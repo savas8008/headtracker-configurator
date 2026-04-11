@@ -695,15 +695,16 @@
                     updateVisualization(mappedPitch, mappedYaw, mappedRoll);
                 } catch (e) { console.warn('PPM (RX) Veri formatı anlaşılamadı:', line); }
             } 
-            // P: verisini işle (TX)
+            // P: verisini işle (TX) — format: P:pitch,R:roll,Y:yaw
             else if (line.startsWith('P:')) {
                 try {
-                    const parts = line.split(',');
-                    const pitch = parseFloat(parts[0].substring(2));
-                    const yaw = parseFloat(parts[1].substring(2));
-                    // TX'den gelen ham veride Roll olmadığını varsayıyoruz.
-                    // Eğer Verici de "P:...,Y:...,R:..." gönderirse, burası da güncellenmeli.
-                    updateVisualization(pitch, yaw, 0); // Roll için 0
+                    let pitch = 0, roll = 0, yaw = 0;
+                    line.split(',').forEach(part => {
+                        if (part.startsWith('P:'))      pitch = parseFloat(part.substring(2));
+                        else if (part.startsWith('R:')) roll  = parseFloat(part.substring(2));
+                        else if (part.startsWith('Y:')) yaw   = parseFloat(part.substring(2));
+                    });
+                    updateVisualization(pitch, yaw, roll);
                 } catch (e) { console.warn('P: (TX) Veri formatı anlaşılamadı:', line); }
             }
             // Ayarları işle (Roll dahil)
@@ -720,7 +721,7 @@
             else if (line.startsWith('OK:') || line.startsWith('ERR:')) {
                 console.log("ESP Mesajı:", line);
                 
-                if (line.includes("Kalibrasyon tamamlandı")) {
+                if (line.includes("Kalibrasyon tamamlandi")) {
                     showCalibrationComplete();
                 }
                 
