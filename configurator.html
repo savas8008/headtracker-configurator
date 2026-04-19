@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ESP32 Headtracker Konfigüratör (v12 - 3 Kanal)</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Roboto+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <style>
         /* --- YUMUŞAK PASTEL TEMA --- */
         :root {
@@ -230,28 +232,19 @@
 
         /* --- Görselleştirme --- */
         #visualizer {
-            width: 160px;
-            height: 160px;
-            border: 4px solid var(--primary-color);
+            width: 280px;
+            height: 220px;
+            border: 2px solid var(--border-light);
             border-radius: 12px;
             margin: 25px auto;
-            transition: transform 0.1s linear;
-            transform-style: preserve-3d;
-            perspective: 500px;
-            background-color: rgba(59, 130, 246, 0.08);
+            overflow: hidden;
+            background: linear-gradient(135deg, #e8f0fe 0%, #f0f4ff 100%);
         }
 
-        #visualizer-face {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            font-weight: 600;
-            color: var(--primary-color);
-            border-radius: 8px;
-            box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.2); 
+        #visualizer canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
         }
 
         #live-data {
@@ -380,9 +373,7 @@
     
     <div class="container" id="visualization-container">
         <h2>Canlı Veri Görselleştirme</h2>
-        <div id="visualizer">
-            <div id="visualizer-face">HEAD</div>
-        </div>
+        <div id="visualizer"></div>
         <div id="live-data">
             Pitch: <span id="pitchValue">0.00</span>° | 
             Yaw: <span id="yawValue">0.00</span>° |
@@ -473,6 +464,91 @@
 
 
     <script>
+        // --- Three.js 3D Görselleştirme ---
+        let threeScene, threeCamera, threeRenderer, threeModel;
+
+        function init3D() {
+            const container = document.getElementById('visualizer');
+            threeScene = new THREE.Scene();
+            threeCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+            threeCamera.position.set(0, 1.5, 5);
+
+            threeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            threeRenderer.setSize(container.clientWidth, container.clientHeight);
+            threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            threeRenderer.outputEncoding = THREE.sRGBEncoding;
+            container.appendChild(threeRenderer.domElement);
+
+            const hemi = new THREE.HemisphereLight(0xffffff, 0x8888aa, 1.2);
+            threeScene.add(hemi);
+            const sun = new THREE.DirectionalLight(0xffffff, 1.5);
+            sun.position.set(4, 8, 5);
+            threeScene.add(sun);
+
+            const controls = new THREE.OrbitControls(threeCamera, threeRenderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.08;
+
+            function makeFaceTexture(label, bgColor, textColor) {
+                const size = 256;
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+
+                // Arka plan
+                ctx.fillStyle = bgColor;
+                ctx.fillRect(0, 0, size, size);
+
+                // İnce kenar çizgisi
+                ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+                ctx.lineWidth = 6;
+                ctx.strokeRect(3, 3, size - 6, size - 6);
+
+                // Yazı
+                ctx.fillStyle = textColor;
+                ctx.font = 'bold 52px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(label, size / 2, size / 2);
+
+                return new THREE.CanvasTexture(canvas);
+            }
+
+            // BoxGeometry yüz sırası: +X, -X, +Y, -Y, +Z, -Z
+            const faceDefs = [
+                { label: 'SAĞ',   bg: '#ef4444', fg: '#ffffff' },  // +X
+                { label: 'SOL',   bg: '#f97316', fg: '#ffffff' },  // -X
+                { label: 'ÜST',   bg: '#22c55e', fg: '#ffffff' },  // +Y
+                { label: 'ALT',   bg: '#6366f1', fg: '#ffffff' },  // -Y
+                { label: 'ÖN',    bg: '#3b82f6', fg: '#ffffff' },  // +Z
+                { label: 'ARKA',  bg: '#64748b', fg: '#ffffff' },  // -Z
+            ];
+
+            const materials = faceDefs.map(f =>
+                new THREE.MeshStandardMaterial({ map: makeFaceTexture(f.label, f.bg, f.fg), roughness: 0.5, metalness: 0.1 })
+            );
+
+            const geo = new THREE.BoxGeometry(2, 2, 2);
+            threeModel = new THREE.Mesh(geo, materials);
+            threeScene.add(threeModel);
+
+            new ResizeObserver(() => {
+                if (!container.clientWidth || !container.clientHeight) return;
+                threeCamera.aspect = container.clientWidth / container.clientHeight;
+                threeCamera.updateProjectionMatrix();
+                threeRenderer.setSize(container.clientWidth, container.clientHeight);
+            }).observe(container);
+
+            (function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                threeRenderer.render(threeScene, threeCamera);
+            })();
+        }
+
+        window.addEventListener('load', init3D);
+
         // --- DOM Seçiciler ---
         const connectButton = document.getElementById('connectButton');
         const connectIcon = document.getElementById('connect-icon');
@@ -736,9 +812,11 @@
             pitchValueText.textContent = pitch.toFixed(2);
             yawValueText.textContent = yaw.toFixed(2);
             rollValueText.textContent = roll.toFixed(2);
-            
-            // 3 eksenli dönüş (X: Pitch, Y: Yaw, Z: Roll)
-            visualizer.style.transform = `rotateX(${-pitch}deg) rotateY(${yaw}deg) rotateZ(${-roll}deg)`;
+
+            if (threeModel) {
+                const toRad = Math.PI / 180;
+                threeModel.rotation.set(-pitch * toRad, yaw * toRad, -roll * toRad);
+            }
         }
 
         function updateSliderValue(key, value) {
