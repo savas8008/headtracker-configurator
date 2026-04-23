@@ -6,6 +6,7 @@
     <title>ESP32 Headtracker Konfigüratör</title>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Orbitron:wght@500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <style>
@@ -329,6 +330,18 @@
             #visualizer { height: 240px; }
             .tx-layout { grid-template-columns: 1fr; }
         }
+        .firmware-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+.firmware-card { padding: 24px 20px; border-radius: 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; align-items: center; text-align: center; }
+.firmware-card h3 { margin: 4px 0 8px; font-size: 16px; border: none; padding: 0; text-transform: none; letter-spacing: 0; }
+.firmware-version { font-size: 13px; color: var(--text-secondary); min-height: 22px; display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 14px; }
+.ver-tag { color: var(--accent-color); font-family: var(--font-mono); font-weight: 600; }
+.flash-btn { background: linear-gradient(135deg,var(--accent-color),#2f80ed)!important; border-color: rgba(86,204,242,0.45)!important; color:#051521!important; width:100%; justify-content:center; }
+.flash-btn:disabled { background: rgba(255,255,255,0.07)!important; color:var(--text-secondary)!important; box-shadow:none!important; transform:none!important; cursor:not-allowed!important; }
+.flash-note { font-size:13px; color:var(--text-secondary); background:rgba(247,181,0,0.07); border:1px solid rgba(247,181,0,0.22); border-radius:12px; padding:12px 16px; line-height:1.5; margin-top:4px; }
+.flash-note code { background:rgba(255,255,255,0.1); padding:1px 5px; border-radius:4px; font-family:var(--font-mono); font-size:12px; color:var(--warning-color); }
+esp-web-install-button { display:block; width:100%; }
+@media (max-width:580px) { .firmware-grid { grid-template-columns:1fr; } }
+
     </style>
 </head>
 <body>
@@ -353,6 +366,39 @@
         </div>
     </div>
 </section>
+<div class="container" id="firmware-container">
+    <h2>⚡ Firmware Güncelleme</h2>
+    <div class="flash-note">
+        <strong>Flaşlamadan önce:</strong> <code>BOOT</code> butonunu basılı tutarken
+        <code>RESET</code>'e kısa basın, ardından butona tıklayın. Sadece <strong>Chrome / Edge</strong> desteklenir.
+    </div>
+    <div class="firmware-grid">
+        <div class="firmware-card">
+            <div style="font-size:34px;margin-bottom:6px">📡</div>
+            <h3>Alıcı (RX)</h3>
+            <div class="firmware-version" id="alici-version">
+                <div class="loader" style="width:14px;height:14px;border-top-color:var(--accent-color);margin:0"></div>
+                <span>Kontrol ediliyor...</span>
+            </div>
+            <esp-web-install-button id="alici-install-btn">
+                <button slot="activate" class="flash-btn" disabled>⚡ Alıcıyı Flaşla</button>
+                <span slot="unsupported" style="color:var(--danger-color);font-size:12px">⚠️ Chrome/Edge gerekli</span>
+            </esp-web-install-button>
+        </div>
+        <div class="firmware-card">
+            <div style="font-size:34px;margin-bottom:6px">🎮</div>
+            <h3>Verici (TX)</h3>
+            <div class="firmware-version" id="verici-version">
+                <div class="loader" style="width:14px;height:14px;border-top-color:var(--accent-color);margin:0"></div>
+                <span>Kontrol ediliyor...</span>
+            </div>
+            <esp-web-install-button id="verici-install-btn">
+                <button slot="activate" class="flash-btn" disabled>⚡ Vericiyi Flaşla</button>
+                <span slot="unsupported" style="color:var(--danger-color);font-size:12px">⚠️ Chrome/Edge gerekli</span>
+            </esp-web-install-button>
+        </div>
+    </div>
+</div>
 
 <!-- VERİCİ PANELİ -->
 <div class="container device-panel" id="tx-panel">
@@ -367,6 +413,19 @@
                     Roll: <span id="rollVal">0.00</span>°
                 </div>
                 <p class="compact-note">Kupu izleyerek bas hareketini anlik kontrol et. Hassasiyet ve PWM araligini sag panelden hizlica tune edebilirsin.</p>
+            </div>
+            <div class="setting-group" style="margin-top:16px">
+                <h3>🔌 I2C Pinleri (MPU6050)</h3>
+                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">SDA/SCL değiştirilirse cihazın yeniden başlatılması gerekir.</p>
+                <div class="row no-value">
+                    <label for="sdaInput">SDA Pini</label>
+                    <input type="number" id="sdaInput" min="0" max="39" value="8" placeholder="GPIO 0-39">
+                </div>
+                <div class="row no-value" style="margin-bottom:12px">
+                    <label for="sclInput">SCL Pini</label>
+                    <input type="number" id="sclInput" min="0" max="39" value="9" placeholder="GPIO 0-39">
+                </div>
+                <button id="applyPinButton">Uygula (Yeniden Başlat)</button>
             </div>
         </div>
 
@@ -389,6 +448,11 @@
                 <div class="row no-value" style="margin-bottom:4px">
                     <label for="pinInput">Çıkış Pini</label>
                     <input type="number" id="pinInput" min="0" max="39" value="7" placeholder="GPIO 0-39">
+                </div>
+                <div class="row" style="margin-top:12px">
+                    <label for="lpfSlider">Filtre (LPF)</label>
+                    <input type="range" id="lpfSlider" min="0" max="0.95" step="0.01" value="0">
+                    <span class="val-badge" id="lpfVal">0.00</span>
                 </div>
             </div>
 
@@ -587,6 +651,11 @@ const sensValSpan   = document.getElementById('sensVal');
 const protoSelect   = document.getElementById('protoSelect');
 const pinInput      = document.getElementById('pinInput');
 const saveConfigBtn = document.getElementById('saveConfigBtn');
+const lpfSlider     = document.getElementById('lpfSlider');
+const lpfValSpan    = document.getElementById('lpfVal');
+const sdaInput      = document.getElementById('sdaInput');
+const sclInput      = document.getElementById('sclInput');
+const applyPinBtn   = document.getElementById('applyPinButton');
 const calibrateBtn  = document.getElementById('calibrateButton');
 const calModal      = document.getElementById('cal-modal');
 const modalTitle    = document.getElementById('modal-title');
@@ -663,12 +732,27 @@ sensSlider.addEventListener('input', () => {
     sensValSpan.textContent = parseFloat(sensSlider.value).toFixed(1);
 });
 
+lpfSlider.addEventListener('input', () => {
+    lpfValSpan.textContent = parseFloat(lpfSlider.value).toFixed(2);
+});
+
+applyPinBtn.addEventListener('click', () => {
+    const sda = parseInt(sdaInput.value);
+    const scl = parseInt(sclInput.value);
+    if (sda >= 0 && sda <= 39 && scl >= 0 && scl <= 39 && sda !== scl) {
+        writeSerial(`SET_I2C_PINS:${sda},${scl}\n`);
+        applyPinBtn.textContent = '✓ Kaydedildi – Cihazı Yeniden Başlatın';
+        setTimeout(() => { applyPinBtn.textContent = 'Uygula (Yeniden Başlat)'; }, 3000);
+    }
+});
+
 saveConfigBtn.addEventListener('click', () => {
     const p = parseInt(pinInput.value);
     if (p < 0 || p > 39) return;
     writeSerial(`SET_SENS:${parseFloat(sensSlider.value).toFixed(1)}\n`);
     writeSerial(`SET_PROTOCOL:${protoSelect.value}\n`);
     writeSerial(`SET_OUTPUT_PIN:${p}\n`);
+    writeSerial(`SET_LPF:${parseFloat(lpfSlider.value).toFixed(2)}\n`);
     const [yaw, pitch, roll] = drChannels;
     writeSerial(`SET_PWM_RANGE:YAW,${yaw.min.value},${yaw.max.value}\n`);
     writeSerial(`SET_PWM_RANGE:PITCH,${pitch.min.value},${pitch.max.value}\n`);
@@ -825,6 +909,14 @@ function handleLine(line) {
                 const v = parseFloat(part.substring(5));
                 sensSlider.value = v;
                 sensValSpan.textContent = v.toFixed(1);
+            } else if (part.startsWith('SDA:')) {
+                sdaInput.value = part.substring(4);
+            } else if (part.startsWith('SCL:')) {
+                sclInput.value = part.substring(4);
+            } else if (part.startsWith('LPF:')) {
+                const v = parseFloat(part.substring(4));
+                lpfSlider.value = v;
+                lpfValSpan.textContent = v.toFixed(2);
             } else {
                 const m = part.match(/^(YAW|PITCH|ROLL):(\d+)-(\d+)$/);
                 if (m && chMap[m[1]]) {
@@ -878,6 +970,50 @@ function showCalComplete() {
     calDoneBtn.style.display = 'block';
     calModal.classList.add('show');
 }
+async function loadFirmwareInfo() {
+    const firmwares = [
+        { repo:'headtracker-alici',  verId:'alici-version',  btnId:'alici-install-btn',  name:'Headtracker Alici'  },
+        { repo:'headtracker-verici', verId:'verici-version', btnId:'verici-install-btn', name:'Headtracker Verici' }
+    ];
+    const results = await Promise.allSettled(
+        firmwares.map(fw =>
+            fetch(`https://api.github.com/repos/savas8008/${fw.repo}/releases?per_page=10`,
+                  { headers:{ Accept:'application/vnd.github+json' } })
+            .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+        )
+    );
+    await customElements.whenDefined('esp-web-install-button').catch(()=>{});
+    results.forEach((result, i) => {
+        const fw        = firmwares[i];
+        const verDiv    = document.getElementById(fw.verId);
+        const installEl = document.getElementById(fw.btnId);
+        const flashBtn  = installEl.querySelector('[slot="activate"]');
+        if (result.status === 'rejected') {
+            verDiv.innerHTML = '<span style="color:var(--danger-color)">✗ Bilgi alinamadi</span>'; return;
+        }
+        const release = result.value.find(r =>
+            r.assets.some(a => a.name==='bootloader.bin') &&
+            r.assets.some(a => a.name==='partitions.bin') &&
+            r.assets.some(a => a.name==='firmware.bin')
+        );
+        if (!release) {
+            verDiv.innerHTML = '<span style="color:var(--warning-color)">⚠ Firmware bulunamadi</span>'; return;
+        }
+        const getUrl = name => release.assets.find(a => a.name===name).browser_download_url;
+        const date   = new Date(release.published_at).toLocaleDateString('tr-TR');
+        verDiv.innerHTML = `<span style="color:var(--success-color)">✓</span> <span class="ver-tag">${release.tag_name}</span> <span style="opacity:.7">${date}</span>`;
+        const manifest = { name:fw.name, version:release.tag_name, builds:[{ chipFamily:'ESP32-C3', parts:[
+            { path:getUrl('bootloader.bin'), offset:0 },
+            { path:getUrl('partitions.bin'), offset:32768 },
+            { path:getUrl('firmware.bin'),   offset:65536 }
+        ]}]};
+        const blob = new Blob([JSON.stringify(manifest)],{type:'application/json'});
+        installEl.manifest = URL.createObjectURL(blob);
+        flashBtn.disabled  = false;
+    });
+}
+loadFirmwareInfo();
+
 </script>
 </body>
 </html>
