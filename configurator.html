@@ -641,6 +641,7 @@ const ICON_USB    = `<img src="assets/icons/usb.png" alt="USB" width="30" height
 const ICON_UNPLUG = `<img src="assets/icons/usb.png" alt="USB" width="30" height="30">`;
 
 // ── DOM ─────────────────────────────────────────────────────────────────────
+const fwContainer   = document.getElementById('firmware-container');
 const connectBtn    = document.getElementById('connectButton');
 const statusDiv     = document.getElementById('status');
 const loaderDiv     = document.getElementById('loader');
@@ -671,7 +672,7 @@ const pwmYawVal     = document.getElementById('pwmYawVal');
 const pwmPitchVal   = document.getElementById('pwmPitchVal');
 const pwmRollVal    = document.getElementById('pwmRollVal');
 
-let port, reader, writer, lineBuffer = '', deviceType = null, calTimer, isClosing = false;
+let port, reader, writer, lineBuffer = '', deviceType = null, calTimer, isClosing = false, identifyInterval = null;
 
 // ── RX PWM slider track renk güncelleme ──────────────────────────────────────
 function updatePwmTrack(slider, value) {
@@ -787,6 +788,10 @@ async function connectSerial() {
         reader = dec.readable.getReader();
         readLoop();
         writeSerial('GET_ID\n');
+        identifyInterval = setInterval(() => {
+            if (!deviceType) writeSerial('GET_ID\n');
+            else { clearInterval(identifyInterval); identifyInterval = null; }
+        }, 2000);
     } catch (err) {
         connectBtn.disabled = false;
         connectBtn.className = 'btn-disconnected';
@@ -812,7 +817,9 @@ async function disconnectSerial() {
     statusDiv.className = 'disconnected';
     txPanel.style.display = 'none';
     rxPanel.style.display = 'none';
+    fwContainer.style.display = 'block';
     deviceType = null;
+    if (identifyInterval) { clearInterval(identifyInterval); identifyInterval = null; }
     isClosing = false;
 }
 
@@ -841,7 +848,9 @@ function handleLine(line) {
         const id = line.substring(3).trim();
         if (id === 'TX' && deviceType !== 'TX') {
             deviceType = 'TX';
+            if (identifyInterval) { clearInterval(identifyInterval); identifyInterval = null; }
             statusDiv.textContent = 'Bağlı: Verici (TX)';
+            fwContainer.style.display = 'none';
             txPanel.style.display = 'block';
             rxPanel.style.display = 'none';
             init3D();
@@ -849,7 +858,9 @@ function handleLine(line) {
             writeSerial('GET_DATA\n');
         } else if (id === 'RX' && deviceType !== 'RX') {
             deviceType = 'RX';
+            if (identifyInterval) { clearInterval(identifyInterval); identifyInterval = null; }
             statusDiv.textContent = 'Bağlı: Alıcı (RX)';
+            fwContainer.style.display = 'none';
             rxPanel.style.display = 'block';
             txPanel.style.display = 'none';
             writeSerial('GET_DATA\n');
@@ -971,46 +982,29 @@ function showCalComplete() {
     calModal.classList.add('show');
 }
 async function loadFirmwareInfo() {
+    const BASE = 'https://raw.githubusercontent.com/savas8008/headtracker-public/main';
     const firmwares = [
-        { repo:'headtracker-alici',  verId:'alici-version',  btnId:'alici-install-btn',  name:'Headtracker Alici'  },
-        { repo:'headtracker-verici', verId:'verici-version', btnId:'verici-install-btn', name:'Headtracker Verici' }
+        { path:'alici',  verId:'alici-version',  btnId:'alici-install-btn'  },
+        { path:'verici', verId:'verici-version', btnId:'verici-install-btn' },
     ];
-    const results = await Promise.allSettled(
-        firmwares.map(fw =>
-            fetch(`https://api.github.com/repos/savas8008/${fw.repo}/releases?per_page=10`,
-                  { headers:{ Accept:'application/vnd.github+json' } })
-            .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
-        )
-    );
     await customElements.whenDefined('esp-web-install-button').catch(()=>{});
-    results.forEach((result, i) => {
-        const fw        = firmwares[i];
+    await Promise.all(firmwares.map(async fw => {
         const verDiv    = document.getElementById(fw.verId);
         const installEl = document.getElementById(fw.btnId);
         const flashBtn  = installEl.querySelector('[slot="activate"]');
-        if (result.status === 'rejected') {
-            verDiv.innerHTML = '<span style="color:var(--danger-color)">✗ Bilgi alinamadi</span>'; return;
+        const url = `${BASE}/${fw.path}/manifest.json`;
+        try {
+            const r = await fetch(url);
+            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+            const manifest = await r.json();
+            const ver = manifest.version || '?';
+            verDiv.innerHTML = `<span style="color:var(--success-color)">✓</span> <span class="ver-tag">${ver}</span>`;
+            installEl.manifest = url;
+            flashBtn.disabled  = false;
+        } catch (_) {
+            verDiv.innerHTML = '<span style="color:var(--warning-color)">⚠ Firmware bulunamadi</span>';
         }
-        const release = result.value.find(r =>
-            r.assets.some(a => a.name==='bootloader.bin') &&
-            r.assets.some(a => a.name==='partitions.bin') &&
-            r.assets.some(a => a.name==='firmware.bin')
-        );
-        if (!release) {
-            verDiv.innerHTML = '<span style="color:var(--warning-color)">⚠ Firmware bulunamadi</span>'; return;
-        }
-        const getUrl = name => release.assets.find(a => a.name===name).browser_download_url;
-        const date   = new Date(release.published_at).toLocaleDateString('tr-TR');
-        verDiv.innerHTML = `<span style="color:var(--success-color)">✓</span> <span class="ver-tag">${release.tag_name}</span> <span style="opacity:.7">${date}</span>`;
-        const manifest = { name:fw.name, version:release.tag_name, builds:[{ chipFamily:'ESP32-C3', parts:[
-            { path:getUrl('bootloader.bin'), offset:0 },
-            { path:getUrl('partitions.bin'), offset:32768 },
-            { path:getUrl('firmware.bin'),   offset:65536 }
-        ]}]};
-        const blob = new Blob([JSON.stringify(manifest)],{type:'application/json'});
-        installEl.manifest = URL.createObjectURL(blob);
-        flashBtn.disabled  = false;
-    });
+    }));
 }
 loadFirmwareInfo();
 
