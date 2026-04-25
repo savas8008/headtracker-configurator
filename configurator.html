@@ -237,6 +237,21 @@
         #calibration-complete-btn { background: linear-gradient(135deg, #22c55e, #16a34a); margin-top: 10px; color: white; border-color: rgba(34, 197, 94, 0.4); }
         #saveConfigBtn { background: linear-gradient(135deg, #22c55e, #16a34a); margin-top: 6px; color: white; border-color: rgba(34, 197, 94, 0.4); }
         .row.pwm-range-row { grid-template-columns: 110px 1fr 110px; }
+        .range-label-stack { display: flex; flex-direction: column; gap: 8px; }
+        .reverse-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            user-select: none;
+        }
+        .reverse-toggle input {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary-color);
+            margin: 0;
+        }
         .dr-wrap { position: relative; height: 32px; display: flex; align-items: center; }
         .dr-track { position: absolute; width: 100%; height: 8px; background: rgba(255,255,255,0.12); border-radius: 999px; }
         .dr-fill    { position: absolute; height: 8px; background: linear-gradient(90deg, var(--accent-color), var(--primary-color)); border-radius: 999px; }
@@ -461,7 +476,13 @@ esp-web-install-button { display:block; width:100%; }
                 <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">Her kanal için minimum ve maksimum PWM değerini sürükleyerek ayarlayın (500–2500 µs).</p>
 
                 <div class="row pwm-range-row">
-                    <label>Yaw (Ch 1)</label>
+                    <div class="range-label-stack">
+                        <label>Yaw (Ch 1)</label>
+                        <label class="reverse-toggle" for="yawReverse">
+                            <input type="checkbox" id="yawReverse">
+                            Reverse
+                        </label>
+                    </div>
                     <div class="dr-wrap" id="drWrapYaw">
                         <div class="dr-track"></div>
                         <div class="dr-fill" id="drFillYaw"></div>
@@ -473,7 +494,13 @@ esp-web-install-button { display:block; width:100%; }
                 </div>
 
                 <div class="row pwm-range-row">
-                    <label>Pitch (Ch 2)</label>
+                    <div class="range-label-stack">
+                        <label>Pitch (Ch 2)</label>
+                        <label class="reverse-toggle" for="pitchReverse">
+                            <input type="checkbox" id="pitchReverse">
+                            Reverse
+                        </label>
+                    </div>
                     <div class="dr-wrap" id="drWrapPitch">
                         <div class="dr-track"></div>
                         <div class="dr-fill" id="drFillPitch"></div>
@@ -485,7 +512,13 @@ esp-web-install-button { display:block; width:100%; }
                 </div>
 
                 <div class="row pwm-range-row">
-                    <label>Roll (Ch 3)</label>
+                    <div class="range-label-stack">
+                        <label>Roll (Ch 3)</label>
+                        <label class="reverse-toggle" for="rollReverse">
+                            <input type="checkbox" id="rollReverse">
+                            Reverse
+                        </label>
+                    </div>
                     <div class="dr-wrap" id="drWrapRoll">
                         <div class="dr-track"></div>
                         <div class="dr-fill" id="drFillRoll"></div>
@@ -671,6 +704,11 @@ const pwmRoll       = document.getElementById('pwmRoll');
 const pwmYawVal     = document.getElementById('pwmYawVal');
 const pwmPitchVal   = document.getElementById('pwmPitchVal');
 const pwmRollVal    = document.getElementById('pwmRollVal');
+const reverseInputs = {
+    YAW: document.getElementById('yawReverse'),
+    PITCH: document.getElementById('pitchReverse'),
+    ROLL: document.getElementById('rollReverse')
+};
 
 let port, reader, writer, lineBuffer = '', deviceType = null, calTimer, isClosing = false, identifyInterval = null;
 
@@ -758,6 +796,9 @@ saveConfigBtn.addEventListener('click', () => {
     writeSerial(`SET_PWM_RANGE:YAW,${yaw.min.value},${yaw.max.value}\n`);
     writeSerial(`SET_PWM_RANGE:PITCH,${pitch.min.value},${pitch.max.value}\n`);
     writeSerial(`SET_PWM_RANGE:ROLL,${roll.min.value},${roll.max.value}\n`);
+    writeSerial(`SET_REVERSE:YAW,${reverseInputs.YAW.checked ? 1 : 0}\n`);
+    writeSerial(`SET_REVERSE:PITCH,${reverseInputs.PITCH.checked ? 1 : 0}\n`);
+    writeSerial(`SET_REVERSE:ROLL,${reverseInputs.ROLL.checked ? 1 : 0}\n`);
     saveConfigBtn.textContent = '✓ Kaydedildi';
     setTimeout(() => { saveConfigBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Kaydet'; }, 1500);
 });
@@ -884,9 +925,9 @@ function handleLine(line) {
             model.rotation.set(-pitch * r, yaw * r, -roll * r);
         }
         const sens = parseFloat(sensSlider.value) || 5.5;
-        updateDualRangeCurrent(drChannels[0], Math.round(1500 + yaw   * sens));
-        updateDualRangeCurrent(drChannels[1], Math.round(1500 + pitch * sens));
-        updateDualRangeCurrent(drChannels[2], Math.round(1500 + roll  * sens));
+        updateDualRangeCurrent(drChannels[0], Math.round(1500 + yaw   * sens * (reverseInputs.YAW.checked ? -1 : 1)));
+        updateDualRangeCurrent(drChannels[1], Math.round(1500 + pitch * sens * (reverseInputs.PITCH.checked ? -1 : 1)));
+        updateDualRangeCurrent(drChannels[2], Math.round(1500 + roll  * sens * (reverseInputs.ROLL.checked ? -1 : 1)));
         return;
     }
 
@@ -929,12 +970,13 @@ function handleLine(line) {
                 lpfSlider.value = v;
                 lpfValSpan.textContent = v.toFixed(2);
             } else {
-                const m = part.match(/^(YAW|PITCH|ROLL):(\d+)-(\d+)$/);
+                const m = part.match(/^(YAW|PITCH|ROLL):(\d+)-(\d+)(?::([01]))?$/);
                 if (m && chMap[m[1]]) {
                     const ch = chMap[m[1]];
                     ch.min.value = m[2];
                     ch.max.value = m[3];
                     updateDualRange(ch);
+                    if (reverseInputs[m[1]]) reverseInputs[m[1]].checked = m[4] === '1';
                 }
             }
         });
