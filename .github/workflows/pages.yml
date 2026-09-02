@@ -22,9 +22,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install MkDocs
+        run: pip install -r requirements-docs.txt
+
+      # Dokümanlar _site/docs altına derlenir (site_dir mkdocs.yml'de tanımlı)
+      - name: Build docs
+        run: mkdocs build --strict
+
+      # Konfigüratör uygulaması kök dizinde kalır; URL'i değişmez
+      - name: Copy configurator app to site root
+        run: |
+          cp index.html configurator.html _site/
+          cp -r assets _site/
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: '_site'
       - uses: actions/deploy-pages@v4
         id: deployment
