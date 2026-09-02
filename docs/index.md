@@ -43,10 +43,10 @@ graph TD
     Önce [Sorun Giderme](sorun-giderme.md) sayfasına bakın. Backpack moduna özel
     sorunlar için [ELRS Backpack](backpack.md) sayfasının sonundaki tablo daha faydalı.
 
-## Kaynak kod
+## Firmware nereden geliyor?
 
-| Repo | İçerik |
-|------|--------|
-| [headtracker-verici](https://github.com/savas8008/headtracker-verici) | Verici firmware'i |
-| [headtracker-alici](https://github.com/savas8008/headtracker-alici) | Alıcı firmware'i |
-| [headtracker-configurator](https://github.com/savas8008/headtracker-configurator) | Tarayıcı arayüzü ve bu dokümanlar |
+Derlenmiş firmware dosyaları herkese açık olarak yayınlanır ve konfigüratör bunları
+doğrudan tarayıcıdan cihaza yazabilir — dosya indirmenize gerek yoktur.
+Ayrıntı: [Firmware Yükleme](firmware.md).
+
+Kaynak kod depoları özeldir; erişim için proje sahibine başvurun.
