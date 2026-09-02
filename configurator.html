@@ -480,6 +480,7 @@ esp-web-install-button { display:block; width:100%; }
                     <div style="margin-top:8px; display:flex; gap:8px">
                         <button id="bpStatusButton" style="flex:1; padding:6px 10px; font-size:13px">Durumu Sorgula</button>
                         <button id="bpTestButton" style="flex:1; padding:6px 10px; font-size:13px">Kanal Testi (15 sn)</button>
+                        <button id="bpScanButton" style="flex:1; padding:6px 10px; font-size:13px">UID Tara (10 sn)</button>
                     </div>
                     <pre id="bpLog" style="margin:8px 0 0; white-space:pre-wrap; font-size:12px; color:var(--text-secondary)"></pre>
                 </div>
@@ -708,6 +709,7 @@ const uidInput      = document.getElementById('uidInput');
 const uidRow        = document.getElementById('uidRow');
 const bpStatusBtn   = document.getElementById('bpStatusButton');
 const bpTestBtn     = document.getElementById('bpTestButton');
+const bpScanBtn     = document.getElementById('bpScanButton');
 const bpLog         = document.getElementById('bpLog');
 const outputPinRow  = document.getElementById('outputPinRow');
 const bindPhraseRow = document.getElementById('bindPhraseRow');
@@ -812,6 +814,7 @@ updateProtoVisibility();
 
 bpStatusBtn.addEventListener('click', () => { bpLog.textContent = ''; writeSerial('BP_STATUS\n'); });
 bpTestBtn.addEventListener('click',   () => { bpLog.textContent = 'Test başladı…'; writeSerial('BP_TEST\n'); });
+bpScanBtn.addEventListener('click',   () => { bpLog.textContent = ''; writeSerial('BP_SCAN\n'); });
 
 lpfSlider.addEventListener('input', () => {
     lpfValSpan.textContent = parseFloat(lpfSlider.value).toFixed(2);
@@ -1042,6 +1045,10 @@ function handleLine(line) {
     // BP_STATUS satirlari
     if (line.startsWith('BP_STATUS:')) {
         bpLog.textContent += line.substring(10).trim() + '\n';
+        return;
+    }
+    if (line.startsWith('BP_SCAN:')) {
+        bpLog.textContent += line.substring(8).trim() + '\n';
         return;
     }
 
