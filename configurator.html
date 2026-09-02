@@ -246,6 +246,11 @@
         .bp-steps li { margin-bottom: 5px; }
         .bp-steps p { margin: 8px 0 0; }
         .bp-btn { flex: 1; padding: 7px 10px; font-size: 13px; }
+        .bp-btn-primary { width: 100%; }
+        .bp-card { margin-top: 10px; border: 1px solid var(--border-light); border-radius: 8px; padding: 10px 12px; }
+        .bp-card-title { font-weight: 700; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--text-primary); margin-bottom: 6px; }
+        .bp-card p { margin: 0 0 10px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+        .bp-state { margin-top: 8px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); }
         #saveConfigBtn { background: linear-gradient(135deg, #22c55e, #16a34a); margin-top: 6px; color: white; border-color: rgba(34, 197, 94, 0.4); }
         .row.pwm-range-row { grid-template-columns: 110px 1fr 110px; }
         .range-label-stack { display: flex; flex-direction: column; gap: 8px; }
@@ -487,7 +492,25 @@ esp-web-install-button { display:block; width:100%; }
                 <div id="backpackInfo" style="display:none; margin-top:10px">
                     <div id="bpStatusPill" class="bp-pill bp-idle">Durum bekleniyor…</div>
 
-                    <details class="bp-steps" open>
+                    <div class="bp-card">
+                        <div class="bp-card-title">Kanalları test et</div>
+                        <p id="bpTestIntro">Kumandada kanal monitörünü açın (<b>Model → Kanallar</b>). Teste basınca 15 saniye
+                           boyunca kafa hareketi yerine düzenli bir tarama sinyali gönderilir; <b>HT Start Channel</b> olarak
+                           seçtiğiniz kanalın (ör. Aux6 → <b>CH10</b>) yavaşça sağa-sola gidip geldiğini görmelisiniz.
+                           Böylece tüm zincirin (tracker → backpack → kumanda) çalıştığını gözünüzle doğrularsınız.</p>
+                        <button id="bpTestButton" class="bp-btn bp-btn-primary">Testi Başlat (15 sn)</button>
+                        <div id="bpTestState" class="bp-state" style="display:none"></div>
+                        <div id="bpTestAsk" style="display:none; margin-top:8px">
+                            <span>Kumandada kanal sağa-sola oynadı mı?</span>
+                            <div style="display:flex; gap:8px; margin-top:6px">
+                                <button id="bpTestYes" class="bp-btn">Evet, oynadı</button>
+                                <button id="bpTestNo"  class="bp-btn">Hayır, hareket yok</button>
+                            </div>
+                        </div>
+                        <div id="bpTestVerdict" class="bp-state" style="display:none"></div>
+                    </div>
+
+                    <details class="bp-steps">
                         <summary>Kurulum adımları</summary>
                         <ol>
                             <li>Kumandada <b>ELRS Lua → Backpack</b> klasörünü açın; <b>Version</b> satırı dolu olmalı (backpack yoksa bu mod çalışmaz).</li>
@@ -497,15 +520,20 @@ esp-web-install-button { display:block; width:100%; }
                             <li>Ana ELRS ayarlarında <b>Switch Mode: 12ch veya 16ch/2</b>. 8ch modunda CH10+ alıcıya gitmez.</li>
                             <li>Bind phrase'i yukarı girip <b>Kaydet</b>'e basın, sonra vericiyi <b>yeniden başlatın</b>.</li>
                         </ol>
-                        <p>Phrase bilinmiyorsa (modül butonla bind edilmişse) <b>UID Tara</b>'yı çalıştırıp çıkan MAC'i UID alanına yazın.</p>
                     </details>
 
-                    <div style="margin-top:8px; display:flex; gap:8px">
-                        <button id="bpStatusButton" class="bp-btn">Durumu Sorgula</button>
-                        <button id="bpTestButton" class="bp-btn">Kanal Testi (15 sn)</button>
-                        <button id="bpScanButton" class="bp-btn">UID Tara (10 sn)</button>
-                    </div>
-                    <pre id="bpLog" style="margin:8px 0 0; white-space:pre-wrap; font-size:12px; color:var(--text-secondary)"></pre>
+                    <details class="bp-steps">
+                        <summary>Gelişmiş</summary>
+                        <p><b>Ham durum:</b> UID, MAC, kanal ve paket sayaçlarını dökümler. Sorun bildirirken bu çıktıyı paylaşın.</p>
+                        <button id="bpStatusButton" class="bp-btn">Ham Durumu Göster</button>
+                        <p style="margin-top:12px"><b>UID tarama:</b> yalnızca <b>bind phrase'inizi bilmiyorsanız</b> gerekir
+                           (ELRS modülü phrase'siz derlenip butonla bind edilmişse). 10 sn boyunca havadaki ESP-NOW adresleri
+                           dinlenir. TX backpack ancak bir ayarı değişince yayın yaptığı için, tarama sırasında kumandada
+                           Lua'dan <b>HT Enable</b>'ı kapatıp açmanız gerekir — yoksa dinlenecek yayın olmaz.
+                           Tarama boyunca kafa takibi verisi gönderilmez, kanallar 10 sn donar.</p>
+                        <button id="bpScanButton" class="bp-btn">UID Taramasını Başlat</button>
+                        <pre id="bpLog" style="margin:8px 0 0; white-space:pre-wrap; font-size:12px; color:var(--text-secondary)"></pre>
+                    </details>
                 </div>
                 <div class="row" style="margin-top:12px">
                     <label for="lpfSlider">Filtre (LPF)</label>
@@ -733,6 +761,11 @@ const uidRow        = document.getElementById('uidRow');
 const bpStatusBtn   = document.getElementById('bpStatusButton');
 const bpTestBtn     = document.getElementById('bpTestButton');
 const bpScanBtn     = document.getElementById('bpScanButton');
+const bpTestState   = document.getElementById('bpTestState');
+const bpTestAsk     = document.getElementById('bpTestAsk');
+const bpTestVerdict = document.getElementById('bpTestVerdict');
+const bpTestYes     = document.getElementById('bpTestYes');
+const bpTestNo      = document.getElementById('bpTestNo');
 const bpLog         = document.getElementById('bpLog');
 const outputPinRow  = document.getElementById('outputPinRow');
 const bindPhraseRow = document.getElementById('bindPhraseRow');
@@ -836,44 +869,55 @@ function updateProtoVisibility() {
 protoSelect.addEventListener('change', updateProtoVisibility);
 updateProtoVisibility();
 
-bpStatusBtn.addEventListener('click', () => { bpLog.textContent = ''; writeSerial('BP_STATUS\n'); });
 let bpCountdown = null;
-function bpStartCountdown(sec, label) {
+
+bpStatusBtn.addEventListener('click', () => { bpLog.textContent = ''; writeSerial('BP_STATUS\n'); });
+
+bpTestBtn.addEventListener('click', () => {
+    writeSerial('BP_TEST\n');
+    bpTestBtn.disabled = true;
+    bpTestAsk.style.display = 'none';
+    bpTestVerdict.style.display = 'none';
+    bpTestState.style.display = '';
     clearInterval(bpCountdown);
-    let left = sec;
+    let left = 15;
     const tick = () => {
-        bpLog.textContent = `${label} — ${left} sn`;
+        bpTestState.innerHTML = `⏱ Tarama sinyali gönderiliyor — <b>${left}</b> sn. Kumandadaki kanal monitörüne bakın.`;
         if (left-- <= 0) clearInterval(bpCountdown);
     };
     tick();
     bpCountdown = setInterval(tick, 1000);
-}
+});
 
-bpTestBtn.addEventListener('click', () => {
-    writeSerial('BP_TEST\n');
-    bpStartCountdown(15, 'Kanal testi sürüyor (Pan süpürülüyor)');
+bpTestYes.addEventListener('click', () => {
+    bpTestAsk.style.display = 'none';
+    bpTestVerdict.style.display = '';
+    bpTestVerdict.innerHTML = '✅ <b>Zincir çalışıyor.</b> Tracker → TX backpack → kumanda yolu tamam; ' +
+        'artık kafa hareketleriniz aynı kanaldan gidiyor. Kurulum bitti.';
+});
+
+bpTestNo.addEventListener('click', () => {
+    bpTestAsk.style.display = 'none';
+    bpTestVerdict.style.display = '';
+    bpTestVerdict.innerHTML = '⚠ <b>Paketler kumandaya ulaşıyor ama kanala yansımıyor.</b> Sırayla kontrol edin:' +
+        '<ol style="margin:6px 0 0; padding-left:20px">' +
+        '<li>Lua → Backpack → <b>HT Enable: On</b> mu? (bir AUX\'a bağladıysanız o switch yukarıda mı)</li>' +
+        '<li><b>HT Start Channel</b> hangisi? Aux6 seçtiyseniz <b>CH10</b>\'a bakmalısınız, CH1\'e değil.</li>' +
+        '<li><b>Switch Mode 12ch veya 16ch/2</b> mi? 8ch modunda CH10+ hiç gönderilmez.</li>' +
+        '<li>EdgeTX seçtiyseniz Model Setup → Trainer → <b>Master/CRSF</b> ve kaynak TR1/TR2/TR3.</li>' +
+        '<li>Bu ayarlar <b>model bazlıdır</b> — doğru modelde olduğunuzdan emin olun.</li></ol>';
 });
 
 bpScanBtn.addEventListener('click', () => {
-    if (!confirm('Tarama boyunca (10 sn) kafa takibi verisi gönderilmez; kumandadaki kanallar bu süre boyunca donar. ' +
-                 'Tarama sırasında kumandada ELRS Lua\'dan bir backpack ayarını değiştirin (ör. HT Enable aç/kapa), ' +
-                 'yoksa dinlenecek bir yayın olmaz.\n\nDevam edilsin mi?')) return;
     writeSerial('BP_SCAN\n');
-    bpStartCountdown(10, 'Taranıyor — şimdi Lua\'da HT Enable\'ı kapat/aç');
-});
-
-lpfSlider.addEventListener('input', () => {
-    lpfValSpan.textContent = parseFloat(lpfSlider.value).toFixed(2);
-});
-
-applyPinBtn.addEventListener('click', () => {
-    const sda = parseInt(sdaInput.value);
-    const scl = parseInt(sclInput.value);
-    if (sda >= 0 && sda <= 39 && scl >= 0 && scl <= 39 && sda !== scl) {
-        writeSerial(`SET_I2C_PINS:${sda},${scl}\n`);
-        applyPinBtn.textContent = '✓ Kaydedildi – Cihazı Yeniden Başlatın';
-        setTimeout(() => { applyPinBtn.textContent = 'Uygula (Yeniden Başlat)'; }, 3000);
-    }
+    clearInterval(bpCountdown);
+    let left = 10;
+    const tick = () => {
+        bpLog.textContent = `Dinleniyor — ${left} sn. Şimdi kumandada Lua → HT Enable'ı kapatıp açın.`;
+        if (left-- <= 0) clearInterval(bpCountdown);
+    };
+    tick();
+    bpCountdown = setInterval(tick, 1000);
 });
 
 saveConfigBtn.addEventListener('click', () => {
@@ -1100,47 +1144,62 @@ function handleLine(line) {
         bpLog.textContent += body + '\n';
         return;
     }
+    // BP_TEST: bitti,<gonderilen>,<ack>
     if (line.startsWith('BP_TEST:')) {
         clearInterval(bpCountdown);
-        bpLog.textContent = line.substring(8).trim();
+        bpTestBtn.disabled = false;
+        const parts = line.substring(8).split(',');
+        const sent = parseInt(parts[1]), ack = parseInt(parts[2]);
+        bpTestState.style.display = '';
+        if (!isNaN(sent) && sent > 0) {
+            const q = Math.round(100 * ack / sent);
+            bpTestState.innerHTML = `Test bitti: <b>${sent}</b> tarama paketi gönderildi, <b>%${q}</b>\'i kumanda tarafından alındı.`;
+            bpTestAsk.style.display = q > 0 ? '' : 'none';
+            if (q === 0) {
+                bpTestVerdict.style.display = '';
+                bpTestVerdict.innerHTML = '⛔ Hiçbir paket kumandaya ulaşmadı — TX backpack bu UID\'de değil. ' +
+                    'Kumandada <b>ELRS Lua → [Bind]</b> yapın.';
+            }
+        } else {
+            bpTestState.textContent = 'Test bitti, normal akışa dönüldü.';
+            bpTestAsk.style.display = '';
+        }
         return;
     }
 
     // Backpack durumu: BP:<aktif>,<link>,<htEnable>[,<ack_ok>,<ack_yok>]
     if (line.startsWith('BP:')) {
         const v = line.substring(3).split(',').map(x => parseInt(x.trim()));
-        const act = v[0], link = v[1], ht = v[2];
+        const act = v[0], ht = v[2];
         const hasAck = v.length >= 5 && !isNaN(v[3]) && !isNaN(v[4]);
-        let cls = 'bp-idle', msg = 'Durum bekleniyor…';
+        let cls = 'bp-ok', msg = '';
+        let dOk = 1, dFail = 0, measuring = false;
+
+        if (hasAck) {
+            if (bpPrev) { dOk = v[3] - bpPrev.ok; dFail = v[4] - bpPrev.fail; }
+            else measuring = true;
+            bpPrev = { ok: v[3], fail: v[4] };
+        }
 
         if (act !== 1) {
             cls = 'bp-err';
-            msg = '⛔ Pasif — bind phrase veya UID girip Kaydet\'e basın, sonra vericiyi yeniden başlatın.';
-        } else if (hasAck) {
-            const dOk   = bpPrev ? v[3] - bpPrev.ok   : 0;
-            const dFail = bpPrev ? v[4] - bpPrev.fail : 0;
-            const first = !bpPrev;
-            bpPrev = { ok: v[3], fail: v[4] };
-            if (first) {
-                cls = 'bp-idle'; msg = 'Ölçülüyor…';
-            } else if (dOk === 0 && dFail === 0) {
-                cls = 'bp-warn';
-                msg = '⏸ Paket gönderilmiyor — IMU verisi akmıyor olabilir. "Kanal Testi"ni deneyin.';
-            } else if (dOk === 0) {
-                cls = 'bp-err';
-                msg = '⛔ Paketler cevapsız — TX backpack bu UID\'de değil. Kumandada <b>ELRS Lua → [Bind]</b> yapın; olmazsa "UID Tara".';
-            } else {
-                const q = Math.round(100 * dOk / (dOk + dFail));
-                if (ht === 1)      { cls = 'bp-ok';   msg = `✅ Hazır — kanallar kumandaya gidiyor. Link %${q}`; }
-                else if (ht === 0) { cls = 'bp-warn'; msg = `⚠ Bağlantı var (link %${q}) ama <b>HT Enable kapalı</b>. Lua\'da On yapın.`; }
-                else               { cls = 'bp-warn'; msg = `⚠ Bağlantı var (link %${q}). HT durumu bilinmiyor — Lua\'da <b>HT Enable</b>\'ı kapatıp açın.`; }
-            }
+            msg = '⛔ <b>Pasif</b> — bind phrase veya UID girip Kaydet\'e basın, sonra vericiyi yeniden başlatın.';
+        } else if (measuring) {
+            cls = 'bp-idle'; msg = 'Ölçülüyor…';
+        } else if (hasAck && dOk === 0 && dFail === 0) {
+            cls = 'bp-warn';
+            msg = '⏸ <b>Veri gönderilmiyor</b> — IMU okunamıyor olabilir. Kalibrasyonu ve I2C pinlerini kontrol edin.';
+        } else if (hasAck && dOk === 0) {
+            cls = 'bp-err';
+            msg = '⛔ <b>Kumanda cevap vermiyor</b> — TX backpack bu UID\'de değil. Kumandada <b>ELRS Lua → [Bind]</b> yapın.';
+        } else if (ht === 0) {
+            cls = 'bp-warn';
+            msg = '⚠ <b>Kumandada HT Enable kapalı</b> — Lua → Backpack → HT Enable: On yapın. Veri gidiyor ama kanala yazılmıyor.';
         } else {
-            // Eski firmware: ACK sayaçları yok, yalnızca link/HT bilgisi var
-            if (ht === 1)       { cls = 'bp-ok';   msg = '✅ Backpack aktif, HT Enable açık.'; }
-            else if (link === 1){ cls = 'bp-warn'; msg = '⚠ TX backpack ile temas var, HT Enable kapalı görünüyor.'; }
-            else                { cls = 'bp-idle'; msg = '🛰️ Backpack aktif, veri gönderiliyor. TX\'ten henüz bildirim yok.'; }
-            msg += ' <span style="opacity:.7">(ayrıntılı teşhis için firmware\'i güncelleyin)</span>';
+            const q = hasAck ? Math.round(100 * dOk / (dOk + dFail)) : null;
+            cls = 'bp-ok';
+            msg = '✅ <b>Çalışıyor</b> — kafa hareketi kumandaya gönderiliyor' + (q !== null ? ` (link %${q})` : '') + '.' +
+                  '<div style="font-weight:400; opacity:.85; margin-top:4px">Kanalların gerçekten oynadığını görmek için aşağıdaki testi çalıştırın.</div>';
         }
         bpPill.className = 'bp-pill ' + cls;
         bpPill.innerHTML = msg;
