@@ -458,11 +458,21 @@ esp-web-install-button { display:block; width:100%; }
                         <option value="0">PPM</option>
                         <option value="1">SBUS</option>
                         <option value="2">SBUS (Ters)</option>
+                        <option value="3">ELRS Backpack (MSP)</option>
                     </select>
                 </div>
-                <div class="row no-value" style="margin-bottom:4px">
+                <div class="row no-value" style="margin-bottom:4px" id="outputPinRow">
                     <label for="pinInput">Çıkış Pini</label>
                     <input type="number" id="pinInput" min="0" max="39" value="7" placeholder="GPIO 0-39">
+                </div>
+                <div class="row no-value" style="margin-bottom:4px; display:none" id="bindPhraseRow">
+                    <label for="bindPhraseInput">Bind Phrase</label>
+                    <input type="text" id="bindPhraseInput" maxlength="32" placeholder="ELRS bind phrase (virgülsüz)">
+                </div>
+                <div id="backpackInfo" style="display:none; margin-top:10px; padding:10px 12px; border:1px solid var(--border-light); border-radius:8px; font-size:13px; color:var(--text-secondary); line-height:1.6">
+                    🛰️ <strong>Backpack modu:</strong> veri, alıcı modül olmadan doğrudan kumandadaki ELRS TX backpack'e MSP/ESP-NOW ile gider. Alıcı modül devre dışı kalır.<br>
+                    Kumanda ELRS Lua → Backpack: <strong>Backpack: On</strong>, <strong>HT Enable: On</strong>, <strong>HT Start Channel: Aux…</strong>, <strong>Telemetry: Off veya ESPNOW</strong> (WiFi seçmeyin).<br>
+                    <span id="backpackStatus">Durum: —</span>
                 </div>
                 <div class="row" style="margin-top:12px">
                     <label for="lpfSlider">Filtre (LPF)</label>
@@ -684,6 +694,11 @@ const sensSlider    = document.getElementById('sensSlider');
 const sensValSpan   = document.getElementById('sensVal');
 const protoSelect   = document.getElementById('protoSelect');
 const pinInput      = document.getElementById('pinInput');
+const bindInput     = document.getElementById('bindPhraseInput');
+const outputPinRow  = document.getElementById('outputPinRow');
+const bindPhraseRow = document.getElementById('bindPhraseRow');
+const backpackInfo  = document.getElementById('backpackInfo');
+const backpackStat  = document.getElementById('backpackStatus');
 const saveConfigBtn = document.getElementById('saveConfigBtn');
 const lpfSlider     = document.getElementById('lpfSlider');
 const lpfValSpan    = document.getElementById('lpfVal');
@@ -771,6 +786,15 @@ sensSlider.addEventListener('input', () => {
     sensValSpan.textContent = parseFloat(sensSlider.value).toFixed(1);
 });
 
+function updateProtoVisibility() {
+    const isBackpack = protoSelect.value === '3';
+    outputPinRow.style.display  = isBackpack ? 'none' : '';
+    bindPhraseRow.style.display = isBackpack ? '' : 'none';
+    backpackInfo.style.display  = isBackpack ? '' : 'none';
+}
+protoSelect.addEventListener('change', updateProtoVisibility);
+updateProtoVisibility();
+
 lpfSlider.addEventListener('input', () => {
     lpfValSpan.textContent = parseFloat(lpfSlider.value).toFixed(2);
 });
@@ -786,11 +810,18 @@ applyPinBtn.addEventListener('click', () => {
 });
 
 saveConfigBtn.addEventListener('click', () => {
+    const isBackpack = protoSelect.value === '3';
     const p = parseInt(pinInput.value);
-    if (p < 0 || p > 39) return;
+    if (!isBackpack && (p < 0 || p > 39)) return;
+    if (isBackpack) {
+        const phrase = bindInput.value.trim();
+        if (!phrase) { alert('Backpack modu için ELRS bind phrase gerekli.'); return; }
+        if (phrase.includes(',')) { alert('Bind phrase virgül içeremez.'); return; }
+        writeSerial(`SET_BIND_PHRASE:${phrase}\n`);
+    }
     writeSerial(`SET_SENS:${parseFloat(sensSlider.value).toFixed(1)}\n`);
     writeSerial(`SET_PROTOCOL:${protoSelect.value}\n`);
-    writeSerial(`SET_OUTPUT_PIN:${p}\n`);
+    if (!isBackpack) writeSerial(`SET_OUTPUT_PIN:${p}\n`);
     writeSerial(`SET_LPF:${parseFloat(lpfSlider.value).toFixed(2)}\n`);
     const [yaw, pitch, roll] = drChannels;
     writeSerial(`SET_PWM_RANGE:YAW,${yaw.min.value},${yaw.max.value}\n`);
@@ -955,8 +986,9 @@ function handleLine(line) {
     if (line.startsWith('CONFIG:')) {
         const chMap = { YAW: drChannels[0], PITCH: drChannels[1], ROLL: drChannels[2] };
         line.substring(7).split(',').forEach(part => {
-            if (part.startsWith('PROTO:'))     protoSelect.value = part.substring(6);
+            if (part.startsWith('PROTO:'))     { protoSelect.value = part.substring(6); updateProtoVisibility(); }
             else if (part.startsWith('PIN:'))  pinInput.value    = part.substring(4);
+            else if (part.startsWith('BIND:')) bindInput.value   = part.substring(5);
             else if (part.startsWith('SENS:')) {
                 const v = parseFloat(part.substring(5));
                 sensSlider.value = v;
@@ -980,6 +1012,16 @@ function handleLine(line) {
                 }
             }
         });
+        return;
+    }
+
+    // Backpack durumu: BP:<aktif>,<link>,<htEnable>
+    if (line.startsWith('BP:')) {
+        const [act, link, ht] = line.substring(3).split(',').map(v => parseInt(v.trim()));
+        const htText = ht === 1 ? '✅ açık' : (ht === 0 ? '⛔ kapalı' : '– bildirilmedi');
+        backpackStat.innerHTML = act === 1
+            ? `Durum: ✅ ESP-NOW aktif · TX backpack ${link === 1 ? '✅ bağlı' : '⏳ bekleniyor'} · HT Enable ${htText}`
+            : 'Durum: ⛔ pasif — bind phrase girip cihazı yeniden başlatın.';
         return;
     }
 
