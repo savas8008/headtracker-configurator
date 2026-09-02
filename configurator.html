@@ -235,6 +235,17 @@
         .progress-bar-inner { width: 0%; height: 100%; background: var(--primary-color); transition: width 0.5s; border-radius: 11px; }
         #countdown-timer { font-size: 30px; font-weight: 600; color: var(--primary-color); margin: 10px 0 20px; }
         #calibration-complete-btn { background: linear-gradient(135deg, #22c55e, #16a34a); margin-top: 10px; color: white; border-color: rgba(34, 197, 94, 0.4); }
+        .bp-pill { padding: 9px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; line-height: 1.5; border: 1px solid transparent; }
+        .bp-idle { background: rgba(148,163,184,0.12); border-color: rgba(148,163,184,0.35); color: var(--text-secondary); }
+        .bp-ok   { background: rgba(34,197,94,0.13);  border-color: rgba(34,197,94,0.45);  color: #4ade80; }
+        .bp-warn { background: rgba(234,179,8,0.13);  border-color: rgba(234,179,8,0.45);  color: #facc15; }
+        .bp-err  { background: rgba(239,68,68,0.13);  border-color: rgba(239,68,68,0.45);  color: #f87171; }
+        .bp-steps { margin-top: 10px; border: 1px solid var(--border-light); border-radius: 8px; padding: 8px 12px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+        .bp-steps summary { cursor: pointer; font-weight: 600; color: var(--text-primary); }
+        .bp-steps ol { margin: 8px 0 0; padding-left: 20px; }
+        .bp-steps li { margin-bottom: 5px; }
+        .bp-steps p { margin: 8px 0 0; }
+        .bp-btn { flex: 1; padding: 7px 10px; font-size: 13px; }
         #saveConfigBtn { background: linear-gradient(135deg, #22c55e, #16a34a); margin-top: 6px; color: white; border-color: rgba(34, 197, 94, 0.4); }
         .row.pwm-range-row { grid-template-columns: 110px 1fr 110px; }
         .range-label-stack { display: flex; flex-direction: column; gap: 8px; }
@@ -473,14 +484,26 @@ esp-web-install-button { display:block; width:100%; }
                     <label for="uidInput">UID (opsiyonel)</label>
                     <input type="text" id="uidInput" placeholder="64,69,87,110,97,85 — boşsa phrase'den türetilir">
                 </div>
-                <div id="backpackInfo" style="display:none; margin-top:10px; padding:10px 12px; border:1px solid var(--border-light); border-radius:8px; font-size:13px; color:var(--text-secondary); line-height:1.6">
-                    🛰️ <strong>Backpack modu:</strong> veri, alıcı modül olmadan doğrudan kumandadaki ELRS TX backpack'e MSP/ESP-NOW ile gider. Alıcı modül devre dışı kalır.<br>
-                    Kumanda ELRS Lua → Backpack: <strong>Backpack: On</strong>, <strong>HT Enable: On</strong>, <strong>HT Start Channel: Aux…</strong>, <strong>Telemetry: Off veya ESPNOW</strong> (WiFi seçmeyin).<br>
-                    <span id="backpackStatus">Durum: —</span>
+                <div id="backpackInfo" style="display:none; margin-top:10px">
+                    <div id="bpStatusPill" class="bp-pill bp-idle">Durum bekleniyor…</div>
+
+                    <details class="bp-steps" open>
+                        <summary>Kurulum adımları</summary>
+                        <ol>
+                            <li>Kumandada <b>ELRS Lua → Backpack</b> klasörünü açın; <b>Version</b> satırı dolu olmalı (backpack yoksa bu mod çalışmaz).</li>
+                            <li><b>İlk kurulumda bir kez [Bind]</b> yapın. Backpack fabrikadan adressiz gelir; bind yapılmadan gönderdiğimiz paketleri kimse almaz.</li>
+                            <li><b>Backpack: On</b>, <b>HT Enable: On</b>, <b>HT Start Channel: Aux6</b> (→ CH10/11/12) veya <b>EdgeTX</b>.</li>
+                            <li><b>Telemetry: Off</b> (ya da ESPNOW). <b>WiFi seçmeyin</b> — o modda backpack ESP-NOW'u hiç başlatmaz.</li>
+                            <li>Ana ELRS ayarlarında <b>Switch Mode: 12ch veya 16ch/2</b>. 8ch modunda CH10+ alıcıya gitmez.</li>
+                            <li>Bind phrase'i yukarı girip <b>Kaydet</b>'e basın, sonra vericiyi <b>yeniden başlatın</b>.</li>
+                        </ol>
+                        <p>Phrase bilinmiyorsa (modül butonla bind edilmişse) <b>UID Tara</b>'yı çalıştırıp çıkan MAC'i UID alanına yazın.</p>
+                    </details>
+
                     <div style="margin-top:8px; display:flex; gap:8px">
-                        <button id="bpStatusButton" style="flex:1; padding:6px 10px; font-size:13px">Durumu Sorgula</button>
-                        <button id="bpTestButton" style="flex:1; padding:6px 10px; font-size:13px">Kanal Testi (15 sn)</button>
-                        <button id="bpScanButton" style="flex:1; padding:6px 10px; font-size:13px">UID Tara (10 sn)</button>
+                        <button id="bpStatusButton" class="bp-btn">Durumu Sorgula</button>
+                        <button id="bpTestButton" class="bp-btn">Kanal Testi (15 sn)</button>
+                        <button id="bpScanButton" class="bp-btn">UID Tara (10 sn)</button>
                     </div>
                     <pre id="bpLog" style="margin:8px 0 0; white-space:pre-wrap; font-size:12px; color:var(--text-secondary)"></pre>
                 </div>
@@ -714,7 +737,7 @@ const bpLog         = document.getElementById('bpLog');
 const outputPinRow  = document.getElementById('outputPinRow');
 const bindPhraseRow = document.getElementById('bindPhraseRow');
 const backpackInfo  = document.getElementById('backpackInfo');
-const backpackStat  = document.getElementById('backpackStatus');
+const bpPill        = document.getElementById('bpStatusPill');
 const saveConfigBtn = document.getElementById('saveConfigBtn');
 const lpfSlider     = document.getElementById('lpfSlider');
 const lpfValSpan    = document.getElementById('lpfVal');
@@ -741,6 +764,7 @@ const reverseInputs = {
     ROLL: document.getElementById('rollReverse')
 };
 
+let bpPrev = null;
 let port, reader, writer, lineBuffer = '', deviceType = null, calTimer, isClosing = false, identifyInterval = null;
 
 // ── RX PWM slider track renk güncelleme ──────────────────────────────────────
@@ -853,8 +877,9 @@ saveConfigBtn.addEventListener('click', () => {
     writeSerial(`SET_REVERSE:YAW,${reverseInputs.YAW.checked ? 1 : 0}\n`);
     writeSerial(`SET_REVERSE:PITCH,${reverseInputs.PITCH.checked ? 1 : 0}\n`);
     writeSerial(`SET_REVERSE:ROLL,${reverseInputs.ROLL.checked ? 1 : 0}\n`);
-    saveConfigBtn.textContent = '✓ Kaydedildi';
-    setTimeout(() => { saveConfigBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Kaydet'; }, 1500);
+    saveConfigBtn.textContent = isBackpack ? '✓ Kaydedildi — vericiyi yeniden başlatın' : '✓ Kaydedildi';
+    if (isBackpack) bpPrev = null;
+    setTimeout(() => { saveConfigBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Kaydet'; }, isBackpack ? 4000 : 1500);
 });
 
 calibrateBtn.addEventListener('click', () => { writeSerial('calibrate\n'); startCalVisuals(); });
@@ -1052,13 +1077,35 @@ function handleLine(line) {
         return;
     }
 
-    // Backpack durumu: BP:<aktif>,<link>,<htEnable>
+    // Backpack durumu: BP:<aktif>,<link>,<htEnable>,<ack_ok>,<ack_yok>
     if (line.startsWith('BP:')) {
-        const [act, link, ht] = line.substring(3).split(',').map(v => parseInt(v.trim()));
-        const htText = ht === 1 ? '✅ açık' : (ht === 0 ? '⛔ kapalı' : '– bildirilmedi');
-        backpackStat.innerHTML = act === 1
-            ? `Durum: ✅ ESP-NOW aktif · TX backpack ${link === 1 ? '✅ bağlı' : '⏳ bekleniyor'} · HT Enable ${htText}`
-            : 'Durum: ⛔ pasif — bind phrase girip cihazı yeniden başlatın.';
+        const v = line.substring(3).split(',').map(x => parseInt(x.trim()));
+        const [act, , ht, ackOk = 0, ackFail = 0] = v;
+        const dOk   = bpPrev ? ackOk   - bpPrev.ackOk   : 0;
+        const dFail = bpPrev ? ackFail - bpPrev.ackFail : 0;
+        const first = !bpPrev;
+        bpPrev = { ackOk, ackFail };
+
+        let cls = 'bp-idle', msg = 'Durum bekleniyor…';
+        if (act !== 1) {
+            cls = 'bp-err';
+            msg = '⛔ Pasif — bind phrase veya UID girip Kaydet\'e basın, sonra vericiyi yeniden başlatın.';
+        } else if (first) {
+            cls = 'bp-idle'; msg = 'Ölçülüyor…';
+        } else if (dOk === 0 && dFail === 0) {
+            cls = 'bp-warn';
+            msg = '⏸ Paket gönderilmiyor — IMU verisi akmıyor olabilir. "Kanal Testi"ni deneyin.';
+        } else if (dOk === 0) {
+            cls = 'bp-err';
+            msg = '⛔ Paketler cevapsız — TX backpack bu UID\'de değil. Kumandada <b>ELRS Lua → [Bind]</b> yapın; olmazsa "UID Tara".';
+        } else {
+            const q = Math.round(100 * dOk / (dOk + dFail));
+            if (ht === 1)      { cls = 'bp-ok';   msg = `✅ Hazır — kanallar kumandaya gidiyor. Link %${q}`; }
+            else if (ht === 0) { cls = 'bp-warn'; msg = `⚠ Bağlantı var (link %${q}) ama <b>HT Enable kapalı</b>. Lua\'da On yapın.`; }
+            else               { cls = 'bp-warn'; msg = `⚠ Bağlantı var (link %${q}). HT durumu bilinmiyor — Lua\'da <b>HT Enable</b>\'ı kapatıp açın.`; }
+        }
+        bpPill.className = 'bp-pill ' + cls;
+        bpPill.innerHTML = msg;
         return;
     }
 
