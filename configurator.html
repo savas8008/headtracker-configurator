@@ -469,10 +469,19 @@ esp-web-install-button { display:block; width:100%; }
                     <label for="bindPhraseInput">Bind Phrase</label>
                     <input type="text" id="bindPhraseInput" maxlength="32" placeholder="ELRS bind phrase (virgülsüz)">
                 </div>
+                <div class="row no-value" style="margin-bottom:4px; display:none" id="uidRow">
+                    <label for="uidInput">UID (opsiyonel)</label>
+                    <input type="text" id="uidInput" placeholder="64,69,87,110,97,85 — boşsa phrase'den türetilir">
+                </div>
                 <div id="backpackInfo" style="display:none; margin-top:10px; padding:10px 12px; border:1px solid var(--border-light); border-radius:8px; font-size:13px; color:var(--text-secondary); line-height:1.6">
                     🛰️ <strong>Backpack modu:</strong> veri, alıcı modül olmadan doğrudan kumandadaki ELRS TX backpack'e MSP/ESP-NOW ile gider. Alıcı modül devre dışı kalır.<br>
                     Kumanda ELRS Lua → Backpack: <strong>Backpack: On</strong>, <strong>HT Enable: On</strong>, <strong>HT Start Channel: Aux…</strong>, <strong>Telemetry: Off veya ESPNOW</strong> (WiFi seçmeyin).<br>
                     <span id="backpackStatus">Durum: —</span>
+                    <div style="margin-top:8px; display:flex; gap:8px">
+                        <button id="bpStatusButton" style="flex:1; padding:6px 10px; font-size:13px">Durumu Sorgula</button>
+                        <button id="bpTestButton" style="flex:1; padding:6px 10px; font-size:13px">Kanal Testi (15 sn)</button>
+                    </div>
+                    <pre id="bpLog" style="margin:8px 0 0; white-space:pre-wrap; font-size:12px; color:var(--text-secondary)"></pre>
                 </div>
                 <div class="row" style="margin-top:12px">
                     <label for="lpfSlider">Filtre (LPF)</label>
@@ -695,6 +704,11 @@ const sensValSpan   = document.getElementById('sensVal');
 const protoSelect   = document.getElementById('protoSelect');
 const pinInput      = document.getElementById('pinInput');
 const bindInput     = document.getElementById('bindPhraseInput');
+const uidInput      = document.getElementById('uidInput');
+const uidRow        = document.getElementById('uidRow');
+const bpStatusBtn   = document.getElementById('bpStatusButton');
+const bpTestBtn     = document.getElementById('bpTestButton');
+const bpLog         = document.getElementById('bpLog');
 const outputPinRow  = document.getElementById('outputPinRow');
 const bindPhraseRow = document.getElementById('bindPhraseRow');
 const backpackInfo  = document.getElementById('backpackInfo');
@@ -790,10 +804,14 @@ function updateProtoVisibility() {
     const isBackpack = protoSelect.value === '3';
     outputPinRow.style.display  = isBackpack ? 'none' : '';
     bindPhraseRow.style.display = isBackpack ? '' : 'none';
+    uidRow.style.display        = isBackpack ? '' : 'none';
     backpackInfo.style.display  = isBackpack ? '' : 'none';
 }
 protoSelect.addEventListener('change', updateProtoVisibility);
 updateProtoVisibility();
+
+bpStatusBtn.addEventListener('click', () => { bpLog.textContent = ''; writeSerial('BP_STATUS\n'); });
+bpTestBtn.addEventListener('click',   () => { bpLog.textContent = 'Test başladı…'; writeSerial('BP_TEST\n'); });
 
 lpfSlider.addEventListener('input', () => {
     lpfValSpan.textContent = parseFloat(lpfSlider.value).toFixed(2);
@@ -815,9 +833,11 @@ saveConfigBtn.addEventListener('click', () => {
     if (!isBackpack && (p < 0 || p > 39)) return;
     if (isBackpack) {
         const phrase = bindInput.value.trim();
-        if (!phrase) { alert('Backpack modu için ELRS bind phrase gerekli.'); return; }
+        const uid    = uidInput.value.trim();
+        if (!phrase && !uid) { alert('Backpack modu için bind phrase veya UID gerekli.'); return; }
         if (phrase.includes(',')) { alert('Bind phrase virgül içeremez.'); return; }
-        writeSerial(`SET_BIND_PHRASE:${phrase}\n`);
+        if (phrase) writeSerial(`SET_BIND_PHRASE:${phrase}\n`);
+        writeSerial(`SET_UID:${uid || 'CLEAR'}\n`);
     }
     writeSerial(`SET_SENS:${parseFloat(sensSlider.value).toFixed(1)}\n`);
     writeSerial(`SET_PROTOCOL:${protoSelect.value}\n`);
@@ -989,6 +1009,10 @@ function handleLine(line) {
             if (part.startsWith('PROTO:'))     { protoSelect.value = part.substring(6); updateProtoVisibility(); }
             else if (part.startsWith('PIN:'))  pinInput.value    = part.substring(4);
             else if (part.startsWith('BIND:')) bindInput.value   = part.substring(5);
+            else if (part.startsWith('UID:')) {
+                const u = part.substring(4).split('-').map(h => parseInt(h, 16));
+                uidInput.value = u.every(b => b === 0) ? '' : u.join(',');
+            }
             else if (part.startsWith('SENS:')) {
                 const v = parseFloat(part.substring(5));
                 sensSlider.value = v;
@@ -1012,6 +1036,12 @@ function handleLine(line) {
                 }
             }
         });
+        return;
+    }
+
+    // BP_STATUS satirlari
+    if (line.startsWith('BP_STATUS:')) {
+        bpLog.textContent += line.substring(10).trim() + '\n';
         return;
     }
 
