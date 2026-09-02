@@ -837,8 +837,30 @@ protoSelect.addEventListener('change', updateProtoVisibility);
 updateProtoVisibility();
 
 bpStatusBtn.addEventListener('click', () => { bpLog.textContent = ''; writeSerial('BP_STATUS\n'); });
-bpTestBtn.addEventListener('click',   () => { bpLog.textContent = 'Test başladı…'; writeSerial('BP_TEST\n'); });
-bpScanBtn.addEventListener('click',   () => { bpLog.textContent = ''; writeSerial('BP_SCAN\n'); });
+let bpCountdown = null;
+function bpStartCountdown(sec, label) {
+    clearInterval(bpCountdown);
+    let left = sec;
+    const tick = () => {
+        bpLog.textContent = `${label} — ${left} sn`;
+        if (left-- <= 0) clearInterval(bpCountdown);
+    };
+    tick();
+    bpCountdown = setInterval(tick, 1000);
+}
+
+bpTestBtn.addEventListener('click', () => {
+    writeSerial('BP_TEST\n');
+    bpStartCountdown(15, 'Kanal testi sürüyor (Pan süpürülüyor)');
+});
+
+bpScanBtn.addEventListener('click', () => {
+    if (!confirm('Tarama boyunca (10 sn) kafa takibi verisi gönderilmez; kumandadaki kanallar bu süre boyunca donar. ' +
+                 'Tarama sırasında kumandada ELRS Lua\'dan bir backpack ayarını değiştirin (ör. HT Enable aç/kapa), ' +
+                 'yoksa dinlenecek bir yayın olmaz.\n\nDevam edilsin mi?')) return;
+    writeSerial('BP_SCAN\n');
+    bpStartCountdown(10, 'Taranıyor — şimdi Lua\'da HT Enable\'ı kapat/aç');
+});
 
 lpfSlider.addEventListener('input', () => {
     lpfValSpan.textContent = parseFloat(lpfSlider.value).toFixed(2);
@@ -1073,36 +1095,52 @@ function handleLine(line) {
         return;
     }
     if (line.startsWith('BP_SCAN:')) {
-        bpLog.textContent += line.substring(8).trim() + '\n';
+        const body = line.substring(8).trim();
+        if (body.startsWith('bitti')) { clearInterval(bpCountdown); bpLog.textContent = ''; }
+        bpLog.textContent += body + '\n';
+        return;
+    }
+    if (line.startsWith('BP_TEST:')) {
+        clearInterval(bpCountdown);
+        bpLog.textContent = line.substring(8).trim();
         return;
     }
 
-    // Backpack durumu: BP:<aktif>,<link>,<htEnable>,<ack_ok>,<ack_yok>
+    // Backpack durumu: BP:<aktif>,<link>,<htEnable>[,<ack_ok>,<ack_yok>]
     if (line.startsWith('BP:')) {
         const v = line.substring(3).split(',').map(x => parseInt(x.trim()));
-        const [act, , ht, ackOk = 0, ackFail = 0] = v;
-        const dOk   = bpPrev ? ackOk   - bpPrev.ackOk   : 0;
-        const dFail = bpPrev ? ackFail - bpPrev.ackFail : 0;
-        const first = !bpPrev;
-        bpPrev = { ackOk, ackFail };
-
+        const act = v[0], link = v[1], ht = v[2];
+        const hasAck = v.length >= 5 && !isNaN(v[3]) && !isNaN(v[4]);
         let cls = 'bp-idle', msg = 'Durum bekleniyor…';
+
         if (act !== 1) {
             cls = 'bp-err';
             msg = '⛔ Pasif — bind phrase veya UID girip Kaydet\'e basın, sonra vericiyi yeniden başlatın.';
-        } else if (first) {
-            cls = 'bp-idle'; msg = 'Ölçülüyor…';
-        } else if (dOk === 0 && dFail === 0) {
-            cls = 'bp-warn';
-            msg = '⏸ Paket gönderilmiyor — IMU verisi akmıyor olabilir. "Kanal Testi"ni deneyin.';
-        } else if (dOk === 0) {
-            cls = 'bp-err';
-            msg = '⛔ Paketler cevapsız — TX backpack bu UID\'de değil. Kumandada <b>ELRS Lua → [Bind]</b> yapın; olmazsa "UID Tara".';
+        } else if (hasAck) {
+            const dOk   = bpPrev ? v[3] - bpPrev.ok   : 0;
+            const dFail = bpPrev ? v[4] - bpPrev.fail : 0;
+            const first = !bpPrev;
+            bpPrev = { ok: v[3], fail: v[4] };
+            if (first) {
+                cls = 'bp-idle'; msg = 'Ölçülüyor…';
+            } else if (dOk === 0 && dFail === 0) {
+                cls = 'bp-warn';
+                msg = '⏸ Paket gönderilmiyor — IMU verisi akmıyor olabilir. "Kanal Testi"ni deneyin.';
+            } else if (dOk === 0) {
+                cls = 'bp-err';
+                msg = '⛔ Paketler cevapsız — TX backpack bu UID\'de değil. Kumandada <b>ELRS Lua → [Bind]</b> yapın; olmazsa "UID Tara".';
+            } else {
+                const q = Math.round(100 * dOk / (dOk + dFail));
+                if (ht === 1)      { cls = 'bp-ok';   msg = `✅ Hazır — kanallar kumandaya gidiyor. Link %${q}`; }
+                else if (ht === 0) { cls = 'bp-warn'; msg = `⚠ Bağlantı var (link %${q}) ama <b>HT Enable kapalı</b>. Lua\'da On yapın.`; }
+                else               { cls = 'bp-warn'; msg = `⚠ Bağlantı var (link %${q}). HT durumu bilinmiyor — Lua\'da <b>HT Enable</b>\'ı kapatıp açın.`; }
+            }
         } else {
-            const q = Math.round(100 * dOk / (dOk + dFail));
-            if (ht === 1)      { cls = 'bp-ok';   msg = `✅ Hazır — kanallar kumandaya gidiyor. Link %${q}`; }
-            else if (ht === 0) { cls = 'bp-warn'; msg = `⚠ Bağlantı var (link %${q}) ama <b>HT Enable kapalı</b>. Lua\'da On yapın.`; }
-            else               { cls = 'bp-warn'; msg = `⚠ Bağlantı var (link %${q}). HT durumu bilinmiyor — Lua\'da <b>HT Enable</b>\'ı kapatıp açın.`; }
+            // Eski firmware: ACK sayaçları yok, yalnızca link/HT bilgisi var
+            if (ht === 1)       { cls = 'bp-ok';   msg = '✅ Backpack aktif, HT Enable açık.'; }
+            else if (link === 1){ cls = 'bp-warn'; msg = '⚠ TX backpack ile temas var, HT Enable kapalı görünüyor.'; }
+            else                { cls = 'bp-idle'; msg = '🛰️ Backpack aktif, veri gönderiliyor. TX\'ten henüz bildirim yok.'; }
+            msg += ' <span style="opacity:.7">(ayrıntılı teşhis için firmware\'i güncelleyin)</span>';
         }
         bpPill.className = 'bp-pill ' + cls;
         bpPill.innerHTML = msg;
