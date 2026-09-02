@@ -80,8 +80,14 @@
             position: relative;
             z-index: 1;
         }
-        .docs-link { display: inline-block; margin-top: 6px; font-size: 13px; color: var(--primary-color); text-decoration: none; }
-        .docs-link:hover { text-decoration: underline; }
+        .docs-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 600;
+            color: var(--primary-color); text-decoration: none;
+            border: 1px solid rgba(255, 122, 24, 0.45); background: rgba(255, 122, 24, 0.10);
+            white-space: nowrap;
+        }
+        .docs-btn:hover { background: rgba(255, 122, 24, 0.20); }
         .app-header {
             width: 100%;
             margin-bottom: 16px;
@@ -383,11 +389,13 @@ esp-web-install-button { display:block; width:100%; }
     <div>
         <div class="hero-kicker">Developed By YILMAZ</div>
         <h2 class="page-title">ESP32 Headtracker Konfigurator</h2>
-        <a class="docs-link" href="docs/" target="_blank" rel="noopener">📘 Dokümantasyon / Docs</a>
     </div>
     <div class="header-panel">
         <div class="header-panel-title">Baglanti ve Durum</div>
         <div class="header-actions">
+            <a class="docs-btn" href="docs/" target="_blank" rel="noopener" title="Kurulum ve sorun giderme kılavuzu">
+                📘 Kılavuz
+            </a>
             <button id="connectButton" class="btn-disconnected">
                 <img src="assets/icons/usb.png" alt="USB bağlantısı" width="30" height="30">
                 USB'den Bağlan
@@ -511,6 +519,11 @@ esp-web-install-button { display:block; width:100%; }
                         </div>
                         <div id="bpTestVerdict" class="bp-state" style="display:none"></div>
                     </div>
+
+                    <p style="margin:10px 0 0; font-size:13px">
+                        <a href="docs/backpack/" target="_blank" rel="noopener" style="color:var(--primary-color)">
+                            📘 Ayrıntılı ELRS Backpack kurulum kılavuzu →</a>
+                    </p>
 
                     <details class="bp-steps">
                         <summary>Kurulum adımları</summary>
