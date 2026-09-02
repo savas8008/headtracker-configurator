@@ -43,10 +43,10 @@ graph TD
     Start with [Troubleshooting](sorun-giderme.md). For backpack-specific problems the
     table at the end of the [ELRS Backpack](backpack.md) page is more useful.
 
-## Source code
+## Where does the firmware come from?
 
-| Repo | Contents |
-|------|----------|
-| [headtracker-verici](https://github.com/savas8008/headtracker-verici) | Transmitter firmware |
-| [headtracker-alici](https://github.com/savas8008/headtracker-alici) | Receiver firmware |
-| [headtracker-configurator](https://github.com/savas8008/headtracker-configurator) | Browser UI and these docs |
+Compiled firmware images are published publicly and the configurator can write them to
+the device straight from the browser — no files to download.
+See [Flashing](firmware.md).
+
+The source repositories are private; contact the project owner for access.

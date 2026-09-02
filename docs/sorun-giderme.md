@@ -56,5 +56,6 @@ durum satırı size hangi aşamada koptuğunu doğrudan söyler.
 ## Hiçbiri işe yaramadı
 
 Konfigüratörde **Gelişmiş → Ham Durumu Göster** çıktısını alın ve sorununuzu
-[GitHub Issues](https://github.com/savas8008/headtracker-verici/issues) üzerinden
-bu çıktıyla birlikte bildirin.
+bu çıktıyla birlikte
+[konfigüratör deposundaki Issues](https://github.com/savas8008/headtracker-configurator/issues)
+üzerinden bildirin.

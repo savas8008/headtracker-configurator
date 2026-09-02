@@ -1,38 +1,47 @@
 # Flashing the firmware
 
-Two options: flash a prebuilt binary, or build from source.
+Firmware is flashed **from the browser, through the configurator**. There is nothing to
+download and nothing to install; the configurator finds the current build and writes it
+to the device.
 
-## Prebuilt firmware (recommended)
+!!! info "Requirements"
+    **Chrome or Edge** (desktop) and a **data-capable USB cable**. Firefox and Safari
+    cannot flash from the browser.
 
-GitHub Actions builds the firmware on every push to `main` and keeps the output:
+## Steps
 
-1. Open the repo's **Actions** tab
-   ([transmitter](https://github.com/savas8008/headtracker-verici/actions),
-   [receiver](https://github.com/savas8008/headtracker-alici/actions))
-2. Pick the topmost successful (green) run
-3. Download the firmware from the **Artifacts** section at the bottom
+1. Open the configurator:
+   **[savas8008.github.io/headtracker-configurator](https://savas8008.github.io/headtracker-configurator/)**
+2. **Don't connect the device yet** — the start screen shows the firmware cards:
+   **Receiver (RX)** and **Transmitter (TX)**. Each card checks the current version automatically.
+3. Plug the device into USB and put it into **download mode**:
+   hold **BOOT**, tap **RESET**, then release BOOT.
+4. Press the button for the device you want to flash — **⚡ Flash transmitter** or
+   **⚡ Flash receiver**.
+5. Pick the serial port in the dialog and wait for the write to finish.
+6. Unplug and replug the device once, then press **Connect over USB** to
+   [open the configurator](konfigurator.md).
 
-Write the `.bin` with a browser flasher such as
-[ESP Web Tools](https://espressif.github.io/esptool-js/) or with `esptool.py`.
-
-## Building from source
-
-Requires [PlatformIO](https://platformio.org/):
-
-```bash
-git clone https://github.com/savas8008/headtracker-verici
-cd headtracker-verici
-pio run -t upload                  # build and flash
-pio device monitor --baud 115200   # watch the serial output
-```
-
-The same steps apply to `headtracker-alici` for the receiver.
+!!! tip "I can't see the firmware cards"
+    The cards only appear when **no device is connected**. Disconnect first.
 
 ## After flashing
 
-Plug the device into USB and open the [configurator](konfigurator.md). The transmitter
-identifies itself as `ID:TX`, the receiver as `ID:RX`.
+For a first-time setup:
 
-!!! note "If the board won't enter the bootloader"
-    Hold the BOOT button while plugging in USB, then release. That puts the ESP32-C3
-    into download mode.
+1. [Calibrate](konfigurator.md#calibration) — place the device on a flat surface and wait 10 s
+2. [Pick the output mode](modlar.md) and save your settings
+3. For backpack mode, follow the [ELRS Backpack](backpack.md) page
+
+Settings live in the device's non-volatile memory. A firmware update normally keeps
+them, but review them once after updating.
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| Button disabled, says Chrome/Edge required | Unsupported browser — use Chrome or Edge |
+| Port list is empty | The cable may be power-only; try another one |
+| Flashing won't start or fails immediately | The device isn't in download mode. Hold BOOT, tap RESET, retry |
+| Flashing stops halfway | Plug directly into the computer instead of a USB hub |
+| Version stuck on "Checking..." | Check your internet connection; the version is fetched online |

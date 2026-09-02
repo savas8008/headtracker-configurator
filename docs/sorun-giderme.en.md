@@ -54,5 +54,5 @@ the status line tells you exactly where the chain breaks.
 ## None of the above helped
 
 Grab the output of **Advanced → Show raw status** in the configurator and report the
-problem with it on
-[GitHub Issues](https://github.com/savas8008/headtracker-verici/issues).
+problem with it on the
+[configurator repository's issues](https://github.com/savas8008/headtracker-configurator/issues).

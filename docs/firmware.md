@@ -1,38 +1,47 @@
 # Firmware Yükleme
 
-İki yol var: hazır derlenmiş dosyayı yüklemek ya da kaynaktan derlemek.
+Firmware, **konfigüratör üzerinden tarayıcıdan** yüklenir. İndirilecek dosya, kurulacak
+program yoktur; konfigüratör güncel sürümü kendisi bulur ve cihaza yazar.
 
-## Hazır firmware (önerilen)
+!!! info "Gereksinimler"
+    **Chrome veya Edge** (masaüstü) ve bir **veri kablosu**. Firefox ve Safari
+    tarayıcıdan flaşlamayı desteklemez.
 
-Her `main` push'unda GitHub Actions firmware'i derler ve çıktısını saklar:
+## Adımlar
 
-1. İlgili reponun **Actions** sekmesini açın
-   ([verici](https://github.com/savas8008/headtracker-verici/actions),
-   [alıcı](https://github.com/savas8008/headtracker-alici/actions))
-2. En üstteki başarılı (yeşil) çalışmayı seçin
-3. Sayfanın altındaki **Artifacts** bölümünden firmware dosyasını indirin
+1. Konfigüratörü açın:
+   **[savas8008.github.io/headtracker-configurator](https://savas8008.github.io/headtracker-configurator/)**
+2. Cihazı henüz **bağlamayın** — açılış ekranındaki firmware kartlarını göreceksiniz:
+   **Alıcı (RX)** ve **Verici (TX)**. Her kartta güncel sürüm otomatik kontrol edilir.
+3. Cihazı USB ile takın ve **indirme moduna** alın:
+   **BOOT** butonunu basılı tutarken **RESET**'e kısa basın, sonra BOOT'u bırakın.
+4. Yüklemek istediğiniz cihazın düğmesine basın — **⚡ Vericiyi Flaşla** veya
+   **⚡ Alıcıyı Flaşla**.
+5. Açılan pencereden seri portu seçin ve yüklemenin bitmesini bekleyin.
+6. Bitince cihazı bir kez fişten çekip takın, sonra **USB'den Bağlan** ile
+   [konfigüratöre bağlanın](konfigurator.md).
 
-İndirdiğiniz `.bin` dosyasını [ESP Web Tools](https://espressif.github.io/esptool-js/)
-gibi bir tarayıcı yükleyicisiyle ya da `esptool.py` ile yazabilirsiniz.
-
-## Kaynaktan derleme
-
-[PlatformIO](https://platformio.org/) kurulu olmalı:
-
-```bash
-git clone https://github.com/savas8008/headtracker-verici
-cd headtracker-verici
-pio run -t upload            # derle ve yükle
-pio device monitor --baud 115200   # seri çıktıyı izle
-```
-
-Alıcı için aynı adımlar `headtracker-alici` reposunda geçerlidir.
+!!! tip "Firmware kartlarını göremiyorum"
+    Kartlar yalnızca **hiçbir cihaz bağlı değilken** görünür. Bağlıysanız önce
+    bağlantıyı kesin.
 
 ## Yükleme sonrası
 
-Cihazı USB ile bilgisayara takıp [konfigüratörü](konfigurator.md) açın. Verici
-`ID:TX`, alıcı `ID:RX` olarak tanınır.
+İlk kurulumda yapılması gerekenler:
 
-!!! note "Kart bootloader'a girmiyorsa"
-    BOOT butonunu basılı tutarken USB'yi takın, sonra bırakın. ESP32-C3 böylece
-    indirme moduna girer.
+1. [Kalibrasyon](konfigurator.md#kalibrasyon) — cihazı düz zemine koyup 10 sn bekleyin
+2. [Çıkış modunu seçin](modlar.md) ve ayarları kaydedin
+3. Backpack modu kullanacaksanız [ELRS Backpack](backpack.md) sayfasını izleyin
+
+Ayarlarınız cihazın kalıcı belleğinde tutulur; firmware güncellemesi bunları
+genelde korur, yine de güncelleme sonrası bir kez gözden geçirin.
+
+## Sorun giderme
+
+| Belirti | Çözüm |
+|---------|-------|
+| Düğme pasif, "Chrome/Edge gerekli" yazıyor | Desteklenmeyen tarayıcı — Chrome veya Edge kullanın |
+| Port listesi boş | Kablo veri taşımıyor olabilir; başka kablo deneyin |
+| Yükleme başlamıyor / hemen hata veriyor | Cihaz indirme modunda değil. BOOT basılıyken RESET'e basıp tekrar deneyin |
+| Yükleme yarıda kesiliyor | USB hub yerine doğrudan bilgisayara takın |
+| Sürüm "Kontrol ediliyor..." kalıyor | İnternet bağlantınızı kontrol edin; sürüm bilgisi çevrimiçi alınır |

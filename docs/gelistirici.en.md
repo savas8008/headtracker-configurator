@@ -3,13 +3,17 @@
 This page is for developers and anyone curious about the protocol. For normal use the
 [Configurator](konfigurator.md) and [ELRS Backpack](backpack.md) pages are enough.
 
-## Repository layout
+## Software components
 
-| Repo | Main files |
-|------|------------|
-| `headtracker-verici` | `rx.ino` (main loop), `HeadTrackerIMU`, `HeadTrackerESPNow`, `HeadTrackerBackpack` |
-| `headtracker-alici` | `alici.ino`, `HeadTrackerESPNow`, `PPMEncoder`, `SBUSEncoder` |
-| `headtracker-configurator` | `configurator.html` (single-file app), `docs/` (this site) |
+| Component | Main parts |
+|-----------|------------|
+| Transmitter firmware | main loop, IMU reading, custom ESP-NOW protocol, backpack (MSP) module |
+| Receiver firmware | main loop, ESP-NOW reception, PPM and SBUS generators |
+| Configurator | single-file browser app and this documentation site |
+
+!!! note "Source code"
+    The firmware repositories are private. Compiled builds are published publicly and
+    [flashed from the configurator](firmware.md). Contact the project owner for source access.
 
 ## Serial commands (115200 baud)
 
@@ -98,7 +102,8 @@ learn it; we request the cached packet with `MSP_ELRS_REQU_VTX_PKT (0x0B)`.
   present. Goggles and tracker powered at once will collide.
 - **Changing modes** changes the WiFi MAC, so it requires a restart.
 
-## Contributing
+## Release flow
 
-Pull requests are welcome. Firmware changes are built with PlatformIO by GitHub Actions
-on every push to `main`; a PR that breaks the build should not be merged.
+Firmware changes are built with PlatformIO in CI; on a successful build the binaries are
+pushed to the public distribution repository, and the configurator serves that version.
+Every firmware a user receives has therefore passed a build.

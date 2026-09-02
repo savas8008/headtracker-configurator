@@ -3,13 +3,17 @@
 Bu sayfa geliştiriciler ve protokolü merak edenler için. Kullanım için
 [Konfigüratör](konfigurator.md) ve [ELRS Backpack](backpack.md) sayfaları yeterlidir.
 
-## Depo yapısı
+## Yazılım bileşenleri
 
-| Repo | Ana dosyalar |
-|------|--------------|
-| `headtracker-verici` | `rx.ino` (ana döngü), `HeadTrackerIMU`, `HeadTrackerESPNow`, `HeadTrackerBackpack` |
-| `headtracker-alici` | `alici.ino`, `HeadTrackerESPNow`, `PPMEncoder`, `SBUSEncoder` |
-| `headtracker-configurator` | `configurator.html` (tek dosya uygulama), `docs/` (bu site) |
+| Bileşen | Ana parçalar |
+|---------|--------------|
+| Verici firmware | ana döngü, IMU okuma, kendi ESP-NOW protokolü, backpack (MSP) modülü |
+| Alıcı firmware | ana döngü, ESP-NOW alımı, PPM ve SBUS üreteçleri |
+| Konfigüratör | tek dosyalık tarayıcı uygulaması ve bu doküman sitesi |
+
+!!! note "Kaynak kod"
+    Firmware depoları özeldir. Derlenmiş sürümler herkese açık yayınlanır ve
+    [konfigüratörden yüklenir](firmware.md). Kaynağa erişim için proje sahibine başvurun.
 
 ## Seri komutlar (115200 baud)
 
@@ -98,7 +102,9 @@ payload + `crc8_dvb_s2` (başlık ve payload üzerinden, polinom `0xD5`).
   Gözlük ve tracker aynı anda açıksa çakışırlar.
 - **Mod değişimi** WiFi MAC'ini değiştirdiği için yeniden başlatma ister.
 
-## Katkı
+## Sürüm akışı
 
-Pull request'ler açıktır. Firmware değişiklikleri `main`'e push'ta GitHub Actions
-tarafından PlatformIO ile derlenir; derleme kırılırsa PR birleştirilmemelidir.
+Firmware değişiklikleri sürekli entegrasyonda PlatformIO ile derlenir; derleme
+başarılıysa çıktı binary'ler herkese açık dağıtım deposuna basılır ve konfigüratör
+oradan güncel sürümü sunar. Yani kullanıcıya ulaşan her firmware, derlemesi geçmiş
+bir sürümdür.
