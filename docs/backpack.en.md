@@ -126,10 +126,17 @@ appear in the source list) and the **DVR Rec** trigger selected on the head trac
 5. **ELRS Lua → Backpack → DVR Rec** → that channel's AUX, ↑ direction.
    Mapping: `AUX1 = CH5` … `AUX8 = CH12`, `AUX10 = CH14`.
 
-!!! warning "Choosing the channel"
-    Do not pick a channel that `HT Start Channel` overrides. ELRS reads the AUX
-    states **after** the override, so with `HT Start Channel: Aux6` CH10/11/12 carry
-    head-tracking data and your logical switch there would be invisible.
+!!! warning "Choosing the channel — it depends on the mode"
+    With `HT Start Channel: Aux<n>`, head tracking overrides **three channels
+    starting at CH(n+4)** as Pan/Tilt/Roll, and those cannot be used for the reset
+    switch: ELRS reads the AUX states **after** the override, so a logical switch
+    placed there is invisible. For `Aux6` those are CH10/11/12.
+
+    With `HT Start Channel: EdgeTX` no AUX is overridden at all — the data goes to
+    the radio as a trainer input (**Pan → TR1, Tilt → TR2, Roll → TR3**), so all of
+    CH5–CH14 stays free.
+
+    The configurator's **channel ↔ AUX converter** works this out for you.
 
 !!! tip "This channel does not have to go over the air"
     ELRS reads the AUX state from the channel data inside the module, not from the

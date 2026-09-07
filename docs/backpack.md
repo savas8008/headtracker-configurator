@@ -125,10 +125,17 @@ olması.
 5. **ELRS Lua → Backpack → DVR Rec** → o kanalın AUX'u, ↑ yönü.
    Eşleme: `AUX1 = CH5` … `AUX8 = CH12`, `AUX10 = CH14`.
 
-!!! warning "Kanal seçerken dikkat"
-    `HT Start Channel`'ın ezdiği kanalları seçmeyin. ELRS AUX'ları **ezme
-    işleminden sonra** okur, yani `HT Start Channel: Aux6` ise CH10/11/12 head
-    tracking verisini taşır; oraya koyduğunuz mantıksal anahtar görünmez.
+!!! warning "Kanal seçerken dikkat — moda göre değişir"
+    `HT Start Channel: Aux<n>` seçiliyse kafa takibi **CH(n+4)'ten itibaren üç
+    kanalı** Pan/Tilt/Roll olarak ezer ve o kanallar sıfırlama anahtarına
+    kullanılamaz: ELRS AUX'ları **ezme işleminden sonra** okuduğu için oraya
+    koyduğunuz mantıksal anahtar görünmez. `Aux6` için bunlar CH10/11/12'dir.
+
+    `HT Start Channel: EdgeTX` seçiliyse hiçbir AUX ezilmez — veri kumandaya
+    trainer girişi olarak gider (**Pan → TR1, Tilt → TR2, Roll → TR3**), yani
+    CH5–CH14'ün tamamı serbesttir.
+
+    Konfigüratördeki **Kanal ↔ AUX dönüştürücü** bunu sizin yerinize hesaplar.
 
 !!! tip "Bu kanalın havaya çıkması gerekmez"
     ELRS AUX durumunu modülün içindeki kanal verisinden okur, telemetri veya OTA
