@@ -78,6 +78,37 @@ yerine düzenli bir tarama sinyali gönderilir. Kumandada kanal monitörünü a�
 gidip geldiğini görün. Test sonunda arayüz kanalın oynayıp oynamadığını sorar ve
 cevabınıza göre ya kurulumun bittiğini söyler ya da kontrol listesi gösterir.
 
+## Kumandadan sıfırlama
+
+Head tracker'ın butonuna uzanmak zahmetliyse merkezi **kumandadaki bir anahtarla**
+sıfırlayabilirsiniz. ELRS'te ekstra bir yazılım kurmanız gerekmez: TX modülü,
+seçtiğiniz AUX anahtarının konumu değiştiğinde zaten backpack'e bir mesaj yolluyor
+ve backpack bu mesajı ESP-NOW ile head tracker'a iletiyor. Head tracker da bunu
+sıfırlama komutu olarak sayar.
+
+İki tetikleyici seçilebilir:
+
+| Seçenek | Kumandadaki ayar | Nasıl davranır |
+|---------|------------------|----------------|
+| **DVR Rec** *(önerilen)* | Lua → Backpack → **DVR Rec** → boş bir AUX | Anahtarın her hareketi sıfırlar. Gözlük backpack'iniz yoksa bu ayarın başka işlevi yoktur; kafa takibi hiç kesilmez. Model bazlı değildir |
+| **HT Enable** | Lua → Backpack → **HT Enable** → bir AUX | Anahtarı indirip kaldırmak sıfırlar. Anahtar aşağıdayken kafa takibi gerçekten kapanır, kanallar kumandanın kendi değerlerine döner. Model bazlıdır |
+
+Kurulum:
+
+1. Kumandada yukarıdaki ayarlardan birini bir AUX'a alın. `DVR Rec` seçtiyseniz
+   `DVR Srt Delay` ve `DVR Stp Delay` **0** kalsın.
+2. Konfigüratörde backpack panelindeki **Kumandadan sıfırlama → Tetikleyici**'yi
+   seçin ve **Kaydet**'e basın.
+3. Anahtarı oynatın. Panelde *"🎯 Kumandadan sıfırlandı"* satırı belirmelidir.
+
+!!! note "Cihazın butonu çalışmaya devam eder"
+    Bu özellik BOOT butonunun yerine geçmez, yanına eklenir. Ayrıca yalnızca
+    backpack modunda çalışır — diğer modlarda kumandayla doğrudan bir bağ yoktur.
+
+!!! tip "Anlık (momentary) anahtar"
+    `DVR Rec` her konum değişiminde tetiklendiği için anlık bir düğmeyle de
+    çalışır: basıp bıraktığınızda iki olay üretir, sonuç aynıdır.
+
 ## Sorun giderme
 
 Durum satırı ne diyorsa ona göre ilerleyin:

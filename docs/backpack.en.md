@@ -79,6 +79,37 @@ and watch your chosen channel (**CH10** for Aux6) move slowly back and forth. At
 the interface asks whether the channel moved and either confirms the setup or shows a
 checklist.
 
+## Zeroing from the radio
+
+If reaching for the head tracker's button is a nuisance, you can re-center from a
+**switch on the radio**. Nothing extra has to be installed on the ELRS side: when the
+AUX switch you pick changes position, the TX module already sends a message to the
+backpack, and the backpack relays it over ESP-NOW to the head tracker, which treats it
+as a zeroing command.
+
+Two triggers are available:
+
+| Option | Setting on the radio | Behaviour |
+|--------|----------------------|-----------|
+| **DVR Rec** *(recommended)* | Lua → Backpack → **DVR Rec** → a spare AUX | Every switch movement zeroes. With no goggle backpack this setting has no other purpose, and head tracking is never interrupted. Not model-specific |
+| **HT Enable** | Lua → Backpack → **HT Enable** → an AUX | Flicking the switch down and back up zeroes. While the switch is down head tracking really is off and the channels revert to the radio's own values. Model-specific |
+
+Setup:
+
+1. Assign one of the settings above to an AUX on the radio. If you pick `DVR Rec`,
+   leave `DVR Srt Delay` and `DVR Stp Delay` at **0**.
+2. In the configurator's backpack panel choose **Zeroing from the radio → Trigger**
+   and press **Save**.
+3. Flick the switch. A *"🎯 Zeroed from the radio"* line should appear in the panel.
+
+!!! note "The device button keeps working"
+    This does not replace the BOOT button, it is added alongside it. It also only works
+    in backpack mode — in the other modes there is no direct link to the radio.
+
+!!! tip "Momentary switch"
+    Because `DVR Rec` fires on every position change, a momentary button works too:
+    press and release produces two events with the same end result.
+
 ## Troubleshooting
 
 Follow whatever the status line says:
