@@ -497,6 +497,35 @@ esp-web-install-button { display:block; width:100%; }
                 <button id="applyPinButton">Uygula (Yeniden Başlat)</button>
             </div>
             <div class="setting-group" style="margin-top:16px">
+                <h3>🔄 Sıfırlama</h3>
+                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">
+                    Merkezi — yani "ileri" kabul edilen yönü — hangi yollarla sıfırlayabileceğiniz.</p>
+                <div class="row no-value" style="margin-bottom:4px">
+                    <label for="zeroPinInput">Buton Pini<button class="hint" data-info="zero-pin" aria-label="Sıfırlama butonu pini hakkında">?</button></label>
+                    <input type="number" id="zeroPinInput" min="0" max="21" value="0" placeholder="GPIO (varsayılan 0 = BOOT)">
+                </div>
+
+                <div id="rcResetBlock" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--border-light)">
+                    <div class="row no-value" style="margin-bottom:4px">
+                        <label for="rcResetSelect">Kumandadan<button class="hint" data-info="rc-reset" aria-label="Kumandadan sıfırlama nasıl çalışıyor?">?</button></label>
+                        <select id="rcResetSelect">
+                            <option value="0">Kapalı</option>
+                            <option value="1">HT Enable anahtarı</option>
+                            <option value="2">DVR Rec anahtarı (önerilen)</option>
+                            <option value="3">İkisi de</option>
+                        </select>
+                    </div>
+                    <div id="rcResetHelp" class="bp-state"></div>
+                    <p style="margin:10px 0 0; font-size:13px; display:flex; align-items:center; gap:2px">
+                        <button class="hint" data-modal="aux-modal" aria-label="Sıfırlama AUX kanalımı nasıl öğrenebilirim?">?</button>
+                        <a href="#" data-modal="aux-modal" style="color:var(--primary-color); margin-left:6px">
+                            Sıfırlama AUX kanalımı nasıl öğrenebilirim?</a>
+                    </p>
+                    <div id="rcResetFlash" class="bp-state" style="display:none"></div>
+                </div>
+            </div>
+
+            <div class="setting-group" style="margin-top:16px">
                 <h3>🎯 Kalibrasyon<button class="hint" data-info="cal" aria-label="Kalibrasyon hakkında">?</button></h3>
                 <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">Cihazı düz bir zemine koyun.</p>
                 <button id="calibrateButton">IMU Kalibre Et</button>
@@ -524,10 +553,6 @@ esp-web-install-button { display:block; width:100%; }
                     <label for="pinInput">Çıkış Pini</label>
                     <input type="number" id="pinInput" min="0" max="39" value="7" placeholder="GPIO 0-39">
                 </div>
-                <div class="row no-value" style="margin-bottom:4px">
-                    <label for="zeroPinInput">Sıfırlama Pini<button class="hint" data-info="zero-pin" aria-label="Sıfırlama butonu pini hakkında">?</button></label>
-                    <input type="number" id="zeroPinInput" min="0" max="21" value="0" placeholder="GPIO (varsayılan 0 = BOOT)">
-                </div>
                 <div class="row no-value" style="margin-bottom:4px; display:none" id="bindPhraseRow">
                     <label for="bindPhraseInput">Bind Phrase</label>
                     <input type="text" id="bindPhraseInput" maxlength="32" placeholder="ELRS bind phrase (virgülsüz)">
@@ -538,30 +563,6 @@ esp-web-install-button { display:block; width:100%; }
                 </div>
                 <div id="backpackInfo" style="display:none; margin-top:10px">
                     <div id="bpStatusPill" class="bp-pill bp-idle">Durum bekleniyor…</div>
-
-                    <div class="bp-card">
-                        <div class="bp-card-title">Kumandadan sıfırlama</div>
-                        <p>Cihazın butonu yerine <b>kumandadaki bir anahtarla</b> merkezi sıfırlayın.
-                           <button class="hint" data-info="rc-reset" aria-label="Bu nasıl çalışıyor?">?</button></p>
-                        <div class="row no-value" style="margin-bottom:4px">
-                            <label for="rcResetSelect">Tetikleyici</label>
-                            <select id="rcResetSelect">
-                                <option value="0">Kapalı</option>
-                                <option value="1">HT Enable anahtarı</option>
-                                <option value="2">DVR Rec anahtarı (önerilen)</option>
-                                <option value="3">İkisi de</option>
-                            </select>
-                        </div>
-                        <div id="rcResetHelp" class="bp-state"></div>
-
-                        <p style="margin:10px 0 0; font-size:13px; display:flex; align-items:center; gap:2px">
-                            <button class="hint" data-modal="aux-modal" aria-label="Sıfırlama AUX kanalımı nasıl öğrenebilirim?">?</button>
-                            <a href="#" data-modal="aux-modal" style="color:var(--primary-color); margin-left:6px">
-                                Sıfırlama AUX kanalımı nasıl öğrenebilirim?</a>
-                        </p>
-
-                        <div id="rcResetFlash" class="bp-state" style="display:none"></div>
-                    </div>
 
                     <div class="bp-card">
                         <div class="bp-card-title">Kanalları test et</div>
@@ -586,8 +587,8 @@ esp-web-install-button { display:block; width:100%; }
                     </p>
 
                     <p style="margin:10px 0 0; font-size:13px">
-                        <button class="hint" data-info="bp-setup" aria-label="Kumandada yapılması gerekenler">?</button>
-                        <a href="#" data-info="bp-setup" style="color:var(--primary-color)">Kumandada ne ayarlamalıyım?</a>
+                        <button class="hint" data-info="bp-setup" aria-label="Kumanda ayarları">?</button>
+                        <a href="#" data-info="bp-setup" style="color:var(--primary-color)">Kumanda Ayarları</a>
                     </p>
 
                     <details class="bp-steps">
@@ -867,6 +868,7 @@ const rcResetSelect = document.getElementById('rcResetSelect');
 const rcResetHelp   = document.getElementById('rcResetHelp');
 const rcResetFlash  = document.getElementById('rcResetFlash');
 const zeroPinInput  = document.getElementById('zeroPinInput');
+const rcResetBlock  = document.getElementById('rcResetBlock');
 const auxHtStart    = document.getElementById('auxHtStart');
 const auxChInput    = document.getElementById('auxChInput');
 const auxModeOut    = document.getElementById('auxModeOut');
@@ -971,6 +973,8 @@ function updateProtoVisibility() {
     bindPhraseRow.style.display = isBackpack ? '' : 'none';
     uidRow.style.display        = isBackpack ? '' : 'none';
     backpackInfo.style.display  = isBackpack ? '' : 'none';
+    // Kumandadan sifirlama yalnizca backpack modunda calisir; buton pini her modda gecerli
+    rcResetBlock.style.display  = isBackpack ? '' : 'none';
 }
 protoSelect.addEventListener('change', updateProtoVisibility);
 updateProtoVisibility();
@@ -1070,7 +1074,7 @@ const INFO_TOPICS = {
            fazla yatırınca sıfırlar. Ayrıntılar kılavuzda.</p>
         <p>Cihazın butonu her durumda çalışmaya devam eder; bu onun yerine geçmez.</p>` },
 
-    'bp-setup': { title: 'Kumandada ne ayarlamalıyım?', body: `
+    'bp-setup': { title: 'Kumanda Ayarları', body: `
         <ol>
             <li><b>ELRS Lua → Backpack</b> klasörünü açın; <b>Version</b> satırı dolu olmalı.
                 Boşsa modülde çalışan bir backpack yok, bu mod kullanılamaz.</li>
