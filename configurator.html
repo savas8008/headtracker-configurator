@@ -518,6 +518,27 @@ esp-web-install-button { display:block; width:100%; }
                             </select>
                         </div>
                         <div id="rcResetHelp" class="bp-state"></div>
+
+                        <details class="bp-steps" id="auxMapBox">
+                            <summary>Kanal ↔ AUX dönüştürücü</summary>
+                            <p style="margin-top:8px">ELRS kanalları <b>AUX</b> adıyla sayar ve numaralar kaymıştır
+                               (<code>AUX1 = CH5</code>). Ayrıca <b>HT Start Channel</b> üç kanalı birden kullanır;
+                               oraya koyduğunuz anahtar ELRS'e görünmez. Aşağıya kullanmayı düşündüğünüz kanalı
+                               yazın, Lua'da seçmeniz gereken satırı ve çakışma olup olmadığını söylesin.</p>
+                            <div class="row no-value" style="margin-bottom:4px">
+                                <label for="auxHtStart">HT Start Channel</label>
+                                <select id="auxHtStart">
+                                    <option value="0">EdgeTX (trainer)</option>
+                                </select>
+                            </div>
+                            <div class="row no-value" style="margin-bottom:4px">
+                                <label for="auxChInput">Kullanacağım kanal</label>
+                                <input type="number" id="auxChInput" min="1" max="16" value="13" placeholder="CH numarası">
+                            </div>
+                            <div id="auxMapOut" class="bp-state"></div>
+                            <table id="auxMapTable" style="margin-top:10px; border-collapse:collapse; font-size:12px; width:100%"></table>
+                        </details>
+
                         <div id="rcResetFlash" class="bp-state" style="display:none"></div>
                     </div>
 
@@ -804,6 +825,10 @@ const bpLog         = document.getElementById('bpLog');
 const rcResetSelect = document.getElementById('rcResetSelect');
 const rcResetHelp   = document.getElementById('rcResetHelp');
 const rcResetFlash  = document.getElementById('rcResetFlash');
+const auxHtStart    = document.getElementById('auxHtStart');
+const auxChInput    = document.getElementById('auxChInput');
+const auxMapOut     = document.getElementById('auxMapOut');
+const auxMapTable   = document.getElementById('auxMapTable');
 const outputPinRow  = document.getElementById('outputPinRow');
 const bindPhraseRow = document.getElementById('bindPhraseRow');
 const backpackInfo  = document.getElementById('backpackInfo');
@@ -924,6 +949,72 @@ const RC_RESET_HELP = {
 const updateRcResetHelp = () => { rcResetHelp.innerHTML = RC_RESET_HELP[rcResetSelect.value] || ''; };
 rcResetSelect.addEventListener('change', updateRcResetHelp);
 updateRcResetHelp();
+
+// ── Kanal ↔ AUX donusturucu ──────────────────────────────────────────────────
+// ELRS'te AUX1 = 4. kanal indeksi, yani CH5 (src/include/common.h). Lua'daki
+// DVR Rec / HT Start listeleri AUX10'a kadar gider → CH14.
+const AUX_FIRST_CH = 5;   // AUX1
+const AUX_LAST_CH  = 14;  // AUX10
+const HT_SPAN      = 3;   // HT Start Channel'dan itibaren Pan/Tilt/Roll
+
+for (let n = 1; n <= 10; n++) {
+    const o = document.createElement('option');
+    o.value = String(n);
+    o.textContent = `Aux${n} (CH${n + AUX_FIRST_CH - 1})`;
+    auxHtStart.appendChild(o);
+}
+auxHtStart.value = '6';   // en yaygin kurulum
+
+const htUsedChannels = () => {
+    const n = parseInt(auxHtStart.value);
+    if (!n) return [];   // EdgeTX trainer: hicbir AUX ezilmez
+    const first = n + AUX_FIRST_CH - 1;
+    return Array.from({ length: HT_SPAN }, (_, i) => first + i);
+};
+
+function updateAuxMap() {
+    const used = htUsedChannels();
+    const ch   = parseInt(auxChInput.value);
+    const aux  = ch - AUX_FIRST_CH + 1;
+
+    let msg;
+    if (isNaN(ch)) {
+        msg = '';
+    } else if (ch < AUX_FIRST_CH) {
+        msg = `⛔ <b>CH${ch}</b> gimbal kanalıdır; ELRS onu AUX olarak listelemez. ` +
+              `En düşük seçilebilir kanal <b>CH${AUX_FIRST_CH} = AUX1</b>.`;
+    } else if (ch > AUX_LAST_CH) {
+        msg = `⛔ <b>CH${ch}</b> için Lua'da karşılık yok — <b>DVR Rec</b> listesi ` +
+              `<b>AUX10 = CH${AUX_LAST_CH}</b>'te biter.`;
+    } else if (used.includes(ch)) {
+        msg = `⛔ <b>CH${ch} = AUX${aux}</b> — ama bu kanalı <b>kafa takibi kullanıyor</b> ` +
+              `(HT Start Channel ${auxHtStart.options[auxHtStart.selectedIndex].text.split(' ')[0]} → ` +
+              `CH${used.join(', CH')}). ELRS AUX'ları ezmeden sonra okuduğu için buraya koyduğunuz ` +
+              `anahtar görünmez. Başka bir kanal seçin.`;
+    } else {
+        msg = `✅ <b>CH${ch} = AUX${aux}</b> — Lua'da <b>Backpack → DVR Rec: AUX${aux}↑</b> seçin. ` +
+              `Bu kanalın havaya çıkması gerekmez, Switch Mode fark etmez.`;
+    }
+    auxMapOut.innerHTML = msg;
+
+    // Canli tablo: kafa takibinin yedigi kanallar ve secili kanal isaretli
+    const cells = [];
+    for (let c = AUX_FIRST_CH; c <= AUX_LAST_CH; c++) {
+        const isHt  = used.includes(c);
+        const isSel = c === ch && !isHt;
+        const bg = isHt  ? 'background:rgba(220,80,80,.18)'
+                 : isSel ? 'background:rgba(80,180,120,.20)' : '';
+        const note = isHt ? ' 🎯' : (isSel ? ' ✓' : '');
+        cells.push(`<td style="padding:3px 5px;border:1px solid var(--border-light);text-align:center;${bg}">` +
+                   `CH${c}<br><b>AUX${c - AUX_FIRST_CH + 1}</b>${note}</td>`);
+    }
+    auxMapTable.innerHTML = '<tr>' + cells.slice(0, 5).join('') + '</tr>' +
+                            '<tr>' + cells.slice(5).join('') + '</tr>';
+}
+
+auxHtStart.addEventListener('change', updateAuxMap);
+auxChInput.addEventListener('input', updateAuxMap);
+updateAuxMap();
 
 bpTestBtn.addEventListener('click', () => {
     writeSerial('BP_TEST\n');
