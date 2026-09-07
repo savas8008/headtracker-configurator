@@ -102,6 +102,43 @@ Setup:
    and press **Save**.
 3. Flick the switch. A *"🎯 Zeroed from the radio"* line should appear in the panel.
 
+### Tilting the radio instead of flicking a switch
+
+If you would rather not spend a physical switch, use the radio's **own
+accelerometer** as the trigger: tilt the radio forward past a set angle and it
+zeroes. Your head stays looking forward, so the centre lands correctly.
+
+You need an EdgeTX radio with a built-in IMU (it has one if **TltX** and **TltY**
+appear in the source list) and the **DVR Rec** trigger selected on the head tracker.
+
+1. **Find the axis.** Which source fore/aft tilt lands on varies by board
+   (`IMU_SWAP_TILT_XY`). Temporarily assign `TltX`, then `TltY`, to a spare channel
+   and watch **Model → Channels** while tilting.
+2. **Read the threshold.** The value comes from the accelerometer, so it is absolute
+   against gravity and does not drift. At the default scale the percentage is roughly
+   `100 × sin(angle)`: 20° ≈ 34%, 30° ≈ 50%, 45° ≈ 71%. Still, read the exact figure
+   off the same channel monitor.
+3. **Logical switch.** `L1: a<x`, source the axis you found, value the percentage you
+   read (`a<x` if tilting forward drives it negative, `a>x` if positive). Give it a
+   **Delay of ~0.5 s** so it cannot chatter right at the threshold.
+4. **Mixer.** Open a spare channel with **L1** itself as the source, weight 100. The
+   channel sits at −100% and jumps to +100% past the threshold.
+5. **ELRS Lua → Backpack → DVR Rec** → that channel's AUX, ↑ direction.
+   Mapping: `AUX1 = CH5` … `AUX8 = CH12`, `AUX10 = CH14`.
+
+!!! warning "Choosing the channel"
+    Do not pick a channel that `HT Start Channel` overrides. ELRS reads the AUX
+    states **after** the override, so with `HT Start Channel: Aux6` CH10/11/12 carry
+    head-tracking data and your logical switch there would be invisible.
+
+!!! tip "This channel does not have to go over the air"
+    ELRS reads the AUX state from the channel data inside the module, not from the
+    OTA packet. So it works even on `Switch Mode: 8ch` and costs no link bandwidth.
+
+It fires on **both edges**: once when you tilt the radio, once more when you level it
+again. The second one is harmless — a safety net, really. What matters is that your
+head is looking where you want the centre to be at the moment you trigger it.
+
 !!! note "The device button keeps working"
     This does not replace the BOOT button, it is added alongside it. It also only works
     in backpack mode — in the other modes there is no direct link to the radio.

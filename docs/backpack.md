@@ -101,6 +101,44 @@ Kurulum:
    seçin ve **Kaydet**'e basın.
 3. Anahtarı oynatın. Panelde *"🎯 Kumandadan sıfırlandı"* satırı belirmelidir.
 
+### Anahtar yerine kumandayı yatırmak
+
+Fiziksel bir anahtar harcamak istemiyorsanız, kumandanın **kendi ivmeölçerini**
+tetikleyici yapabilirsiniz: kumandayı belli bir açıdan fazla öne yatırınca sıfırlar.
+Kafanız ileri bakmaya devam ettiği için merkez de doğru oturur.
+
+Gerekenler: dahili IMU'su olan bir EdgeTX kumandası (kaynak listesinde **TltX** ve
+**TltY** görünüyorsa vardır) ve head tracker'da **DVR Rec** tetikleyicisinin seçili
+olması.
+
+1. **Ekseni bulun.** Ön/arka yatırmanın hangi kaynağa düştüğü karta göre değişir
+   (`IMU_SWAP_TILT_XY`). Boş bir kanala geçici olarak `TltX`, sonra `TltY` atayıp
+   **Model → Kanallar**'da kumandayı yatırırken hangisinin oynadığına bakın.
+2. **Eşiği okuyun.** Değer ivmeölçerden gelir, yani yerçekimine göre mutlaktır —
+   kaymaz. Varsayılan ölçekte yüzde kabaca `100 × sin(açı)`: 20° ≈ %34, 30° ≈ %50,
+   45° ≈ %71. Yine de kesin sayıyı aynı kanal monitöründen okumak en sağlıklısı.
+3. **Mantıksal anahtar.** `L1: a<x`, kaynak eşikte belirlediğiniz eksen, değer
+   okuduğunuz yüzde (öne yatırınca değer negatifleşiyorsa `a<x`, pozitifleşiyorsa
+   `a>x`). **Delay ≈ 0.5 sn** verin — eşiğin tam sınırında titremeyi engeller.
+4. **Mikser.** Boş bir kanal açın, kaynağı doğrudan **L1**, ağırlık 100. Kanal
+   normalde −%100, eşik aşılınca +%100 olur.
+5. **ELRS Lua → Backpack → DVR Rec** → o kanalın AUX'u, ↑ yönü.
+   Eşleme: `AUX1 = CH5` … `AUX8 = CH12`, `AUX10 = CH14`.
+
+!!! warning "Kanal seçerken dikkat"
+    `HT Start Channel`'ın ezdiği kanalları seçmeyin. ELRS AUX'ları **ezme
+    işleminden sonra** okur, yani `HT Start Channel: Aux6` ise CH10/11/12 head
+    tracking verisini taşır; oraya koyduğunuz mantıksal anahtar görünmez.
+
+!!! tip "Bu kanalın havaya çıkması gerekmez"
+    ELRS AUX durumunu modülün içindeki kanal verisinden okur, telemetri veya OTA
+    paketinden değil. Yani `Switch Mode: 8ch` olsa bile çalışır ve link
+    bant genişliğinden bir şey götürmez.
+
+Tetikleme **her iki kenarda** olur: kumandayı yatırınca bir, düzeltince bir daha
+sıfırlar. İkincisi zararsız, hatta emniyet — asıl önemlisi tetiklediğiniz anda
+**kafanızın merkez saymak istediğiniz yöne bakıyor** olması.
+
 !!! note "Cihazın butonu çalışmaya devam eder"
     Bu özellik BOOT butonunun yerine geçmez, yanına eklenir. Ayrıca yalnızca
     backpack modunda çalışır — diğer modlarda kumandayla doğrudan bir bağ yoktur.
