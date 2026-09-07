@@ -91,8 +91,8 @@
         .app-header {
             width: 100%;
             margin-bottom: 16px;
-            padding: 22px 24px;
-            border-radius: 28px;
+            padding: 16px 22px;
+            border-radius: 24px;
             background:
                 radial-gradient(circle at top right, rgba(255, 122, 24, 0.16), transparent 30%),
                 linear-gradient(135deg, rgba(86, 204, 242, 0.13), rgba(10, 21, 34, 0.88) 55%);
@@ -100,7 +100,7 @@
             box-shadow: var(--shadow-medium);
             overflow: hidden;
             display: grid;
-            grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.9fr);
+            grid-template-columns: minmax(0, 1fr) auto;
             gap: 20px;
             align-items: center;
         }
@@ -174,40 +174,59 @@
         #connectButton.btn-connected:hover { box-shadow: 0 18px 32px rgba(34,197,94,0.32); }
         #calibrateButton { background: linear-gradient(135deg, var(--warning-color), var(--warning-hover)); border-color: rgba(247, 181, 0, 0.6); color: #231700; }
         #applyPinButton { background: linear-gradient(135deg, #56ccf2, #2f80ed); font-size: 14px; padding: 10px 18px; border-color: rgba(86, 204, 242, 0.45); color: #051521; }
-        .header-panel {
-            padding: 18px;
-            border-radius: 22px;
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .connection-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0;
+            padding: 8px 14px;
+            border-radius: 999px;
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.08);
         }
-        .header-panel-title {
-            margin: 0 0 12px;
-            color: var(--text-secondary);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
+        /* Aciklama baloncugu: metinler sayfada durmaz, soru isaretine tiklayinca acilir */
+        .hint {
+            all: unset;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 19px; height: 19px; margin-left: 7px;
+            border-radius: 50%; cursor: pointer; flex: none;
+            font-size: 12px; font-weight: 700; line-height: 1;
+            color: var(--accent-color);
+            background: rgba(86, 204, 242, 0.12);
+            border: 1px solid rgba(86, 204, 242, 0.4);
+            vertical-align: middle;
         }
-        .header-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: stretch;
+        .hint:hover  { background: rgba(86, 204, 242, 0.26); color: #d7f4ff; }
+        .hint:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+        .hint.warn { color: var(--warning-color); background: rgba(247,181,0,0.12); border-color: rgba(247,181,0,0.42); }
+        .hint.warn:hover { background: rgba(247,181,0,0.26); }
+        .modal-content.info-modal { max-width: 640px; text-align: left; padding: 26px 28px; max-height: 82vh; overflow-y: auto; }
+        .modal-content.info-modal h2 { color: var(--text-primary); font-size: 19px; margin: 0 34px 14px 0; padding-bottom: 10px;
+                         border-bottom: 1px solid var(--border-light); }
+        .modal-content .info-modal-body { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        .info-modal .info-modal-body p { margin: 0 0 10px; }
+        .info-modal-body ol, .info-modal-body ul { margin: 0 0 10px; padding-left: 20px; }
+        .info-modal-body li { margin-bottom: 6px; }
+        .info-modal-body table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 4px 0 12px; }
+        .info-modal-body th, .info-modal-body td { border: 1px solid var(--border-light); padding: 6px 8px; text-align: left; }
+        .info-modal-body th { color: var(--text-primary); background: rgba(255,255,255,0.04); }
+        .info-modal-body code { background: rgba(255,255,255,0.09); padding: 1px 5px; border-radius: 4px;
+                                font-family: var(--font-mono); font-size: 12px; color: var(--accent-color); }
+        .info-modal-close {
+            all: unset; position: absolute; top: 16px; right: 20px;
+            cursor: pointer; font-size: 22px; line-height: 1; color: var(--text-secondary);
         }
-        .connection-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 46px;
-            font-size: 16px;
-            font-weight: 600;
-            gap: 10px;
-            margin: 0;
-            padding: 10px 14px;
-            border-radius: 14px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
+        .info-modal-close:hover { color: var(--text-primary); }
+        .info-modal-wrap { position: relative; }
         #status.connected { color: var(--success-color); }
         #status.disconnected { color: var(--danger-color); }
         .loader { border: 4px solid var(--border-light); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
@@ -215,7 +234,7 @@
         .setting-group { margin-bottom: 14px; border: 1px solid var(--border-light); border-radius: 18px; padding: 18px; background: var(--bg-soft); }
         .setting-group h3 { margin-top: 0; color: var(--text-primary); font-weight: 700; border-bottom: 1px solid var(--border-light); padding-bottom: 10px; margin-bottom: 14px; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; }
         .row { margin-bottom: 12px; display: grid; grid-template-columns: 110px 1fr 78px; gap: 12px; align-items: center; }
-        .row.no-value { grid-template-columns: 120px 1fr; }
+        .row.no-value { grid-template-columns: 148px 1fr; }
         .row label { font-weight: 500; color: var(--text-secondary); font-size: 14px; }
         input[type="range"] { width: 100%; -webkit-appearance: none; appearance: none; height: 8px; background: rgba(255,255,255,0.12); outline: none; border-radius: 999px; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: grab; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
@@ -225,8 +244,8 @@
         input[type="range"][disabled]::-moz-range-thumb { background: var(--success-color); }
         .val-badge { font-family: var(--font-mono); font-size: 14px; background: rgba(255,255,255,0.05); padding: 7px 10px; border-radius: 10px; text-align: center; border: 1px solid var(--border-light); color: var(--text-primary); }
         .val-badge.unit::after { content: ' µs'; font-size: 11px; color: var(--text-secondary); }
-        select, input[type="number"] { width: 100%; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: 12px; font-family: var(--font-main); font-size: 14px; color: var(--text-primary); background: var(--bg-card-strong); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
-        select:focus, input[type="number"]:focus { border-color: rgba(255, 122, 24, 0.65); box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.14); }
+        select, input[type="number"], input[type="text"] { width: 100%; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: 12px; font-family: var(--font-main); font-size: 14px; color: var(--text-primary); background: var(--bg-card-strong); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        select:focus, input[type="number"]:focus, input[type="text"]:focus { border-color: rgba(255, 122, 24, 0.65); box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.14); }
         #visualizer { width: 100%; height: 260px; border: 1px solid var(--border-light); border-radius: 20px; margin-bottom: 12px; overflow: hidden; background: radial-gradient(circle at top, rgba(86, 204, 242, 0.18), transparent 34%), linear-gradient(180deg, #0f2236 0%, #09131f 100%); }
         #visualizer canvas { display: block; width: 100% !important; height: 100% !important; }
         #live-data { font-family: var(--font-mono); font-size: 15px; background: rgba(255,255,255,0.04); padding: 14px 15px; border-radius: 14px; border: 1px solid var(--border-light); text-align: center; margin-bottom: 20px; color: #dbebf8; }
@@ -369,7 +388,9 @@
             #visualizer { height: 240px; }
             .tx-layout { grid-template-columns: 1fr; }
         }
-        .firmware-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+        .dev-icon-emoji { height: 46px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; font-size: 38px; line-height: 1; }
+.dev-icon-wrap { height: 46px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; }
+.firmware-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
 .firmware-card { padding: 24px 20px; border-radius: 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; align-items: center; text-align: center; }
 .firmware-card h3 { margin: 4px 0 8px; font-size: 16px; border: none; padding: 0; text-transform: none; letter-spacing: 0; }
 .firmware-version { font-size: 13px; color: var(--text-secondary); min-height: 22px; display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 14px; }
@@ -390,51 +411,58 @@ esp-web-install-button { display:block; width:100%; }
         <div class="hero-kicker">Developed By YILMAZ</div>
         <h2 class="page-title">ESP32 Headtracker Konfigurator</h2>
     </div>
-    <div class="header-panel">
-        <div class="header-panel-title">Baglanti ve Durum</div>
-        <div class="header-actions">
-            <a class="docs-btn" href="docs/" target="_blank" rel="noopener" title="Kurulum ve sorun giderme kılavuzu">
-                📘 Kılavuz
-            </a>
-            <button id="connectButton" class="btn-disconnected">
-                <img src="assets/icons/usb.png" alt="USB bağlantısı" width="30" height="30">
-                USB'den Bağlan
-            </button>
-            <div class="connection-status">
-                <div id="status" class="disconnected">Bagli Degil</div>
-                <div id="loader" class="loader" style="display:none"></div>
-            </div>
+    <div class="header-actions">
+        <div class="connection-status">
+            <div id="status" class="disconnected">Bağlı değil</div>
+            <div id="loader" class="loader" style="display:none;width:16px;height:16px;border-width:3px"></div>
         </div>
+        <a class="docs-btn" href="docs/" target="_blank" rel="noopener" title="Kurulum ve sorun giderme kılavuzu">
+            📘 Kılavuz
+        </a>
+        <button id="connectButton" class="btn-disconnected">
+            <img src="assets/icons/usb.png" alt="USB bağlantısı" width="24" height="24">
+            USB'den Bağlan
+        </button>
     </div>
 </section>
 <div class="container" id="firmware-container">
     <h2>⚡ Firmware Güncelleme</h2>
     <div class="flash-note">
-        <strong>Flaşlamadan önce:</strong> <code>BOOT</code> butonunu basılı tutarken
-        <code>RESET</code>'e kısa basın, ardından butona tıklayın. Sadece <strong>Chrome / Edge</strong> desteklenir.
+        Cihazı <strong>bootloader moduna</strong> alıp aşağıdaki butona basın.
+        <button class="hint warn" data-info="flash" aria-label="Nasıl bootloader moduna alınır?">!</button>
+        Sadece <strong>Chrome / Edge</strong>.
     </div>
     <div class="firmware-grid">
         <div class="firmware-card">
-            <div style="font-size:34px;margin-bottom:6px">📡</div>
-            <h3>Alıcı (RX)</h3>
+            <div class="dev-icon-emoji">🎮</div>
+            <h3>Alıcı (RX) — Kumanda Modülü</h3>
             <div class="firmware-version" id="alici-version">
                 <div class="loader" style="width:14px;height:14px;border-top-color:var(--accent-color);margin:0"></div>
                 <span>Kontrol ediliyor...</span>
             </div>
             <esp-web-install-button id="alici-install-btn">
-                <button slot="activate" class="flash-btn" disabled>⚡ Alıcıyı Flaşla</button>
+                <button slot="activate" class="flash-btn" disabled>⚡ Kumanda Modülünü Flaşla</button>
                 <span slot="unsupported" style="color:var(--danger-color);font-size:12px">⚠️ Chrome/Edge gerekli</span>
             </esp-web-install-button>
         </div>
         <div class="firmware-card">
-            <div style="font-size:34px;margin-bottom:6px">🎮</div>
-            <h3>Verici (TX)</h3>
+            <div class="dev-icon-wrap"><svg class="dev-icon" viewBox="0 0 64 64" width="46" height="46" role="img" aria-label="Kafa takip cihazı">
+                    <defs><linearGradient id="htg" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#56ccf2"/><stop offset="1" stop-color="#ff7a18"/>
+                    </linearGradient></defs>
+                    <path d="M40 8c-10 0-18 7.6-18 17 0 4 1.3 6.6 1.3 9 0 2.2-3.3 3.4-3.3 5.4 0 1.7 2 2.1 2 2.1s-.7 3.2.6 4.4c1 1 3 .8 3 .8s-.3 4 1.2 5.4c2 1.9 7.2 1.3 10.2.8V56h4V42.6c6.9-2.4 11-8.7 11-17.6 0-9.4-2-17-12-17Z"
+                          fill="none" stroke="url(#htg)" stroke-width="3" stroke-linejoin="round"/>
+                    <circle cx="41" cy="24" r="2.6" fill="#56ccf2"/>
+                    <path d="M52 14a20 20 0 0 1 0 22M57 10a26 26 0 0 1 0 30" fill="none"
+                          stroke="#ff7a18" stroke-width="2.4" stroke-linecap="round" opacity=".85"/>
+                </svg></div>
+            <h3>Kafa Takip Cihazı (Verici)</h3>
             <div class="firmware-version" id="verici-version">
                 <div class="loader" style="width:14px;height:14px;border-top-color:var(--accent-color);margin:0"></div>
                 <span>Kontrol ediliyor...</span>
             </div>
             <esp-web-install-button id="verici-install-btn">
-                <button slot="activate" class="flash-btn" disabled>⚡ Vericiyi Flaşla</button>
+                <button slot="activate" class="flash-btn" disabled>⚡ Kafa Takip Cihazını Flaşla</button>
                 <span slot="unsupported" style="color:var(--danger-color);font-size:12px">⚠️ Chrome/Edge gerekli</span>
             </esp-web-install-button>
         </div>
@@ -443,7 +471,7 @@ esp-web-install-button { display:block; width:100%; }
 
 <!-- VERİCİ PANELİ -->
 <div class="container device-panel" id="tx-panel">
-    <h2>Verici (TX)</h2>
+    <h2>Kafa Takip Cihazı (Verici)</h2>
     <div class="tx-layout">
         <div class="tx-visual-column">
             <div class="telemetry-card">
@@ -453,11 +481,11 @@ esp-web-install-button { display:block; width:100%; }
                     Yaw: <span id="yawVal">0.00</span>°&nbsp;&nbsp;|&nbsp;&nbsp;
                     Roll: <span id="rollVal">0.00</span>°
                 </div>
-                <p class="compact-note">Kupu izleyerek bas hareketini anlik kontrol et. Hassasiyet ve PWM araligini sag panelden hizlica tune edebilirsin.</p>
+                <p class="compact-note">Küpü izleyerek baş hareketini anlık kontrol edin.
+                   <button class="hint" data-info="visual" aria-label="Küp görselleştirme hakkında">?</button></p>
             </div>
             <div class="setting-group" style="margin-top:16px">
-                <h3>🔌 I2C Pinleri (MPU6050)</h3>
-                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">SDA/SCL değiştirilirse cihazın yeniden başlatılması gerekir.</p>
+                <h3>🔌 I2C Pinleri (MPU6050)<button class="hint" data-info="i2c" aria-label="I2C pinleri hakkında">?</button></h3>
                 <div class="row no-value">
                     <label for="sdaInput">SDA Pini</label>
                     <input type="number" id="sdaInput" min="0" max="39" value="8" placeholder="GPIO 0-39">
@@ -467,6 +495,11 @@ esp-web-install-button { display:block; width:100%; }
                     <input type="number" id="sclInput" min="0" max="39" value="9" placeholder="GPIO 0-39">
                 </div>
                 <button id="applyPinButton">Uygula (Yeniden Başlat)</button>
+            </div>
+            <div class="setting-group" style="margin-top:16px">
+                <h3>🎯 Kalibrasyon<button class="hint" data-info="cal" aria-label="Kalibrasyon hakkında">?</button></h3>
+                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">Cihazı düz bir zemine koyun.</p>
+                <button id="calibrateButton">IMU Kalibre Et</button>
             </div>
         </div>
 
@@ -491,6 +524,10 @@ esp-web-install-button { display:block; width:100%; }
                     <label for="pinInput">Çıkış Pini</label>
                     <input type="number" id="pinInput" min="0" max="39" value="7" placeholder="GPIO 0-39">
                 </div>
+                <div class="row no-value" style="margin-bottom:4px">
+                    <label for="zeroPinInput">Sıfırlama Pini<button class="hint" data-info="zero-pin" aria-label="Sıfırlama butonu pini hakkında">?</button></label>
+                    <input type="number" id="zeroPinInput" min="0" max="21" value="0" placeholder="GPIO (varsayılan 0 = BOOT)">
+                </div>
                 <div class="row no-value" style="margin-bottom:4px; display:none" id="bindPhraseRow">
                     <label for="bindPhraseInput">Bind Phrase</label>
                     <input type="text" id="bindPhraseInput" maxlength="32" placeholder="ELRS bind phrase (virgülsüz)">
@@ -504,10 +541,8 @@ esp-web-install-button { display:block; width:100%; }
 
                     <div class="bp-card">
                         <div class="bp-card-title">Kumandadan sıfırlama</div>
-                        <p>Head tracker'ın butonuna basmak yerine <b>kumandadaki bir anahtarla</b> merkezi
-                           sıfırlayın. ELRS tarafında ek bir şey kurmanız gerekmez: TX modülü, seçtiğiniz
-                           AUX anahtarının konumu değiştiğinde zaten backpack'e bir mesaj yolluyor —
-                           head tracker bu mesajı sıfırlama komutu olarak kullanır.</p>
+                        <p>Cihazın butonu yerine <b>kumandadaki bir anahtarla</b> merkezi sıfırlayın.
+                           <button class="hint" data-info="rc-reset" aria-label="Bu nasıl çalışıyor?">?</button></p>
                         <div class="row no-value" style="margin-bottom:4px">
                             <label for="rcResetSelect">Tetikleyici</label>
                             <select id="rcResetSelect">
@@ -519,37 +554,20 @@ esp-web-install-button { display:block; width:100%; }
                         </div>
                         <div id="rcResetHelp" class="bp-state"></div>
 
-                        <details class="bp-steps" id="auxMapBox">
-                            <summary>Kanal ↔ AUX dönüştürücü</summary>
-                            <p style="margin-top:8px">ELRS kanalları <b>AUX</b> adıyla sayar ve numaralar kaymıştır
-                               (<code>AUX1 = CH5</code>). Kafa takibi verisinin nereye gittiği ise
-                               <b>HT Start Channel</b>'a göre tamamen değişir — <b>Aux…</b> seçiliyse üç RC kanalını
-                               ezer, <b>EdgeTX</b> seçiliyse hiçbir kanala dokunmadan kumandaya trainer girişi
-                               olarak gider. Aşağıdan modunuzu ve kullanmayı düşündüğünüz kanalı seçin.</p>
-                            <div class="row no-value" style="margin-bottom:4px">
-                                <label for="auxHtStart">HT Start Channel</label>
-                                <select id="auxHtStart">
-                                    <option value="0">EdgeTX (trainer)</option>
-                                </select>
-                            </div>
-                            <div class="row no-value" style="margin-bottom:4px">
-                                <label for="auxChInput">Kullanacağım kanal</label>
-                                <input type="number" id="auxChInput" min="1" max="16" value="13" placeholder="CH numarası">
-                            </div>
-                            <div id="auxModeOut" class="bp-state" style="margin-top:4px"></div>
-                            <div id="auxMapOut" class="bp-state"></div>
-                            <table id="auxMapTable" style="margin-top:10px; border-collapse:collapse; font-size:12px; width:100%"></table>
-                        </details>
+                        <p style="margin:10px 0 0; font-size:13px; display:flex; align-items:center; gap:2px">
+                            <button class="hint" data-modal="aux-modal" aria-label="Sıfırlama AUX kanalımı nasıl öğrenebilirim?">?</button>
+                            <a href="#" data-modal="aux-modal" style="color:var(--primary-color); margin-left:6px">
+                                Sıfırlama AUX kanalımı nasıl öğrenebilirim?</a>
+                        </p>
 
                         <div id="rcResetFlash" class="bp-state" style="display:none"></div>
                     </div>
 
                     <div class="bp-card">
                         <div class="bp-card-title">Kanalları test et</div>
-                        <p id="bpTestIntro">Kumandada kanal monitörünü açın (<b>Model → Kanallar</b>). Teste basınca 15 saniye
-                           boyunca kafa hareketi yerine düzenli bir tarama sinyali gönderilir; <b>HT Start Channel</b> olarak
-                           seçtiğiniz kanalın (ör. Aux6 → <b>CH10</b>) yavaşça sağa-sola gidip geldiğini görmelisiniz.
-                           Böylece tüm zincirin (tracker → backpack → kumanda) çalıştığını gözünüzle doğrularsınız.</p>
+                        <p id="bpTestIntro">15 sn boyunca kafa hareketi yerine tarama sinyali gönderilir; kumandada
+                           ilgili kanalın oynadığını görmelisiniz.
+                           <button class="hint" data-info="bp-test" aria-label="Kanal testi nasıl okunur?">?</button></p>
                         <button id="bpTestButton" class="bp-btn bp-btn-primary">Testi Başlat (15 sn)</button>
                         <div id="bpTestState" class="bp-state" style="display:none"></div>
                         <div id="bpTestAsk" style="display:none; margin-top:8px">
@@ -567,28 +585,18 @@ esp-web-install-button { display:block; width:100%; }
                             📘 Ayrıntılı ELRS Backpack kurulum kılavuzu →</a>
                     </p>
 
-                    <details class="bp-steps">
-                        <summary>Kurulum adımları</summary>
-                        <ol>
-                            <li>Kumandada <b>ELRS Lua → Backpack</b> klasörünü açın; <b>Version</b> satırı dolu olmalı (backpack yoksa bu mod çalışmaz).</li>
-                            <li><b>İlk kurulumda bir kez [Bind]</b> yapın. Backpack fabrikadan adressiz gelir; bind yapılmadan gönderdiğimiz paketleri kimse almaz.</li>
-                            <li><b>Backpack: On</b>, <b>HT Enable: On</b>, <b>HT Start Channel: Aux6</b> (→ CH10/11/12) veya <b>EdgeTX</b>.</li>
-                            <li><b>Telemetry: Off</b> (ya da ESPNOW). <b>WiFi seçmeyin</b> — o modda backpack ESP-NOW'u hiç başlatmaz.</li>
-                            <li>Ana ELRS ayarlarında <b>Switch Mode: 12ch veya 16ch/2</b>. 8ch modunda CH10+ alıcıya gitmez.</li>
-                            <li>Bind phrase'i yukarı girip <b>Kaydet</b>'e basın, sonra vericiyi <b>yeniden başlatın</b>.</li>
-                        </ol>
-                    </details>
+                    <p style="margin:10px 0 0; font-size:13px">
+                        <button class="hint" data-info="bp-setup" aria-label="Kumandada yapılması gerekenler">?</button>
+                        <a href="#" data-info="bp-setup" style="color:var(--primary-color)">Kumandada ne ayarlamalıyım?</a>
+                    </p>
 
                     <details class="bp-steps">
                         <summary>Gelişmiş</summary>
-                        <p><b>Ham durum:</b> UID, MAC, kanal ve paket sayaçlarını dökümler. Sorun bildirirken bu çıktıyı paylaşın.</p>
-                        <button id="bpStatusButton" class="bp-btn">Ham Durumu Göster</button>
-                        <p style="margin-top:12px"><b>UID tarama:</b> yalnızca <b>bind phrase'inizi bilmiyorsanız</b> gerekir
-                           (ELRS modülü phrase'siz derlenip butonla bind edilmişse). 10 sn boyunca havadaki ESP-NOW adresleri
-                           dinlenir. TX backpack ancak bir ayarı değişince yayın yaptığı için, tarama sırasında kumandada
-                           Lua'dan <b>HT Enable</b>'ı kapatıp açmanız gerekir — yoksa dinlenecek yayın olmaz.
-                           Tarama boyunca kafa takibi verisi gönderilmez, kanallar 10 sn donar.</p>
-                        <button id="bpScanButton" class="bp-btn">UID Taramasını Başlat</button>
+                        <p style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                            <button id="bpStatusButton" class="bp-btn">Ham Durumu Göster</button>
+                            <button id="bpScanButton" class="bp-btn">UID Taraması</button>
+                            <button class="hint" data-info="bp-advanced" aria-label="Bu araçlar ne yapar?">?</button>
+                        </p>
                         <pre id="bpLog" style="margin:8px 0 0; white-space:pre-wrap; font-size:12px; color:var(--text-secondary)"></pre>
                     </details>
                 </div>
@@ -600,8 +608,7 @@ esp-web-install-button { display:block; width:100%; }
             </div>
 
             <div class="setting-group">
-                <h3>📐 PWM Çıkış Aralığı</h3>
-                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">Her kanal için minimum ve maksimum PWM değerini sürükleyerek ayarlayın (500–2500 µs).</p>
+                <h3>📐 PWM Çıkış Aralığı<button class="hint" data-info="pwm" aria-label="PWM aralığı hakkında">?</button></h3>
 
                 <div class="row pwm-range-row">
                     <div class="range-label-stack">
@@ -665,16 +672,11 @@ esp-web-install-button { display:block; width:100%; }
         </div>
     </div>
 
-    <div class="setting-group" style="margin-top:16px">
-        <h3>🎯 Kalibrasyon</h3>
-        <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">Cihazı düz zemine koyun, ardından kalibre edin.</p>
-        <button id="calibrateButton">IMU Kalibre Et</button>
-    </div>
 </div>
 
 <!-- ALICI PANELİ -->
 <div class="container device-panel" id="rx-panel">
-    <h2>Alıcı (RX) — PWM Değerleri</h2>
+    <h2>🎮 Alıcı (RX) — Kumanda Modülü</h2>
     <div class="info-bar waiting" id="rx-status-bar">
         ⏳ Handshake bekleniyor — vericiyi açın ve bağlantının kurulmasını bekleyin.
     </div>
@@ -696,6 +698,43 @@ esp-web-install-button { display:block; width:100%; }
             <input type="range" id="pwmRoll" min="1000" max="2000" value="1500" disabled>
             <span class="val-badge unit" id="pwmRollVal">1500</span>
         </div>
+    </div>
+</div>
+
+<!-- Kanal ↔ AUX dönüştürücü -->
+<div id="aux-modal" class="modal-overlay">
+    <div class="modal-content info-modal info-modal-wrap">
+        <button class="info-modal-close" data-close aria-label="Kapat">&times;</button>
+        <h2>Sıfırlama AUX kanalımı nasıl öğrenebilirim?</h2>
+        <div class="info-modal-body">
+    <p style="margin-top:8px">ELRS kanalları <b>AUX</b> adıyla sayar ve numaralar kaymıştır
+    (<code>AUX1 = CH5</code>). Kafa takibi verisinin nereye gittiği ise
+    <b>HT Start Channel</b>'a göre tamamen değişir — <b>Aux…</b> seçiliyse üç RC kanalını
+    ezer, <b>EdgeTX</b> seçiliyse hiçbir kanala dokunmadan kumandaya trainer girişi
+    olarak gider. Aşağıdan modunuzu ve kullanmayı düşündüğünüz kanalı seçin.</p>
+    <div class="row no-value" style="margin-bottom:4px">
+    <label for="auxHtStart">HT Start Channel</label>
+    <select id="auxHtStart">
+    <option value="0">EdgeTX (trainer)</option>
+    </select>
+    </div>
+    <div class="row no-value" style="margin-bottom:4px">
+    <label for="auxChInput">Kullanacağım kanal</label>
+    <input type="number" id="auxChInput" min="1" max="16" value="13" placeholder="CH numarası">
+    </div>
+    <div id="auxModeOut" class="bp-state" style="margin-top:4px"></div>
+    <div id="auxMapOut" class="bp-state"></div>
+    <table id="auxMapTable" style="margin-top:10px; border-collapse:collapse; font-size:12px; width:100%"></table>
+        </div>
+    </div>
+</div>
+
+<!-- Genel açıklama modalı -->
+<div id="info-modal" class="modal-overlay">
+    <div class="modal-content info-modal info-modal-wrap">
+        <button class="info-modal-close" data-close aria-label="Kapat">&times;</button>
+        <h2 id="info-modal-title"></h2>
+        <div class="info-modal-body" id="info-modal-body"></div>
     </div>
 </div>
 
@@ -827,6 +866,7 @@ const bpLog         = document.getElementById('bpLog');
 const rcResetSelect = document.getElementById('rcResetSelect');
 const rcResetHelp   = document.getElementById('rcResetHelp');
 const rcResetFlash  = document.getElementById('rcResetFlash');
+const zeroPinInput  = document.getElementById('zeroPinInput');
 const auxHtStart    = document.getElementById('auxHtStart');
 const auxChInput    = document.getElementById('auxChInput');
 const auxModeOut    = document.getElementById('auxModeOut');
@@ -940,18 +980,175 @@ let bpCountdown = null;
 bpStatusBtn.addEventListener('click', () => { bpLog.textContent = ''; writeSerial('BP_STATUS\n'); });
 
 const RC_RESET_HELP = {
-    '0': 'Sıfırlama yalnızca cihazdaki BOOT butonuyla yapılır.',
-    '1': 'Kumandada <b>ELRS Lua → Backpack → HT Enable</b>\'ı bir AUX\'a alın. Anahtarı indirip ' +
-         'kaldırmak sıfırlar. Dikkat: anahtar aşağıdayken kafa takibi gerçekten kapanır, kanallar ' +
-         'kumandanın kendi değerlerine döner. Bu ayar model bazlıdır.',
-    '2': 'Kumandada <b>ELRS Lua → Backpack → DVR Rec</b>\'e boş bir AUX seçin (<b>Srt/Stp Delay: 0</b>). ' +
-         'Gözlük backpack\'iniz yoksa bu ayarın başka işlevi yoktur — kafa takibini kesmeyen, tamamen ' +
-         'size ait bir sıfırlama düğmesi olur. Her konum değişiminde tetiklenir, model bazlı değildir.',
+    '0': 'Sıfırlama yalnızca cihazdaki butonla yapılır.',
+    '1': 'Kumandada <b>Lua → Backpack → HT Enable</b>\'ı bir AUX\'a alın; anahtarı indirip kaldırmak sıfırlar.',
+    '2': 'Kumandada <b>Lua → Backpack → DVR Rec</b>\'e boş bir AUX seçin; her konum değişimi sıfırlar.',
     '3': 'Her iki anahtar da sıfırlar.'
 };
 const updateRcResetHelp = () => { rcResetHelp.innerHTML = RC_RESET_HELP[rcResetSelect.value] || ''; };
 rcResetSelect.addEventListener('change', updateRcResetHelp);
 updateRcResetHelp();
+
+// ── Aciklama modallari ──────────────────────────────────────────────────────
+// Uzun anlatimlar sayfada durmaz; kullanici soru/unlem isaretine tiklayinca acilir.
+const INFO_TOPICS = {
+    flash: { title: 'Cihazı bootloader moduna alma', body: `
+        <p>ESP32 yeni firmware'i ancak bootloader modundayken kabul eder:</p>
+        <ol>
+            <li><code>BOOT</code> butonunu <b>basılı tutun</b>.</li>
+            <li>Basılı tutarken <code>RESET</code>'e kısa bir kez basın.</li>
+            <li><code>BOOT</code>'u bırakın, ardından flaşlama butonuna tıklayın.</li>
+        </ol>
+        <p>Açılan pencereden cihazın seri portunu seçin. Web Serial yalnızca
+           <b>Chrome</b> ve <b>Edge</b>'de vardır; Firefox/Safari çalışmaz.</p>
+        <p>Cihaz konfigüratöre bağlıyken flaşlama yapılamaz — önce
+           <b>Bağlantıyı Kes</b>'e basın.</p>` },
+
+    i2c: { title: 'I2C pinleri (MPU6050)', body: `
+        <p>Sensörün bağlı olduğu iki GPIO. Varsayılan <code>SDA = 8</code>,
+           <code>SCL = 9</code>; kendi kartınızda farklı lehimlediyseniz burada değiştirin.</p>
+        <p>Değişiklik <b>yeniden başlatma ister</b> — I2C veri yolu açılışta kuruluyor.
+           Kaydettikten sonra cihazın gücünü kesip verin.</p>
+        <p>Açılışta sensör bulunamazsa küp donuk kalır ve <code>BP_STATUS</code>
+           çıktısında <code>imu_hata=1</code> görünür.</p>` },
+
+    visual: { title: 'Küp görselleştirme', body: `
+        <p>Küp, cihazdan gelen <b>ham</b> açıları gösterir — hassasiyet, PWM aralığı ve
+           reverse ayarları buraya yansımaz. Amacı sensörün sağlıklı okuduğunu doğrulamak.</p>
+        <p>Küpü fareyle döndürebilirsiniz; bu yalnızca kamerayı çevirir, veriyi etkilemez.</p>
+        <p>Küp titriyorsa <b>Filtre (LPF)</b> değerini yükseltin. Kayıyorsa
+           <b>Kalibrasyon</b> yapın.</p>` },
+
+    pwm: { title: 'PWM çıkış aralığı ve reverse', body: `
+        <p>Her eksen için gönderilecek en düşük ve en yüksek darbe genişliği
+           (500–2500 µs). Kolları sürükleyerek daraltırsanız kamera daha az döner,
+           genişletirseniz daha çok.</p>
+        <p>Yeşil çizgi o anki değerdir — kafanızı çevirip aralığın uçlarına
+           gerçekten ulaşıp ulaşmadığınızı görebilirsiniz.</p>
+        <p><b>Reverse</b> ekseni ters çevirir: kafanızı sağa çevirdiğinizde kamera
+           sola gidiyorsa bunu işaretleyin.</p>
+        <p>Backpack modunda bu aralık vericide uygulanır, sonuç CRSF kanal değerine
+           çevrilerek kumandaya gider.</p>` },
+
+    cal: { title: 'IMU kalibrasyonu', body: `
+        <p>Cihazı <b>düz ve titreşimsiz</b> bir zemine koyun, 10 saniye boyunca
+           dokunmayın. Jiroskop sapması ölçülür ve cihazın kalıcı hafızasına yazılır —
+           her açılışta tekrarlamanız gerekmez.</p>
+        <p>Kalibrasyon sırasında cihaz hareket ederse sonuç bozulur; açılar yavaşça
+           kayıyorsa kalibrasyonu tekrarlayın.</p>
+        <p>Kalibrasyon <b>merkezi sıfırlamak</b> değildir. Merkez için butona basın
+           ya da kumandadan sıfırlamayı kullanın.</p>` },
+
+    'zero-pin': { title: 'Sıfırlama butonu pini', body: `
+        <p>Kısa basışta o anki bakış yönünü merkez yapan butonun GPIO'su.
+           Varsayılan <code>0</code>, yani kartın üstündeki <b>BOOT</b> butonu.</p>
+        <p>Kutuya kendi butonunuzu taktıysanız onun pinini yazın. Buton
+           <b>pin ile GND arasına</b> bağlanır; dahili pull-up açıktır, harici
+           direnç gerekmez.</p>
+        <p>ESP32-C3'te kullanılabilir pinler: <code>0-10</code> ve <code>18-21</code>.
+           11-17 arası dahili flash'a ayrılmıştır. I2C pinleriyle (SDA/SCL) aynı
+           olamaz — cihaz bunu reddeder.</p>
+        <p>Değişiklik anında geçerli olur, yeniden başlatma gerekmez.</p>` },
+
+    'rc-reset': { title: 'Kumandadan sıfırlama nasıl çalışıyor?', body: `
+        <p>ELRS TX modülü, seçtiğiniz AUX anahtarının konumu <b>değiştiğinde</b>
+           backpack'e bir mesaj yolluyor; backpack de bunu ESP-NOW ile kafa takip
+           cihazına iletiyor. Yani anahtar hareketi zaten bize ulaşan bir pakettir —
+           biz onu sıfırlama komutu sayıyoruz. <b>ELRS tarafında ek bir kurulum yok.</b></p>
+        <table>
+            <tr><th>Tetikleyici</th><th>Kumandadaki ayar</th><th>Davranış</th></tr>
+            <tr><td><b>DVR Rec</b><br>(önerilen)</td><td>Lua → Backpack → <b>DVR Rec</b> → boş bir AUX</td>
+                <td>Her konum değişiminde sıfırlar. Gözlük backpack'iniz yoksa bu ayarın
+                    başka işlevi yoktur; kafa takibi hiç kesilmez. Model bazlı değildir.</td></tr>
+            <tr><td><b>HT Enable</b></td><td>Lua → Backpack → <b>HT Enable</b> → bir AUX</td>
+                <td>Anahtarı indirip kaldırmak sıfırlar. Anahtar aşağıdayken kafa takibi
+                    gerçekten kapanır, kanallar kumandanın kendi değerlerine döner. Model bazlıdır.</td></tr>
+        </table>
+        <p><b>Anahtar yerine kumandayı yatırmak:</b> kumandanızda dahili gyro varsa
+           (kaynak listesinde <code>TltX</code> / <code>TltY</code> görünüyorsa) bir mantıksal
+           anahtar kurup onu boş bir kanala bindirebilirsiniz — kumandayı belli bir açıdan
+           fazla yatırınca sıfırlar. Ayrıntılar kılavuzda.</p>
+        <p>Cihazın butonu her durumda çalışmaya devam eder; bu onun yerine geçmez.</p>` },
+
+    'bp-setup': { title: 'Kumandada ne ayarlamalıyım?', body: `
+        <ol>
+            <li><b>ELRS Lua → Backpack</b> klasörünü açın; <b>Version</b> satırı dolu olmalı.
+                Boşsa modülde çalışan bir backpack yok, bu mod kullanılamaz.</li>
+            <li><b>İlk kurulumda bir kez [Bind]</b> yapın. Backpack fabrikadan adressiz gelir;
+                bind yapılmadan gönderdiğimiz paketleri kimse almaz. En çok vakit kaybettiren adım budur.</li>
+            <li><b>Backpack: On</b>, <b>HT Enable: On</b>,
+                <b>HT Start Channel: Aux6</b> (→ CH10/11/12) veya <b>EdgeTX</b> (trainer).</li>
+            <li><b>Telemetry: Off</b> ya da <b>ESPNOW</b>. <b>WiFi seçmeyin</b> —
+                o modda backpack ESP-NOW'u hiç başlatmaz, kafa takibi tamamen ölür.</li>
+            <li>Ana ELRS ayarlarında <b>Switch Mode: 12ch</b> veya <b>16ch/2</b>.
+                8ch modunda CH10 ve üstü alıcıya hiç gitmez.</li>
+            <li>Bind phrase'i soldaki alana girip <b>Kaydet</b>'e basın, sonra cihazı
+                <b>yeniden başlatın</b>.</li>
+        </ol>
+        <p><b>Dikkat:</b> <code>HT Enable</code> ve <code>HT Start Channel</code> model bazlı
+           ayarlardır — model değiştirince sıfırlanırlar.</p>` },
+
+    'bp-test': { title: 'Kanal testi nasıl okunur?', body: `
+        <p>Kumandada kanal monitörünü açın: <b>Model → Kanallar</b>. Teste basınca 15 saniye
+           boyunca kafa hareketi yerine düzenli bir tarama sinyali gönderilir.</p>
+        <p><b>HT Start Channel</b> olarak seçtiğiniz kanalın (ör. Aux6 → <b>CH10</b>)
+           yavaşça sağa-sola gidip geldiğini görmelisiniz. Böylece tüm zincirin
+           (cihaz → backpack → kumanda) çalıştığını gözünüzle doğrularsınız.</p>
+        <p>Test bitince arayüz kanalın oynayıp oynamadığını sorar; cevabınıza göre ya
+           kurulumun tamam olduğunu söyler ya da kontrol listesini gösterir.</p>
+        <p>Test sırasında IMU verisi gönderilmez — bu normaldir, 15 sn sonra kendiliğinden
+           normale döner.</p>` },
+
+    'bp-advanced': { title: 'Gelişmiş teşhis araçları', body: `
+        <p><b>Ham durum:</b> UID, gerçek MAC adresi, WiFi kanalı ve paket sayaçlarını dökümler.
+           Bir sorun bildirirken bu çıktıyı paylaşın.</p>
+        <p><b>UID taraması:</b> yalnızca <b>bind phrase'inizi bilmiyorsanız</b> gerekir
+           (ELRS modülü phrase'siz derlenip butonla bind edilmişse). 10 saniye boyunca
+           havadaki ESP-NOW adresleri dinlenir ve listelenir.</p>
+        <p>TX backpack ancak bir ayarı değiştiğinde yayın yapar; bu yüzden tarama sırasında
+           kumandada Lua'dan <b>HT Enable</b>'ı kapatıp açmanız gerekir — yoksa dinlenecek
+           yayın olmaz ve liste boş çıkar. Bu "backpack yok" demek değildir.</p>
+        <p>Tarama boyunca kafa takibi verisi gönderilmez, kumandadaki kanallar 10 sn donar.
+           Bu da normaldir.</p>` },
+};
+
+const infoModal      = document.getElementById('info-modal');
+const infoModalTitle = document.getElementById('info-modal-title');
+const infoModalBody  = document.getElementById('info-modal-body');
+let   openModalEl    = null;
+
+function openModal(el) {
+    if (openModalEl) openModalEl.classList.remove('show');
+    openModalEl = el;
+    el.classList.add('show');
+}
+function closeModal() {
+    if (!openModalEl) return;
+    openModalEl.classList.remove('show');
+    openModalEl = null;
+}
+function openInfo(key) {
+    const topic = INFO_TOPICS[key];
+    if (!topic) return;
+    infoModalTitle.textContent = topic.title;
+    infoModalBody.innerHTML = topic.body;
+    openModal(infoModal);
+}
+
+document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-info],[data-modal]');
+    if (trigger) {
+        e.preventDefault();
+        const named = trigger.getAttribute('data-modal');
+        if (named) openModal(document.getElementById(named));
+        else openInfo(trigger.getAttribute('data-info'));
+        return;
+    }
+    // Kapatma: capraz butonu ya da modal disina tiklama
+    if (e.target.closest('[data-close]') ||
+        (openModalEl && e.target === openModalEl)) closeModal();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
 // ── Kanal ↔ AUX donusturucu ──────────────────────────────────────────────────
 // ELRS'te AUX1 = 4. kanal indeksi, yani CH5 (src/include/common.h). Lua'daki
@@ -1110,6 +1307,8 @@ saveConfigBtn.addEventListener('click', () => {
     writeSerial(`SET_PROTOCOL:${protoSelect.value}\n`);
     if (!isBackpack) writeSerial(`SET_OUTPUT_PIN:${p}\n`);
     writeSerial(`SET_LPF:${parseFloat(lpfSlider.value).toFixed(2)}\n`);
+    const zp = parseInt(zeroPinInput.value);
+    if (!isNaN(zp)) writeSerial(`SET_ZERO_PIN:${zp}\n`);
     const [yaw, pitch, roll] = drChannels;
     writeSerial(`SET_PWM_RANGE:YAW,${yaw.min.value},${yaw.max.value}\n`);
     writeSerial(`SET_PWM_RANGE:PITCH,${pitch.min.value},${pitch.max.value}\n`);
@@ -1209,7 +1408,7 @@ function handleLine(line) {
         if (id === 'TX' && deviceType !== 'TX') {
             deviceType = 'TX';
             if (identifyInterval) { clearInterval(identifyInterval); identifyInterval = null; }
-            statusDiv.textContent = 'Bağlı: Verici (TX)';
+            statusDiv.textContent = 'Bağlı: Kafa Takip Cihazı';
             fwContainer.style.display = 'none';
             txPanel.style.display = 'block';
             rxPanel.style.display = 'none';
@@ -1219,7 +1418,7 @@ function handleLine(line) {
         } else if (id === 'RX' && deviceType !== 'RX') {
             deviceType = 'RX';
             if (identifyInterval) { clearInterval(identifyInterval); identifyInterval = null; }
-            statusDiv.textContent = 'Bağlı: Alıcı (RX)';
+            statusDiv.textContent = 'Bağlı: Kumanda Modülü';
             fwContainer.style.display = 'none';
             rxPanel.style.display = 'block';
             txPanel.style.display = 'none';
@@ -1278,6 +1477,7 @@ function handleLine(line) {
             else if (part.startsWith('PIN:'))  pinInput.value    = part.substring(4);
             else if (part.startsWith('BIND:')) bindInput.value   = part.substring(5);
             else if (part.startsWith('RCRST:')) { rcResetSelect.value = part.substring(6); updateRcResetHelp(); }
+            else if (part.startsWith('ZPIN:')) zeroPinInput.value = part.substring(5);
             else if (part.startsWith('UID:')) {
                 const u = part.substring(4).split('-').map(h => parseInt(h, 16));
                 uidInput.value = u.every(b => b === 0) ? '' : u.join(',');
