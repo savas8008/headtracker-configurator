@@ -78,6 +78,82 @@ yerine düzenli bir tarama sinyali gönderilir. Kumandada kanal monitörünü a�
 gidip geldiğini görün. Test sonunda arayüz kanalın oynayıp oynamadığını sorar ve
 cevabınıza göre ya kurulumun bittiğini söyler ya da kontrol listesi gösterir.
 
+## Kumandadan sıfırlama
+
+Head tracker'ın butonuna uzanmak zahmetliyse merkezi **kumandadaki bir anahtarla**
+sıfırlayabilirsiniz. ELRS'te ekstra bir yazılım kurmanız gerekmez: TX modülü,
+seçtiğiniz AUX anahtarının konumu değiştiğinde zaten backpack'e bir mesaj yolluyor
+ve backpack bu mesajı ESP-NOW ile head tracker'a iletiyor. Head tracker da bunu
+sıfırlama komutu olarak sayar.
+
+İki tetikleyici seçilebilir:
+
+| Seçenek | Kumandadaki ayar | Nasıl davranır |
+|---------|------------------|----------------|
+| **DVR Rec** *(önerilen)* | Lua → Backpack → **DVR Rec** → boş bir AUX | Anahtarın her hareketi sıfırlar. Gözlük backpack'iniz yoksa bu ayarın başka işlevi yoktur; kafa takibi hiç kesilmez. Model bazlı değildir |
+| **HT Enable** | Lua → Backpack → **HT Enable** → bir AUX | Anahtarı indirip kaldırmak sıfırlar. Anahtar aşağıdayken kafa takibi gerçekten kapanır, kanallar kumandanın kendi değerlerine döner. Model bazlıdır |
+
+Kurulum:
+
+1. Kumandada yukarıdaki ayarlardan birini bir AUX'a alın. `DVR Rec` seçtiyseniz
+   `DVR Srt Delay` ve `DVR Stp Delay` **0** kalsın.
+2. Konfigüratörde backpack panelindeki **Kumandadan sıfırlama → Tetikleyici**'yi
+   seçin ve **Kaydet**'e basın.
+3. Anahtarı oynatın. Panelde *"🎯 Kumandadan sıfırlandı"* satırı belirmelidir.
+
+### Anahtar yerine kumandayı yatırmak
+
+Fiziksel bir anahtar harcamak istemiyorsanız, kumandanın **kendi ivmeölçerini**
+tetikleyici yapabilirsiniz: kumandayı belli bir açıdan fazla öne yatırınca sıfırlar.
+Kafanız ileri bakmaya devam ettiği için merkez de doğru oturur.
+
+Gerekenler: dahili IMU'su olan bir EdgeTX kumandası (kaynak listesinde **TltX** ve
+**TltY** görünüyorsa vardır) ve head tracker'da **DVR Rec** tetikleyicisinin seçili
+olması.
+
+1. **Ekseni bulun.** Ön/arka yatırmanın hangi kaynağa düştüğü karta göre değişir
+   (`IMU_SWAP_TILT_XY`). Boş bir kanala geçici olarak `TltX`, sonra `TltY` atayıp
+   **Model → Kanallar**'da kumandayı yatırırken hangisinin oynadığına bakın.
+2. **Eşiği okuyun.** Değer ivmeölçerden gelir, yani yerçekimine göre mutlaktır —
+   kaymaz. Varsayılan ölçekte yüzde kabaca `100 × sin(açı)`: 20° ≈ %34, 30° ≈ %50,
+   45° ≈ %71. Yine de kesin sayıyı aynı kanal monitöründen okumak en sağlıklısı.
+3. **Mantıksal anahtar.** `L1: a<x`, kaynak eşikte belirlediğiniz eksen, değer
+   okuduğunuz yüzde (öne yatırınca değer negatifleşiyorsa `a<x`, pozitifleşiyorsa
+   `a>x`). **Delay ≈ 0.5 sn** verin — eşiğin tam sınırında titremeyi engeller.
+4. **Mikser.** Boş bir kanal açın, kaynağı doğrudan **L1**, ağırlık 100. Kanal
+   normalde −%100, eşik aşılınca +%100 olur.
+5. **ELRS Lua → Backpack → DVR Rec** → o kanalın AUX'u, ↑ yönü.
+   Eşleme: `AUX1 = CH5` … `AUX8 = CH12`, `AUX10 = CH14`.
+
+!!! warning "Kanal seçerken dikkat — moda göre değişir"
+    `HT Start Channel: Aux<n>` seçiliyse kafa takibi **CH(n+4)'ten itibaren üç
+    kanalı** Pan/Tilt/Roll olarak ezer ve o kanallar sıfırlama anahtarına
+    kullanılamaz: ELRS AUX'ları **ezme işleminden sonra** okuduğu için oraya
+    koyduğunuz mantıksal anahtar görünmez. `Aux6` için bunlar CH10/11/12'dir.
+
+    `HT Start Channel: EdgeTX` seçiliyse hiçbir AUX ezilmez — veri kumandaya
+    trainer girişi olarak gider (**Pan → TR1, Tilt → TR2, Roll → TR3**), yani
+    CH5–CH14'ün tamamı serbesttir.
+
+    Konfigüratördeki **Kanal ↔ AUX dönüştürücü** bunu sizin yerinize hesaplar.
+
+!!! tip "Bu kanalın havaya çıkması gerekmez"
+    ELRS AUX durumunu modülün içindeki kanal verisinden okur, telemetri veya OTA
+    paketinden değil. Yani `Switch Mode: 8ch` olsa bile çalışır ve link
+    bant genişliğinden bir şey götürmez.
+
+Tetikleme **her iki kenarda** olur: kumandayı yatırınca bir, düzeltince bir daha
+sıfırlar. İkincisi zararsız, hatta emniyet — asıl önemlisi tetiklediğiniz anda
+**kafanızın merkez saymak istediğiniz yöne bakıyor** olması.
+
+!!! note "Cihazın butonu çalışmaya devam eder"
+    Bu özellik BOOT butonunun yerine geçmez, yanına eklenir. Ayrıca yalnızca
+    backpack modunda çalışır — diğer modlarda kumandayla doğrudan bir bağ yoktur.
+
+!!! tip "Anlık (momentary) anahtar"
+    `DVR Rec` her konum değişiminde tetiklendiği için anlık bir düğmeyle de
+    çalışır: basıp bıraktığınızda iki olay üretir, sonuç aynıdır.
+
 ## Sorun giderme
 
 Durum satırı ne diyorsa ona göre ilerleyin:

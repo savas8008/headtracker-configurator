@@ -33,6 +33,7 @@ Bu sayfa geliştiriciler ve protokolü merak edenler için. Kullanım için
 | `SET_REVERSE:YAW\|PITCH\|ROLL,0\|1` | Eksen tersleme |
 | `SET_BIND_PHRASE:<metin>` | ELRS bind phrase (maks. 32 karakter, virgülsüz) |
 | `SET_UID:a,b,c,d,e,f` | UID'yi doğrudan gir; `SET_UID:CLEAR` ile sıfırla |
+| `SET_RC_RESET:0-3` | Kumandadan sıfırlama kaynağı (bit maskesi: 1=HT Enable, 2=DVR Rec) |
 | `BP_STATUS` | Backpack teşhis dökümü |
 | `BP_TEST` | 15 sn kanal süpürme testi |
 | `BP_SCAN` | 10 sn ESP-NOW gönderici taraması |
@@ -77,6 +78,19 @@ adresi kullanır. TX backpack, kaynak MAC'i kendi UID'sine uymayan paketleri ata
 durumu. TX bunu yalnızca *değiştiğinde* yayınlar; sonradan açılan bir cihaz durumu
 öğrenemeyeceği için `MSP_ELRS_REQU_VTX_PKT (0x0B)` ile önbellekteki paket istenir.
 
+**Gelen — `MSP_ELRS_BACKPACK_SET_RECORDING_STATE (0x0305)`**: ELRS Lua'daki
+`DVR Rec` AUX'unun durumu. TX modülü bunu yalnızca anahtar konumu değişince üretir;
+TX backpack de önbelleklemez (`SendCachedMSP()` sadece VTX ve HT paketlerini yollar),
+dolayısıyla gelen her paket gerçek bir kullanıcı hareketidir.
+
+**Kumandadan sıfırlama** bu iki gelen mesajın üstüne kuruludur: `0x030D`'nin
+kapalı→açık geçişi ve `0x0305`'in her değişimi birer sıfırlama olayıdır. Hangisinin
+dinleneceği `SET_RC_RESET` bit maskesiyle seçilir. Olay ESP-NOW alım görevinde
+32 bitlik bir sayaçla işaretlenir, `loop()` içinde `takeResetRequest()` ile tüketilir
+— IMU referans quaternion'una başka bir görevden dokunulmaz ve kilit gerekmeden olay
+kaybı olmaz. Açılıştan sonraki 3 sn (`BACKPACK_RESET_SUPPRESS_MS`) yok sayılır,
+çünkü o pencerede gelen paket kendi istediğimiz önbellek senkronu olabilir.
+
 **MSP v2 çerçevesi:** `$X<` + flags(1) + function(2, LE) + payloadSize(2, LE) +
 payload + `crc8_dvb_s2` (başlık ve payload üzerinden, polinom `0xD5`).
 
@@ -88,7 +102,7 @@ payload + `crc8_dvb_s2` (başlık ve payload üzerinden, polinom `0xD5`).
 
 | Namespace | İçerik |
 |-----------|--------|
-| `ht_verici` | protokol, pinler, hassasiyet, LPF, PWM aralıkları, reverse, bind phrase, UID |
+| `ht_verici` | protokol, pinler, hassasiyet, LPF, PWM aralıkları, reverse, bind phrase, UID, `rcReset` |
 | `imu-offsets` | 6 offset değeri (accel/gyro X-Y-Z) ve `calibrated_ok` bayrağı |
 
 ## Bilinen tuzaklar
@@ -98,6 +112,8 @@ payload + `crc8_dvb_s2` (başlık ve payload üzerinden, polinom `0xD5`).
 - **`Telemetry: WiFi`** seçilirse backpack açılışta WiFi servisine girer ve ESP-NOW'u
   hiç başlatmaz; head tracking tamamen ölür. `Off` ve `ESPNOW` çalışır.
 - **`HT Enable` / `HT Start Channel` model bazlıdır**; model değişince sıfırlanır.
+  `DVR Rec` ve `Telemetry` ise geneldir — kumandadan sıfırlama için `DVR Rec`
+  tercih edilmesinin bir sebebi de budur.
 - **Aynı MAC adresi** hem TX backpack'te hem bizde hem de (varsa) gözlükte kullanılır.
   Gözlük ve tracker aynı anda açıksa çakışırlar.
 - **Mod değişimi** WiFi MAC'ini değiştirdiği için yeniden başlatma ister.

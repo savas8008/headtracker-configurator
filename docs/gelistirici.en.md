@@ -33,6 +33,7 @@ This page is for developers and anyone curious about the protocol. For normal us
 | `SET_REVERSE:YAW\|PITCH\|ROLL,0\|1` | axis reverse |
 | `SET_BIND_PHRASE:<text>` | ELRS bind phrase (max 32 chars, no commas) |
 | `SET_UID:a,b,c,d,e,f` | set the UID directly; `SET_UID:CLEAR` to clear |
+| `SET_RC_RESET:0-3` | zeroing trigger from the radio (bit mask: 1=HT Enable, 2=DVR Rec) |
 | `BP_STATUS` | backpack diagnostic dump |
 | `BP_TEST` | 15 s channel sweep test |
 | `BP_SCAN` | 10 s ESP-NOW transmitter scan |
@@ -77,6 +78,20 @@ use the same address. The TX backpack drops packets whose source MAC doesn't mat
 state. The TX only broadcasts it *on change*, so a device powered up later would never
 learn it; we request the cached packet with `MSP_ELRS_REQU_VTX_PKT (0x0B)`.
 
+**Incoming — `MSP_ELRS_BACKPACK_SET_RECORDING_STATE (0x0305)`**: the state of the
+`DVR Rec` AUX in ELRS Lua. The TX module emits it only when the switch changes
+position, and the TX backpack does not cache it (`SendCachedMSP()` only replays the
+VTX and HT packets), so every packet that arrives is a genuine user action.
+
+**Zeroing from the radio** is built on these two incoming messages: an off→on
+transition of `0x030D` and any change of `0x0305` each count as a zeroing event.
+Which ones are listened to is selected with the `SET_RC_RESET` bit mask. The event is
+flagged with a 32-bit counter in the ESP-NOW receive task and consumed in `loop()` via
+`takeResetRequest()` — the IMU reference quaternion is never touched from another task,
+and no event is lost without needing a lock. The first 3 s after start-up
+(`BACKPACK_RESET_SUPPRESS_MS`) are ignored, because a packet arriving in that window
+may be the cache sync we asked for ourselves.
+
 **MSP v2 frame:** `$X<` + flags(1) + function(2, LE) + payloadSize(2, LE) + payload +
 `crc8_dvb_s2` (over header and payload, polynomial `0xD5`).
 
@@ -88,7 +103,7 @@ learn it; we request the cached packet with `MSP_ELRS_REQU_VTX_PKT (0x0B)`.
 
 | Namespace | Contents |
 |-----------|----------|
-| `ht_verici` | protocol, pins, sensitivity, LPF, PWM ranges, reverse, bind phrase, UID |
+| `ht_verici` | protocol, pins, sensitivity, LPF, PWM ranges, reverse, bind phrase, UID, `rcReset` |
 | `imu-offsets` | 6 offsets (accel/gyro X-Y-Z) and the `calibrated_ok` flag |
 
 ## Known traps
@@ -98,6 +113,8 @@ learn it; we request the cached packet with `MSP_ELRS_REQU_VTX_PKT (0x0B)`.
 - **`Telemetry: WiFi`** makes the backpack boot into its WiFi service and never start
   ESP-NOW; head tracking dies completely. `Off` and `ESPNOW` both work.
 - **`HT Enable` / `HT Start Channel` are per model** and reset when you switch models.
+  `DVR Rec` and `Telemetry` are global — one more reason to prefer `DVR Rec` for
+  zeroing from the radio.
 - **The same MAC address** is used by the TX backpack, by us, and by the goggles if
   present. Goggles and tracker powered at once will collide.
 - **Changing modes** changes the WiFi MAC, so it requires a restart.

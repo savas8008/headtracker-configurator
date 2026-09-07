@@ -79,6 +79,81 @@ and watch your chosen channel (**CH10** for Aux6) move slowly back and forth. At
 the interface asks whether the channel moved and either confirms the setup or shows a
 checklist.
 
+## Zeroing from the radio
+
+If reaching for the head tracker's button is a nuisance, you can re-center from a
+**switch on the radio**. Nothing extra has to be installed on the ELRS side: when the
+AUX switch you pick changes position, the TX module already sends a message to the
+backpack, and the backpack relays it over ESP-NOW to the head tracker, which treats it
+as a zeroing command.
+
+Two triggers are available:
+
+| Option | Setting on the radio | Behaviour |
+|--------|----------------------|-----------|
+| **DVR Rec** *(recommended)* | Lua → Backpack → **DVR Rec** → a spare AUX | Every switch movement zeroes. With no goggle backpack this setting has no other purpose, and head tracking is never interrupted. Not model-specific |
+| **HT Enable** | Lua → Backpack → **HT Enable** → an AUX | Flicking the switch down and back up zeroes. While the switch is down head tracking really is off and the channels revert to the radio's own values. Model-specific |
+
+Setup:
+
+1. Assign one of the settings above to an AUX on the radio. If you pick `DVR Rec`,
+   leave `DVR Srt Delay` and `DVR Stp Delay` at **0**.
+2. In the configurator's backpack panel choose **Zeroing from the radio → Trigger**
+   and press **Save**.
+3. Flick the switch. A *"🎯 Zeroed from the radio"* line should appear in the panel.
+
+### Tilting the radio instead of flicking a switch
+
+If you would rather not spend a physical switch, use the radio's **own
+accelerometer** as the trigger: tilt the radio forward past a set angle and it
+zeroes. Your head stays looking forward, so the centre lands correctly.
+
+You need an EdgeTX radio with a built-in IMU (it has one if **TltX** and **TltY**
+appear in the source list) and the **DVR Rec** trigger selected on the head tracker.
+
+1. **Find the axis.** Which source fore/aft tilt lands on varies by board
+   (`IMU_SWAP_TILT_XY`). Temporarily assign `TltX`, then `TltY`, to a spare channel
+   and watch **Model → Channels** while tilting.
+2. **Read the threshold.** The value comes from the accelerometer, so it is absolute
+   against gravity and does not drift. At the default scale the percentage is roughly
+   `100 × sin(angle)`: 20° ≈ 34%, 30° ≈ 50%, 45° ≈ 71%. Still, read the exact figure
+   off the same channel monitor.
+3. **Logical switch.** `L1: a<x`, source the axis you found, value the percentage you
+   read (`a<x` if tilting forward drives it negative, `a>x` if positive). Give it a
+   **Delay of ~0.5 s** so it cannot chatter right at the threshold.
+4. **Mixer.** Open a spare channel with **L1** itself as the source, weight 100. The
+   channel sits at −100% and jumps to +100% past the threshold.
+5. **ELRS Lua → Backpack → DVR Rec** → that channel's AUX, ↑ direction.
+   Mapping: `AUX1 = CH5` … `AUX8 = CH12`, `AUX10 = CH14`.
+
+!!! warning "Choosing the channel — it depends on the mode"
+    With `HT Start Channel: Aux<n>`, head tracking overrides **three channels
+    starting at CH(n+4)** as Pan/Tilt/Roll, and those cannot be used for the reset
+    switch: ELRS reads the AUX states **after** the override, so a logical switch
+    placed there is invisible. For `Aux6` those are CH10/11/12.
+
+    With `HT Start Channel: EdgeTX` no AUX is overridden at all — the data goes to
+    the radio as a trainer input (**Pan → TR1, Tilt → TR2, Roll → TR3**), so all of
+    CH5–CH14 stays free.
+
+    The configurator's **channel ↔ AUX converter** works this out for you.
+
+!!! tip "This channel does not have to go over the air"
+    ELRS reads the AUX state from the channel data inside the module, not from the
+    OTA packet. So it works even on `Switch Mode: 8ch` and costs no link bandwidth.
+
+It fires on **both edges**: once when you tilt the radio, once more when you level it
+again. The second one is harmless — a safety net, really. What matters is that your
+head is looking where you want the centre to be at the moment you trigger it.
+
+!!! note "The device button keeps working"
+    This does not replace the BOOT button, it is added alongside it. It also only works
+    in backpack mode — in the other modes there is no direct link to the radio.
+
+!!! tip "Momentary switch"
+    Because `DVR Rec` fires on every position change, a momentary button works too:
+    press and release produces two events with the same end result.
+
 ## Troubleshooting
 
 Follow whatever the status line says:
