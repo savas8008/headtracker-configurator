@@ -624,6 +624,11 @@ esp-web-install-button { display:block; width:100%; }
                     <input type="range" id="lpfSlider" min="0" max="0.95" step="0.01" value="0">
                     <span class="val-badge" id="lpfVal">0.00</span>
                 </div>
+                <div class="row">
+                    <label for="kpSlider">Sarsıntı Bağışıklığı<button class="hint" data-info="kp" aria-label="Sarsıntı bağışıklığı nedir?">?</button></label>
+                    <input type="range" id="kpSlider" min="0.5" max="10" step="0.5" value="2">
+                    <span class="val-badge" id="kpVal">2.0</span>
+                </div>
             </div>
 
             <div class="setting-group">
@@ -898,6 +903,8 @@ const backpackInfo  = document.getElementById('backpackInfo');
 const bpPill        = document.getElementById('bpStatusPill');
 const saveConfigBtn = document.getElementById('saveConfigBtn');
 const lpfSlider     = document.getElementById('lpfSlider');
+const kpSlider      = document.getElementById('kpSlider');
+const kpValSpan     = document.getElementById('kpVal');
 const lpfValSpan    = document.getElementById('lpfVal');
 const sdaInput      = document.getElementById('sdaInput');
 const sclInput      = document.getElementById('sclInput');
@@ -986,6 +993,14 @@ drChannels.forEach(ch => {
 calDoneBtn.addEventListener('click', () => calModal.classList.remove('show'));
 connectBtn.addEventListener('click', () => port ? disconnectSerial() : connectSerial());
 
+// LPF rozeti bugune kadar yalnizca GET_CONFIG geldiginde guncelleniyordu;
+// kaydirici surulurken deger gorunmuyordu.
+lpfSlider.addEventListener('input', () => {
+    lpfValSpan.textContent = parseFloat(lpfSlider.value).toFixed(2);
+});
+kpSlider.addEventListener('input', () => {
+    kpValSpan.textContent = parseFloat(kpSlider.value).toFixed(1);
+});
 sensSlider.addEventListener('input', () => {
     sensValSpan.textContent = parseFloat(sensSlider.value).toFixed(1);
 });
@@ -1081,6 +1096,26 @@ const INFO_TOPICS = {
            Uyguladıktan sonra cihazın gücünü kesip verin.</p>
         <p>Açılışta sensör bulunamazsa yukarıdaki rozet kırmızı olur, küp donuk
            kalır ve <code>BP_STATUS</code> çıktısında <code>imu_hata=1</code> görünür.</p>` },
+
+    kp: { title: 'Sarsıntı bağışıklığı (Mahony Kp)', body: `
+        <p>Filtrenin <b>ivmeölçere ne kadar güvendiğini</b> belirler. İvmeölçer
+           yerçekimini ölçer — ama cihaz sarsıldığında yerçekimi <i>artı</i> o
+           sarsıntının ivmesini ölçer, ve filtre aradaki farkı bilemez.</p>
+        <p>Değer yüksekse filtre bu sahte eğimi olduğu gibi takip eder. 0.3 saniye
+           süren küçük bir sarsıntının (0.1 g) ürettiği tepe sapma:</p>
+        <table style="width:100%; font-size:13px; border-collapse:collapse">
+            <tr><td><b>10</b> (eski)</td><td>5.4°</td></tr>
+            <tr><td><b>5</b></td><td>4.4°</td></tr>
+            <tr><td><b>2</b> (varsayılan)</td><td>2.6°</td></tr>
+            <tr><td><b>1</b></td><td>1.5°</td></tr>
+        </table>
+        <p><b>Düşürmek</b> jiroskopa ağırlık verir: sarsıntı daha az yansır,
+           buna karşılık eğim düzeltmesi yavaşlar. <b>Yükseltmek</b> tersi.</p>
+        <p>Cihaz dururken arada bir kaç derecelik titreme görüyorsanız bu ayarı
+           düşürün — <code>2.0</code> iyi bir başlangıç, gerekirse <code>1.0</code>.</p>
+        <p>Bu ayar <b>yaw'ı doğrudan etkilemez</b> (yaw'ın yerçekimi referansı
+           yoktur), ama pitch/roll sarsıntısı sıfırlama referansı eğikse yaw'a
+           sızar — dolayısıyla yaw'daki titremeyi de azaltır.</p>` },
 
     'imu-select': { title: 'Sensör seçimi', body: `
         <p>Cihaz açılışta I2C hattını tarar ve sensörü <b>kendisi tanır</b>. İki aile
@@ -1417,6 +1452,7 @@ saveConfigBtn.addEventListener('click', () => {
     writeSerial(`SET_PROTOCOL:${protoSelect.value}\n`);
     if (!isBackpack) writeSerial(`SET_OUTPUT_PIN:${p}\n`);
     writeSerial(`SET_LPF:${parseFloat(lpfSlider.value).toFixed(2)}\n`);
+    writeSerial(`SET_KP:${parseFloat(kpSlider.value).toFixed(1)}\n`);
     if (!isNaN(zp)) writeSerial(`SET_ZERO_PIN:${zp}\n`);
     const [yaw, pitch, roll] = drChannels;
     writeSerial(`SET_PWM_RANGE:YAW,${yaw.min.value},${yaw.max.value}\n`);
@@ -1633,6 +1669,11 @@ function handleLine(line) {
             else if (part.startsWith('IMUSEL:')) imuSelect.value = part.substring(7);
             else if (part.startsWith('IMU:'))    detectedImu = part.substring(4);
             else if (part.startsWith('AXES:'))   axesInput.value = part.substring(5);
+            else if (part.startsWith('KP:')) {
+                const v = parseFloat(part.substring(3));
+                kpSlider.value = v;
+                kpValSpan.textContent = v.toFixed(1);
+            }
             else if (part.startsWith('PROTO:'))     { protoSelect.value = part.substring(6); updateProtoVisibility(); }
             else if (part.startsWith('PIN:'))  pinInput.value    = part.substring(4);
             else if (part.startsWith('BIND:')) bindInput.value   = part.substring(5);

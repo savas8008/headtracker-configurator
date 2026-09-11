@@ -21,6 +21,7 @@ Tarayıcıdan çalışan ayar arayüzü. Kurulum gerekmez:
 | **Protokol** | Çıkış modu: PPM / SBUS / SBUS ters / [ELRS Backpack](backpack.md) |
 | **Çıkış Pini** | Alıcıdaki sinyal pini (backpack modunda görünmez) |
 | **Filtre (LPF)** | Titreşim yumuşatma. 0 = kapalı, 0.95 = çok yumuşak ama gecikmeli |
+| **Sarsıntı Bağışıklığı** | Filtrenin ivmeölçere güveni (Mahony Kp). Düşük = sarsıntıya dayanıklı |
 | **PWM Çıkış Aralığı** | Her eksen için alt/üst sınır (500–2500 µs) |
 | **Reverse** | Ekseni ters çevirir |
 | **Sensör** | Hangi IMU kullanılacak: Otomatik / MPU6050 / LSM6DSM |
@@ -53,6 +54,33 @@ tekrarlayın** — jiroskop sapması eski eksen haritasıyla ölçülmüştür.
 **Uygula** düğmesi sensör seçimini, eksen yönünü ve I2C pinlerini birlikte
 gönderir. I2C veri yolu açılışta kurulduğu için pin değişikliği yeniden başlatma
 ister.
+
+## Cihaz dururken titriyorsa
+
+İvmeölçer yerçekimini ölçer — ama cihaz sarsıldığında yerçekimi *artı* o
+sarsıntının ivmesini ölçer ve filtre aradaki farkı bilemez. **Sarsıntı
+Bağışıklığı** yüksekse filtre bu sahte eğimi olduğu gibi takip eder.
+
+0.3 saniye süren küçük bir sarsıntının (0.1 g) ürettiği tepe sapma:
+
+| Ayar | Tepe sapma |
+|------|-----------|
+| 10 (eski varsayılan) | 5.4° |
+| 5 | 4.4° |
+| **2 (varsayılan)** | **2.6°** |
+| 1 | 1.5° |
+
+Cihaz dururken arada bir kaç derecelik titreme görüyorsanız bu ayarı düşürün.
+Düşürmek jiroskopa ağırlık verir: sarsıntı daha az yansır, eğim düzeltmesi
+biraz yavaşlar.
+
+!!! note "Yaw'da titreme görüyorsanız"
+    Yaw'ın mutlak referansı yoktur (manyetometre yok, ivmeölçer yerçekimi
+    ekseni etrafındaki dönmeyi göremez). Yaw'da **sıçrayıp geri gelen** bir
+    oynama saf yaw değildir — pitch/roll sarsıntısının yaw'a sızmasıdır. Sızma,
+    sıfırlama referansı eğikken artar: **cihazı yatayken sıfırlayın.**
+    Seri terminalde `IMU_STATS` komutu `ref_egim_derece` ile bu eğimi ve
+    `ivme_sapma_max_derece` ile filtreyi iten bozulmanın büyüklüğünü raporlar.
 
 ## Kalibrasyon
 
