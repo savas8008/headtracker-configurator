@@ -23,10 +23,35 @@ A browser-based settings tool. Nothing to install:
 | **Filter (LPF)** | Vibration smoothing. 0 = off, 0.95 = very smooth but laggy |
 | **PWM output range** | Lower/upper limit per axis (500–2500 µs) |
 | **Reverse** | Inverts an axis |
-| **SDA / SCL pin** | MPU6050 I2C pins (restart after changing) |
+| **Sensor** | Which IMU to use: Automatic / MPU6050 / LSM6DSM |
+| **SDA / SCL pin** | I2C pins (restart after changing) |
+| **Axis orientation** | How the sensor sits in the enclosure, e.g. `+X+Y+Z` or `-Y+X+Z` |
 
 **Save** writes the settings to the device's non-volatile memory (NVS); they survive
 a power cycle.
+
+## Sensor section
+
+The badge at the top of the panel shows which board is connected and which sensor
+was detected. Normally it is green and names the sensor.
+
+Leave **Sensor** on **Automatic** in the usual case: the device scans the I2C bus at
+boot and, because the two families sit at non-overlapping addresses, detection is
+unambiguous. Manual selection is there for an unrecognised clone chip, or when two
+sensors share the bus.
+
+**Axis orientation** tells the device how the sensor faces inside the enclosure. The
+symptom of a wrong value: you tilt your head up and the cube rolls sideways, or one
+axis moves backwards. Calibration does not fix this.
+
+- One axis moves backwards → put `-` in front of that letter: `+X-Y+Z`
+- Two axes are swapped → swap the letters: `+Y+X+Z`
+
+Each axis (X, Y, Z) must appear exactly once. After changing it, **recalibrate** —
+the stored gyro bias was measured under the old axis map.
+
+**Apply** sends the sensor selection, the axis orientation and the I2C pins together.
+The I2C bus is set up at boot, so a pin change needs a restart.
 
 ## Calibration
 

@@ -431,6 +431,8 @@ esp-web-install-button { display:block; width:100%; }
         Cihazı <strong>bootloader moduna</strong> alıp aşağıdaki butona basın.
         <button class="hint warn" data-info="flash" aria-label="Nasıl bootloader moduna alınır?">!</button>
         Sadece <strong>Chrome / Edge</strong>.
+        <br><span style="opacity:.8">ESP32-C3 Mini ve Deneyap Kart aynı butondan yüklenir —
+        bağlı çip otomatik tanınıp doğru firmware seçilir.</span>
     </div>
     <div class="firmware-grid">
         <div class="firmware-card">
@@ -486,15 +488,29 @@ esp-web-install-button { display:block; width:100%; }
                    <button class="hint" data-info="visual" aria-label="Küp görselleştirme hakkında">?</button></p>
             </div>
             <div class="setting-group" style="margin-top:16px">
-                <h3>🔌 I2C Pinleri (MPU6050)<button class="hint" data-info="i2c" aria-label="I2C pinleri hakkında">?</button></h3>
+                <h3>🧭 Sensör<button class="hint" data-info="i2c" aria-label="Sensör ve I2C pinleri hakkında">?</button></h3>
+                <div id="imuDetected" class="bp-pill bp-idle" style="margin-bottom:12px">Sensör bilgisi bekleniyor…</div>
+                <div class="row no-value">
+                    <label for="imuSelect">Sensör<button class="hint" data-info="imu-select" aria-label="Sensör seçimi hakkında">?</button></label>
+                    <select id="imuSelect">
+                        <option value="0">Otomatik tanı (önerilen)</option>
+                        <option value="1">MPU6050</option>
+                        <option value="2">LSM6DSM</option>
+                    </select>
+                </div>
                 <div class="row no-value">
                     <label for="sdaInput">SDA Pini</label>
-                    <input type="number" id="sdaInput" min="0" max="39" value="8" placeholder="GPIO 0-39">
+                    <input type="number" id="sdaInput" min="0" max="39" value="8" placeholder="GPIO">
                 </div>
-                <div class="row no-value" style="margin-bottom:12px">
+                <div class="row no-value">
                     <label for="sclInput">SCL Pini</label>
-                    <input type="number" id="sclInput" min="0" max="39" value="9" placeholder="GPIO 0-39">
+                    <input type="number" id="sclInput" min="0" max="39" value="9" placeholder="GPIO">
                 </div>
+                <div class="row no-value" style="margin-bottom:4px">
+                    <label for="axesInput">Eksen Yönü<button class="hint" data-info="axes" aria-label="Eksen yönü nedir?">?</button></label>
+                    <input type="text" id="axesInput" maxlength="6" value="+X+Y+Z" placeholder="+X+Y+Z">
+                </div>
+                <div id="pinHelpNote" class="bp-state" style="margin-bottom:12px"></div>
                 <button id="applyPinButton">Uygula (Yeniden Başlat)</button>
             </div>
             <div class="setting-group" style="margin-top:16px">
@@ -505,6 +521,7 @@ esp-web-install-button { display:block; width:100%; }
                     <label for="zeroPinInput">Buton Pini<button class="hint" data-info="zero-pin" aria-label="Sıfırlama butonu pini hakkında">?</button></label>
                     <input type="number" id="zeroPinInput" min="0" max="21" value="0" placeholder="GPIO (varsayılan 0 = BOOT)">
                 </div>
+                <div id="zeroPinNote" class="bp-state"></div>
 
                 <div id="rcResetBlock" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--border-light)">
                     <div class="row no-value" style="margin-bottom:4px">
@@ -885,6 +902,11 @@ const lpfValSpan    = document.getElementById('lpfVal');
 const sdaInput      = document.getElementById('sdaInput');
 const sclInput      = document.getElementById('sclInput');
 const applyPinBtn   = document.getElementById('applyPinButton');
+const imuSelect     = document.getElementById('imuSelect');
+const imuDetected   = document.getElementById('imuDetected');
+const axesInput     = document.getElementById('axesInput');
+const pinHelpNote   = document.getElementById('pinHelpNote');
+const zeroPinNote   = document.getElementById('zeroPinNote');
 const calibrateBtn  = document.getElementById('calibrateButton');
 const calModal      = document.getElementById('cal-modal');
 const modalTitle    = document.getElementById('modal-title');
@@ -996,6 +1018,43 @@ updateRcResetHelp();
 
 // ── Aciklama modallari ──────────────────────────────────────────────────────
 // Uzun anlatimlar sayfada durmaz; kullanici soru/unlem isaretine tiklayinca acilir.
+// ── Kart tablosu ─────────────────────────────────────────────────────────────
+// Aralıklar vericideki src/board_config.h > isUsableGpio() ile birebir aynı
+// olmalı; burada erken uyarı veriyoruz, son sözü yine cihaz söylüyor.
+const BOARDS = {
+    C3:   { name: 'ESP32-C3 Mini',
+            ranges: [[0,10],[18,21]],
+            help:   'Bu kartta kullanılabilir GPIO: 0-10 ve 18-21 (11-17 dahili flash).' },
+    DYDK: { name: 'Deneyap Kart',
+            ranges: [[0,5],[12,15],[18,19],[21,23],[25,27],[32,33]],
+            help:   'Bu kartta kullanılabilir GPIO: 0-5, 12-15, 18-19, 21-23, 25-27, 32-33 '
+                  + '(6-11 flash, 16-17 PSRAM, 34-39 yalnızca giriş).' },
+};
+let boardId = 'C3';
+
+function gpioOk(pin) {
+    const b = BOARDS[boardId] || BOARDS.C3;
+    return Number.isInteger(pin) && b.ranges.some(([lo, hi]) => pin >= lo && pin <= hi);
+}
+
+// Cihazın SET_AXES ayrıştırıcısının aynası: her eksen bir kez, işaret isteğe bağlı.
+function axesOk(spec) {
+    const m = spec.toUpperCase().replace(/[\s,]/g, '').match(/^([+-]?[XYZ]){3}$/);
+    if (!m) return false;
+    const axes = spec.toUpperCase().replace(/[\s,+-]/g, '');
+    return new Set(axes).size === 3;
+}
+
+// Karta göre pin alanlarının sınırlarını ve yardım metnini güncelle.
+function applyBoardLimits() {
+    const b = BOARDS[boardId] || BOARDS.C3;
+    const lo = b.ranges[0][0], hi = b.ranges[b.ranges.length - 1][1];
+    [sdaInput, sclInput, zeroPinInput].forEach(el => { el.min = lo; el.max = hi; });
+    // Not iki yerde de duruyor: pin alanları iki ayrı bölüme dağılmış durumda.
+    pinHelpNote.textContent = b.help;
+    zeroPinNote.textContent = b.help;
+}
+
 const INFO_TOPICS = {
     flash: { title: 'Cihazı bootloader moduna alma', body: `
         <p>ESP32 yeni firmware'i ancak bootloader modundayken kabul eder:</p>
@@ -1004,18 +1063,53 @@ const INFO_TOPICS = {
             <li>Basılı tutarken <code>RESET</code>'e kısa bir kez basın.</li>
             <li><code>BOOT</code>'u bırakın, ardından flaşlama butonuna tıklayın.</li>
         </ol>
+        <p><b>Deneyap Kart'ta bu adımlar genellikle gerekmez</b> — o kartta USB-UART
+           köprüsü vardır ve bootloader'a otomatik geçilir. Doğrudan flaşlama
+           butonuna basmayı deneyin, olmazsa yukarıdaki sırayı izleyin.</p>
         <p>Açılan pencereden cihazın seri portunu seçin. Web Serial yalnızca
            <b>Chrome</b> ve <b>Edge</b>'de vardır; Firefox/Safari çalışmaz.</p>
         <p>Cihaz konfigüratöre bağlıyken flaşlama yapılamaz — önce
            <b>Bağlantıyı Kes</b>'e basın.</p>` },
 
-    i2c: { title: 'I2C pinleri (MPU6050)', body: `
-        <p>Sensörün bağlı olduğu iki GPIO. Varsayılan <code>SDA = 8</code>,
-           <code>SCL = 9</code>; kendi kartınızda farklı lehimlediyseniz burada değiştirin.</p>
+    i2c: { title: 'Sensör ve I2C pinleri', body: `
+        <p>Sensörün bağlı olduğu iki GPIO. Varsayılan kartınıza göre değişir:
+           ESP32-C3 Mini'de <code>SDA = 8</code> / <code>SCL = 9</code>,
+           Deneyap Kart'ta <code>SDA = 4</code> / <code>SCL = 15</code>.</p>
+        <p>Deneyap Kart'ta dahili LSM6DSM zaten bu hatta bağlıdır — harici sensör
+           takmadıysanız bu değerlere dokunmanız gerekmez.</p>
         <p>Değişiklik <b>yeniden başlatma ister</b> — I2C veri yolu açılışta kuruluyor.
-           Kaydettikten sonra cihazın gücünü kesip verin.</p>
-        <p>Açılışta sensör bulunamazsa küp donuk kalır ve <code>BP_STATUS</code>
-           çıktısında <code>imu_hata=1</code> görünür.</p>` },
+           Uyguladıktan sonra cihazın gücünü kesip verin.</p>
+        <p>Açılışta sensör bulunamazsa yukarıdaki rozet kırmızı olur, küp donuk
+           kalır ve <code>BP_STATUS</code> çıktısında <code>imu_hata=1</code> görünür.</p>` },
+
+    'imu-select': { title: 'Sensör seçimi', body: `
+        <p>Cihaz açılışta I2C hattını tarar ve sensörü <b>kendisi tanır</b>. İki aile
+           farklı adreslerde durduğu için karışma ihtimali yok:</p>
+        <ul>
+            <li><b>MPU6050</b> — <code>0x68</code> / <code>0x69</code></li>
+            <li><b>LSM6DSM</b> — <code>0x6A</code> / <code>0x6B</code>
+                (Deneyap Kart'ın dahili sensörü)</li>
+        </ul>
+        <p>Bu yüzden normalde <b>Otomatik</b>'te bırakın. Elle seçim, tanınmayan bir
+           klon yongayla uğraşırken ya da hatta iki sensör birden varken hangisinin
+           kullanılacağını söylemek için vardır.</p>
+        <p>Seçim <b>anında</b> uygulanır; cihaz sensörü hemen yeniden arar.</p>` },
+
+    axes: { title: 'Eksen yönü', body: `
+        <p>Sensörün kutunun içinde hangi yöne baktığını söyler. Farklı kartlarda ve
+           breakout'larda yonga farklı yönde lehimli olduğu için gerekir.</p>
+        <p><b>Kalibrasyon bunu düzeltmez.</b> Belirtisi şudur: kafanızı yukarı
+           kaldırdığınızda küp sağa yatıyor, ya da bir eksen tersine hareket ediyor.</p>
+        <p>Nasıl bulunur — küpe bakarak tek tek deneyin:</p>
+        <ol>
+            <li>Bir eksen <b>ters</b> hareket ediyorsa o harfin başına <code>-</code> koyun
+                (örn. <code>+X-Y+Z</code>).</li>
+            <li>İki eksen <b>yer değiştirmişse</b> harfleri takas edin
+                (örn. <code>+Y+X+Z</code>).</li>
+        </ol>
+        <p>Her eksen (X, Y, Z) tam bir kez geçmelidir. Değiştirdikten sonra
+           <b>kalibrasyonu tekrarlayın</b> — jiroskop sapması gövde eksenlerinde
+           saklanır ve eski haritayla ölçülmüştür.</p>` },
 
     visual: { title: 'Küp görselleştirme', body: `
         <p>Küp, cihazdan gelen <b>ham</b> açıları gösterir — hassasiyet, PWM aralığı ve
@@ -1050,9 +1144,12 @@ const INFO_TOPICS = {
         <p>Kutuya kendi butonunuzu taktıysanız onun pinini yazın. Buton
            <b>pin ile GND arasına</b> bağlanır; dahili pull-up açıktır, harici
            direnç gerekmez.</p>
-        <p>ESP32-C3'te kullanılabilir pinler: <code>0-10</code> ve <code>18-21</code>.
-           11-17 arası dahili flash'a ayrılmıştır. I2C pinleriyle (SDA/SCL) aynı
-           olamaz — cihaz bunu reddeder.</p>
+        <p>Kullanılabilir pinler karta göre değişir; alanın altındaki not o an bağlı
+           kartınınkini gösterir. ESP32-C3'te <code>0-10</code> ve <code>18-21</code>
+           (11-17 dahili flash); Deneyap Kart'ta <code>0-5, 12-15, 18-19, 21-23,
+           25-27, 32-33</code> (6-11 flash, 16-17 PSRAM, 34-39 yalnızca giriş —
+           dahili pull-up'ları yoktur, buton bağlanamaz). I2C pinleriyle (SDA/SCL)
+           aynı olamaz — cihaz bunu reddeder.</p>
         <p>Değişiklik anında geçerli olur, yeniden başlatma gerekmez.</p>` },
 
     'rc-reset': { title: 'Kumandadan sıfırlama nasıl çalışıyor?', body: `
@@ -1299,6 +1396,14 @@ saveConfigBtn.addEventListener('click', () => {
     const isBackpack = protoSelect.value === '3';
     const p = parseInt(pinInput.value);
     if (!isBackpack && (p < 0 || p > 39)) return;
+    // Buton pini bu kartın pini; çıkış pini ise alıcının, o yüzden burada
+    // doğrulanmaz. Kontroller tek bir komut gönderilmeden önce yapılır ki
+    // reddedilen bir değer yarım kaydedilmiş bir yapılandırma bırakmasın.
+    const zp = parseInt(zeroPinInput.value, 10);
+    if (!isNaN(zp) && !gpioOk(zp)) {
+        alert(`Geçersiz buton pini. ${(BOARDS[boardId] || BOARDS.C3).help}`);
+        return;
+    }
     if (isBackpack) {
         const phrase = bindInput.value.trim();
         const uid    = uidInput.value.trim();
@@ -1312,7 +1417,6 @@ saveConfigBtn.addEventListener('click', () => {
     writeSerial(`SET_PROTOCOL:${protoSelect.value}\n`);
     if (!isBackpack) writeSerial(`SET_OUTPUT_PIN:${p}\n`);
     writeSerial(`SET_LPF:${parseFloat(lpfSlider.value).toFixed(2)}\n`);
-    const zp = parseInt(zeroPinInput.value);
     if (!isNaN(zp)) writeSerial(`SET_ZERO_PIN:${zp}\n`);
     const [yaw, pitch, roll] = drChannels;
     writeSerial(`SET_PWM_RANGE:YAW,${yaw.min.value},${yaw.max.value}\n`);
@@ -1324,6 +1428,30 @@ saveConfigBtn.addEventListener('click', () => {
     saveConfigBtn.textContent = isBackpack ? '✓ Kaydedildi — vericiyi yeniden başlatın' : '✓ Kaydedildi';
     if (isBackpack) bpPrev = null;
     setTimeout(() => { saveConfigBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Kaydet'; }, isBackpack ? 4000 : 1500);
+});
+
+// Sensör paneli: seçim + eksen + I2C pinleri.
+// Bu buton bugüne kadar hiçbir olaya bağlı değildi, yani SET_I2C_PINS
+// konfigüratörden hiç gönderilmiyordu.
+applyPinBtn.addEventListener('click', () => {
+    const sda = parseInt(sdaInput.value, 10);
+    const scl = parseInt(sclInput.value, 10);
+    const axes = axesInput.value.trim();
+    const b = BOARDS[boardId] || BOARDS.C3;
+
+    if (!gpioOk(sda) || !gpioOk(scl)) { alert(`Geçersiz I2C pini. ${b.help}`); return; }
+    if (sda === scl) { alert('SDA ve SCL aynı pin olamaz.'); return; }
+    if (!axesOk(axes)) {
+        alert('Eksen yönü +X+Y+Z biçiminde olmalı; her eksen (X, Y, Z) tam bir kez geçmeli.');
+        return;
+    }
+
+    writeSerial(`SET_IMU:${['AUTO','MPU6050','LSM6DSM'][imuSelect.value] || 'AUTO'}\n`);
+    writeSerial(`SET_AXES:${axes.toUpperCase()}\n`);
+    writeSerial(`SET_I2C_PINS:${sda},${scl}\n`);
+
+    applyPinBtn.textContent = '✓ Gönderildi — cihazı yeniden başlatın';
+    setTimeout(() => { applyPinBtn.textContent = 'Uygula (Yeniden Başlat)'; }, 4000);
 });
 
 calibrateBtn.addEventListener('click', () => { writeSerial('calibrate\n'); startCalVisuals(); });
@@ -1406,6 +1534,22 @@ async function readLoop() {
 }
 
 // ── Seri Veri İşleme ─────────────────────────────────────────────────────────
+// Bağlı sensörü ve seçimin onunla uyuşup uyuşmadığını gösterir.
+function renderImuBadge(detected) {
+    if (detected === null) return;
+    const board = (BOARDS[boardId] || BOARDS.C3).name;
+    if (!detected || detected === 'YOK') {
+        imuDetected.className = 'bp-pill bp-err';
+        imuDetected.innerHTML = `⛔ <b>${board}</b> — sensör bulunamadı. `
+            + 'SDA/SCL pinlerini ve kabloyu kontrol edin.';
+        return;
+    }
+    const forced = imuSelect.value !== '0';
+    imuDetected.className = 'bp-pill bp-ok';
+    imuDetected.innerHTML = `✅ <b>${board}</b> — <b>${detected}</b> bağlı`
+        + (forced ? ' (elle seçildi).' : ' (otomatik tanındı).');
+}
+
 function handleLine(line) {
     // Cihaz tanıma
     if (line.startsWith('ID:')) {
@@ -1477,8 +1621,19 @@ function handleLine(line) {
     // TX konfig: CONFIG:PROTO:0,PIN:7,SENS:5.50,YAW:1000-2000,PITCH:1000-2000,ROLL:1000-2000
     if (line.startsWith('CONFIG:')) {
         const chMap = { YAW: drChannels[0], PITCH: drChannels[1], ROLL: drChannels[2] };
+        let detectedImu = null;
         line.substring(7).split(',').forEach(part => {
-            if (part.startsWith('PROTO:'))     { protoSelect.value = part.substring(6); updateProtoVisibility(); }
+            // BOARD cihazın çıktısında ilk sırada gelir, böylece pin alanlarının
+            // sınırları SDA/SCL/ZPIN okunmadan önce karta göre ayarlanmış olur.
+            if (part.startsWith('BOARD:')) {
+                const id = part.substring(6);
+                boardId = BOARDS[id] ? id : 'C3';
+                applyBoardLimits();
+            }
+            else if (part.startsWith('IMUSEL:')) imuSelect.value = part.substring(7);
+            else if (part.startsWith('IMU:'))    detectedImu = part.substring(4);
+            else if (part.startsWith('AXES:'))   axesInput.value = part.substring(5);
+            else if (part.startsWith('PROTO:'))     { protoSelect.value = part.substring(6); updateProtoVisibility(); }
             else if (part.startsWith('PIN:'))  pinInput.value    = part.substring(4);
             else if (part.startsWith('BIND:')) bindInput.value   = part.substring(5);
             else if (part.startsWith('RCRST:')) { rcResetSelect.value = part.substring(6); updateRcResetHelp(); }
@@ -1510,6 +1665,7 @@ function handleLine(line) {
                 }
             }
         });
+        renderImuBadge(detectedImu);
         return;
     }
 
@@ -1661,6 +1817,7 @@ async function loadFirmwareInfo() {
         }
     }));
 }
+applyBoardLimits();   // cihaz bağlanana kadar varsayılan kart (C3) sınırları
 loadFirmwareInfo();
 
 </script>

@@ -1,13 +1,14 @@
 # FPV Head Tracker
 
-ESP32-C3 tabanlı, kafa hareketinizi FPV kameranızın gimbal'ine taşıyan açık kaynaklı
+ESP32 tabanlı, kafa hareketinizi FPV kameranızın gimbal'ine taşıyan açık kaynaklı
 bir head tracker sistemi. Başınızı çevirdiğinizde kamera da çevrilir.
+ESP32-C3 Mini ve Deneyap Kart ile, MPU6050 ve LSM6DSM sensörleriyle çalışır.
 
 ## Sistem neyden oluşuyor
 
 | Parça | Nerede durur | Ne yapar |
 |-------|--------------|----------|
-| **Verici** | Gözlüğün/kaskın üstünde | MPU6050 ile kafa açısını okur, kablosuz gönderir |
+| **Verici** | Gözlüğün/kaskın üstünde | IMU ile kafa açısını okur, kablosuz gönderir |
 | **Alıcı** | Kumandanın trainer portunda | Gelen açıyı PPM veya SBUS sinyaline çevirir |
 | **Konfigüratör** | Tarayıcıda | USB ile ayar yapar, kalibrasyon ve teşhis sunar |
 

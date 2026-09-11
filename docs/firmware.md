@@ -13,8 +13,10 @@ program yoktur; konfigüratör güncel sürümü kendisi bulur ve cihaza yazar.
    **[savas8008.github.io/headtracker-configurator](https://savas8008.github.io/headtracker-configurator/)**
 2. Cihazı henüz **bağlamayın** — açılış ekranındaki firmware kartlarını göreceksiniz:
    **Alıcı (RX)** ve **Verici (TX)**. Her kartta güncel sürüm otomatik kontrol edilir.
-3. Cihazı USB ile takın ve **indirme moduna** alın:
+3. Cihazı USB ile takın. **ESP32-C3 Mini**'de **indirme moduna** almanız gerekir:
    **BOOT** butonunu basılı tutarken **RESET**'e kısa basın, sonra BOOT'u bırakın.
+   **Deneyap Kart**'ta bu adım genelde gerekmez — USB-UART köprüsü bootloader'a
+   kendisi geçirir; olmazsa aynı sırayı izleyin.
 4. Yüklemek istediğiniz cihazın düğmesine basın — **⚡ Vericiyi Flaşla** veya
    **⚡ Alıcıyı Flaşla**.
 5. Açılan pencereden seri portu seçin ve yüklemenin bitmesini bekleyin.
@@ -43,5 +45,6 @@ genelde korur, yine de güncelleme sonrası bir kez gözden geçirin.
 | Düğme pasif, "Chrome/Edge gerekli" yazıyor | Desteklenmeyen tarayıcı — Chrome veya Edge kullanın |
 | Port listesi boş | Kablo veri taşımıyor olabilir; başka kablo deneyin |
 | Yükleme başlamıyor / hemen hata veriyor | Cihaz indirme modunda değil. BOOT basılıyken RESET'e basıp tekrar deneyin |
+| Hangi kartı yüklediğimi seçemiyorum | Seçmeniz gerekmez — bağlı çip otomatik tanınır, ESP32-C3 Mini ve Deneyap Kart aynı düğmeden yüklenir |
 | Yükleme yarıda kesiliyor | USB hub yerine doğrudan bilgisayara takın |
 | Sürüm "Kontrol ediliyor..." kalıyor | İnternet bağlantınızı kontrol edin; sürüm bilgisi çevrimiçi alınır |

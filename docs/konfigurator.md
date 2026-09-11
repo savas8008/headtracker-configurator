@@ -23,10 +23,36 @@ Tarayıcıdan çalışan ayar arayüzü. Kurulum gerekmez:
 | **Filtre (LPF)** | Titreşim yumuşatma. 0 = kapalı, 0.95 = çok yumuşak ama gecikmeli |
 | **PWM Çıkış Aralığı** | Her eksen için alt/üst sınır (500–2500 µs) |
 | **Reverse** | Ekseni ters çevirir |
-| **SDA / SCL Pini** | MPU6050 I2C pinleri (değiştirince yeniden başlatın) |
+| **Sensör** | Hangi IMU kullanılacak: Otomatik / MPU6050 / LSM6DSM |
+| **SDA / SCL Pini** | I2C pinleri (değiştirince yeniden başlatın) |
+| **Eksen Yönü** | Sensörün kutu içindeki yönü, örn. `+X+Y+Z` veya `-Y+X+Z` |
 
 Değişiklikler **Kaydet**'e basınca cihazın kalıcı belleğine (NVS) yazılır; güç
 kesilse de korunur.
+
+## Sensör bölümü
+
+Panelin üstündeki rozet hangi kartın bağlı olduğunu ve hangi sensörün tanındığını
+gösterir. Normal durumda yeşildir ve sensör adını yazar.
+
+**Sensör** seçimini genelde **Otomatik**'te bırakın: cihaz açılışta I2C hattını
+tarar, iki ailenin adresleri çakışmadığı için tanıma kesindir. Elle seçim,
+tanınmayan bir klon yongayla uğraşırken ya da hatta iki sensör birden varken
+işe yarar.
+
+**Eksen Yönü**, sensörün kutu içinde hangi yöne baktığını söyler. Belirtisi:
+kafanızı yukarı kaldırdığınızda küp sağa yatıyor ya da bir eksen ters hareket
+ediyor. Bunu kalibrasyon düzeltmez.
+
+- Bir eksen ters hareket ediyorsa o harfin başına `-` koyun → `+X-Y+Z`
+- İki eksen yer değiştirmişse harfleri takas edin → `+Y+X+Z`
+
+Her eksen (X, Y, Z) tam bir kez geçmelidir. Değiştirdikten sonra **kalibrasyonu
+tekrarlayın** — jiroskop sapması eski eksen haritasıyla ölçülmüştür.
+
+**Uygula** düğmesi sensör seçimini, eksen yönünü ve I2C pinlerini birlikte
+gönderir. I2C veri yolu açılışta kurulduğu için pin değişikliği yeniden başlatma
+ister.
 
 ## Kalibrasyon
 

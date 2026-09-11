@@ -27,9 +27,23 @@ extremes with the **PWM output range**.
 
 ## An axis moves the wrong way
 
-Tick **Reverse** for that axis. If channels are cross-coupled (turning your head
-sideways tilts the gimbal up), the sensor is mounted at an angle — fix the mechanical
-alignment, software can't correct it.
+If a single axis runs backwards, tick **Reverse** for that axis.
+
+If the channels are **cross-coupled** (turning your head sideways tilts the gimbal
+up), the sensor faces a different way than expected. You do not have to fix that
+mechanically — tell the device instead, under **Sensor → Axis orientation** in the
+configurator.
+
+- One axis moves backwards → put `-` in front of that letter: `+X-Y+Z`
+- Two axes are swapped → swap the letters: `+Y+X+Z`
+
+Work it out by watching the cube; each axis (X, Y, Z) must appear exactly once.
+After changing it, **recalibrate** — the stored gyro bias was measured under the old
+axis map.
+
+!!! note "Calibration does not fix this"
+    Calibration measures gyro bias, not which way the sensor faces. Cross-coupled
+    channels are only fixed by the axis orientation.
 
 ## The receiver won't connect
 
