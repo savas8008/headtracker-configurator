@@ -14,8 +14,10 @@ to the device.
    **[savas8008.github.io/headtracker-configurator](https://savas8008.github.io/headtracker-configurator/)**
 2. **Don't connect the device yet** — the start screen shows the firmware cards:
    **Receiver (RX)** and **Transmitter (TX)**. Each card checks the current version automatically.
-3. Plug the device into USB and put it into **download mode**:
-   hold **BOOT**, tap **RESET**, then release BOOT.
+3. Plug the device into USB. On the **ESP32-C3 Mini** you must put it into
+   **download mode**: hold **BOOT**, tap **RESET**, then release BOOT. On the
+   **Deneyap Kart** this step is usually unnecessary — its USB-UART bridge enters
+   the bootloader on its own; if it doesn't, follow the same sequence.
 4. Press the button for the device you want to flash — **⚡ Flash transmitter** or
    **⚡ Flash receiver**.
 5. Pick the serial port in the dialog and wait for the write to finish.
@@ -43,5 +45,6 @@ them, but review them once after updating.
 | Button disabled, says Chrome/Edge required | Unsupported browser — use Chrome or Edge |
 | Port list is empty | The cable may be power-only; try another one |
 | Flashing won't start or fails immediately | The device isn't in download mode. Hold BOOT, tap RESET, retry |
+| I can't pick which board I'm flashing | You don't have to — the connected chip is detected automatically; the ESP32-C3 Mini and the Deneyap Kart flash from the same button |
 | Flashing stops halfway | Plug directly into the computer instead of a USB hub |
 | Version stuck on "Checking..." | Check your internet connection; the version is fetched online |

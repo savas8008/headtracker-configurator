@@ -29,9 +29,22 @@ Aralığı** ile ayrıca sınırlayabilirsiniz.
 
 ## Eksen ters çalışıyor
 
-İlgili eksenin **Reverse** kutusunu işaretleyin. Kanal karışıyorsa (kafayı yana
-çevirince gimbal yukarı bakıyor gibi) sensörün montaj yönü hatalıdır — mekanik
-hizalamayı düzeltin, yazılımla çözülmez.
+Tek bir eksen ters çalışıyorsa ilgili eksenin **Reverse** kutusunu işaretleyin.
+
+Kanallar **karışıyorsa** (kafayı yana çevirince gimbal yukarı bakıyor gibi) sensör
+montaj yönü beklenenden farklıdır. Bunu mekanik olarak düzeltmek zorunda değilsiniz:
+konfigüratördeki **Sensör → Eksen Yönü** alanından söyleyin.
+
+- Bir eksen ters hareket ediyorsa o harfin başına `-` koyun → `+X-Y+Z`
+- İki eksen yer değiştirmişse harfleri takas edin → `+Y+X+Z`
+
+Küpe bakarak tek tek deneyin; her eksen (X, Y, Z) tam bir kez geçmelidir.
+Değiştirdikten sonra **kalibrasyonu tekrarlayın** — jiroskop sapması eski eksen
+haritasıyla ölçülmüştür.
+
+!!! note "Kalibrasyon bunu düzeltmez"
+    Kalibrasyon jiroskop sapmasını ölçer, sensörün hangi yöne baktığını değil.
+    Eksen karışması yalnızca Eksen Yönü ile çözülür.
 
 ## Alıcı bağlanmıyor
 
