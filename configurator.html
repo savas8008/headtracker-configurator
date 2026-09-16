@@ -14,36 +14,36 @@
     <script src="assets/js/i18n.js"></script>
     <style>
         :root {
-            --bg-body: #07131f;
-            --bg-card: rgba(10, 21, 34, 0.82);
-            --bg-card-strong: rgba(12, 27, 43, 0.92);
-            --bg-soft: rgba(255, 255, 255, 0.04);
-            --text-primary: #edf7ff;
-            --text-secondary: #98abc0;
-            --border-light: rgba(255, 255, 255, 0.08);
-            --primary-color: #ff7a18;
-            --primary-hover: #ff9340;
-            --accent-color: #56ccf2;
-            --success-color: #22c55e;
-            --danger-color: #ef4444;
-            --warning-color: #f7b500;
-            --warning-hover: #de9d00;
+            --bg-body: #f3f6fb;
+            --bg-card: rgba(255, 255, 255, 0.86);
+            --bg-card-strong: #ffffff;
+            --bg-soft: rgba(16, 27, 45, 0.035);
+            --text-primary: #0a1424;
+            --text-secondary: #46536a;
+            --border-light: rgba(16, 27, 45, 0.13);
+            --primary-color: #e2650f;
+            --primary-hover: #ff8a3d;
+            --accent-color: #1c7fb0;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+            --warning-color: #b45309;
+            --warning-hover: #92400e;
             --font-main: 'Barlow', sans-serif;
             --font-mono: 'Roboto Mono', monospace;
-            --shadow-light: 0 12px 28px rgba(0,0,0,0.2);
-            --shadow-medium: 0 24px 48px rgba(0,0,0,0.28);
+            --shadow-light: 0 8px 20px rgba(16, 27, 45, 0.07);
+            --shadow-medium: 0 20px 40px rgba(16, 27, 45, 0.12);
         }
         * { box-sizing: border-box; }
         body {
             font-family: var(--font-main);
             background:
-                radial-gradient(circle at top left, rgba(86, 204, 242, 0.16), transparent 24%),
-                radial-gradient(circle at top right, rgba(255, 122, 24, 0.18), transparent 26%),
-                linear-gradient(145deg, #07131f 0%, #091726 45%, #06101a 100%);
+                radial-gradient(circle at top left, rgba(28, 127, 176, 0.09), transparent 26%),
+                radial-gradient(circle at top right, rgba(226, 101, 15, 0.09), transparent 28%),
+                linear-gradient(160deg, #f8fafd 0%, #eef2f8 45%, #f3f6fb 100%);
             color: var(--text-primary);
-            margin: 0; padding: 28px 20px 44px;
+            margin: 0; padding: 16px 18px 24px;
             display: flex; flex-direction: column; align-items: center;
-            line-height: 1.6;
+            line-height: 1.5;
             min-height: 100vh;
             position: relative;
         }
@@ -53,14 +53,14 @@
             inset: 0;
             pointer-events: none;
             background:
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+                linear-gradient(rgba(16,27,45,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16,27,45,0.035) 1px, transparent 1px);
             background-size: 72px 72px;
             mask-image: radial-gradient(circle at center, black 38%, transparent 92%);
-            opacity: 0.35;
+            opacity: 0.5;
         }
         h1 {
-            color: #ffffff;
+            color: var(--text-primary);
             font-family: 'Orbitron', var(--font-main);
             font-size: clamp(2rem, 5vw, 3.6rem);
             font-weight: 700;
@@ -70,11 +70,11 @@
         }
         h2 {
             color: var(--text-primary);
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 10px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 8px;
             margin-top: 0;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             letter-spacing: 0.02em;
         }
         .page-shell {
@@ -87,19 +87,19 @@
             display: inline-flex; align-items: center; gap: 6px;
             padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 600;
             color: var(--primary-color); text-decoration: none;
-            border: 1px solid rgba(255, 122, 24, 0.45); background: rgba(255, 122, 24, 0.10);
+            border: 1px solid rgba(226, 101, 15, 0.35); background: rgba(226, 101, 15, 0.08);
             white-space: nowrap;
         }
-        .docs-btn:hover { background: rgba(255, 122, 24, 0.20); }
+        .docs-btn:hover { background: rgba(226, 101, 15, 0.16); }
         .app-header {
             width: 100%;
-            margin-bottom: 16px;
-            padding: 16px 22px;
-            border-radius: 24px;
+            margin-bottom: 10px;
+            padding: 10px 18px;
+            border-radius: 18px;
             background:
-                radial-gradient(circle at top right, rgba(255, 122, 24, 0.16), transparent 30%),
-                linear-gradient(135deg, rgba(86, 204, 242, 0.13), rgba(10, 21, 34, 0.88) 55%);
-            border: 1px solid rgba(255,255,255,0.08);
+                radial-gradient(circle at top right, rgba(226, 101, 15, 0.10), transparent 30%),
+                linear-gradient(135deg, rgba(28, 127, 176, 0.08), rgba(255, 255, 255, 0.92) 55%);
+            border: 1px solid var(--border-light);
             box-shadow: var(--shadow-medium);
             overflow: hidden;
             display: grid;
@@ -111,12 +111,12 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 12px;
+            padding: 4px 10px;
             border-radius: 999px;
-            margin-bottom: 14px;
-            background: rgba(86, 204, 242, 0.12);
-            border: 1px solid rgba(86, 204, 242, 0.24);
-            color: #98eeff;
+            margin-bottom: 6px;
+            background: rgba(28, 127, 176, 0.10);
+            border: 1px solid rgba(28, 127, 176, 0.28);
+            color: #0d5c80;
             font-size: 12px;
             font-weight: 700;
             letter-spacing: 0.16em;
@@ -140,21 +140,19 @@
             gap: 8px;
             padding: 10px 14px;
             border-radius: 999px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.07);
-            color: #d7e7f3;
+            background: rgba(16,27,45,0.04);
+            border: 1px solid rgba(16,27,45,0.08);
+            color: #33465c;
             font-size: 13px;
             font-weight: 600;
         }
         .container {
-            background:
-                linear-gradient(180deg, rgba(255,255,255,0.03), transparent 22%),
-                var(--bg-card);
+            background: var(--bg-card);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border-radius: 24px; padding: 20px;
+            border-radius: 18px; padding: 16px;
             width: 100%; max-width: 1180px;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
             box-shadow: var(--shadow-light);
             border: 1px solid var(--border-light);
             transition: box-shadow 0.25s, transform 0.25s;
@@ -162,21 +160,21 @@
         .container:hover { box-shadow: var(--shadow-medium); transform: translateY(-2px); }
         .device-panel { display: none; }
         button {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); color: #0b1320;
-            border: 1px solid rgba(255, 122, 24, 0.65); padding: 13px 22px; border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); color: #fff7ee;
+            border: 1px solid rgba(226, 101, 15, 0.55); padding: 13px 22px; border-radius: 14px;
             font-size: 15px; font-weight: 700; cursor: pointer;
             transition: transform 0.18s, box-shadow 0.2s, opacity 0.2s;
             display: inline-flex; align-items: center; gap: 8px;
-            box-shadow: 0 14px 26px rgba(255, 122, 24, 0.22);
+            box-shadow: 0 10px 22px rgba(226, 101, 15, 0.20);
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 18px 32px rgba(255, 122, 24, 0.28); }
-        button:disabled { background: #6b7280; color: white; cursor: not-allowed; box-shadow: none; transform: none; }
-        #connectButton.btn-disconnected { background: linear-gradient(135deg, #ef4444, #dc2626); border-color: rgba(239,68,68,0.6); color: #fff; box-shadow: 0 14px 26px rgba(239,68,68,0.22); }
-        #connectButton.btn-disconnected:hover { box-shadow: 0 18px 32px rgba(239,68,68,0.32); }
-        #connectButton.btn-connected { background: linear-gradient(135deg, #22c55e, #16a34a); border-color: rgba(34,197,94,0.6); color: #fff; box-shadow: 0 14px 26px rgba(34,197,94,0.22); }
-        #connectButton.btn-connected:hover { box-shadow: 0 18px 32px rgba(34,197,94,0.32); }
-        #calibrateButton { background: linear-gradient(135deg, var(--warning-color), var(--warning-hover)); border-color: rgba(247, 181, 0, 0.6); color: #231700; }
-        #applyPinButton { background: linear-gradient(135deg, #56ccf2, #2f80ed); font-size: 14px; padding: 10px 18px; border-color: rgba(86, 204, 242, 0.45); color: #051521; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(226, 101, 15, 0.26); }
+        button:disabled { background: #e1e6ec; color: #97a2b0; cursor: not-allowed; box-shadow: none; transform: none; }
+        #connectButton.btn-disconnected { background: linear-gradient(135deg, #ef4444, #dc2626); border-color: rgba(239,68,68,0.6); color: #fff; box-shadow: 0 10px 22px rgba(239,68,68,0.20); }
+        #connectButton.btn-disconnected:hover { box-shadow: 0 14px 28px rgba(239,68,68,0.28); }
+        #connectButton.btn-connected { background: linear-gradient(135deg, #22c55e, #16a34a); border-color: rgba(34,197,94,0.6); color: #fff; box-shadow: 0 10px 22px rgba(34,197,94,0.20); }
+        #connectButton.btn-connected:hover { box-shadow: 0 14px 28px rgba(34,197,94,0.28); }
+        #calibrateButton { background: linear-gradient(135deg, #f7b500, var(--warning-color)); border-color: rgba(180, 83, 9, 0.5); color: #2b1600; }
+        #applyPinButton { background: linear-gradient(135deg, var(--accent-color), #145e85); font-size: 14px; padding: 10px 18px; border-color: rgba(28, 127, 176, 0.45); color: #fff; }
         .header-actions {
             display: flex;
             flex-wrap: wrap;
@@ -193,8 +191,8 @@
             margin: 0;
             padding: 8px 14px;
             border-radius: 999px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(16,27,45,0.04);
+            border: 1px solid var(--border-light);
         }
         /* Aciklama baloncugu: metinler sayfada durmaz, soru isaretine tiklayinca acilir */
         .hint {
@@ -204,14 +202,14 @@
             border-radius: 50%; cursor: pointer; flex: none;
             font-size: 12px; font-weight: 700; line-height: 1;
             color: var(--accent-color);
-            background: rgba(86, 204, 242, 0.12);
-            border: 1px solid rgba(86, 204, 242, 0.4);
+            background: rgba(28, 127, 176, 0.10);
+            border: 1px solid rgba(28, 127, 176, 0.35);
             vertical-align: middle;
         }
-        .hint:hover  { background: rgba(86, 204, 242, 0.26); color: #d7f4ff; }
+        .hint:hover  { background: rgba(28, 127, 176, 0.20); color: #0d5c80; }
         .hint:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }
-        .hint.warn { color: var(--warning-color); background: rgba(247,181,0,0.12); border-color: rgba(247,181,0,0.42); }
-        .hint.warn:hover { background: rgba(247,181,0,0.26); }
+        .hint.warn { color: var(--warning-color); background: rgba(180,83,9,0.10); border-color: rgba(180,83,9,0.35); }
+        .hint.warn:hover { background: rgba(180,83,9,0.20); }
         .modal-content.info-modal { max-width: 640px; text-align: left; padding: 26px 28px; max-height: 82vh; overflow-y: auto; }
         .modal-content.info-modal h2 { color: var(--text-primary); font-size: 19px; margin: 0 34px 14px 0; padding-bottom: 10px;
                          border-bottom: 1px solid var(--border-light); }
@@ -221,8 +219,8 @@
         .info-modal-body li { margin-bottom: 6px; }
         .info-modal-body table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 4px 0 12px; }
         .info-modal-body th, .info-modal-body td { border: 1px solid var(--border-light); padding: 6px 8px; text-align: left; }
-        .info-modal-body th { color: var(--text-primary); background: rgba(255,255,255,0.04); }
-        .info-modal-body code { background: rgba(255,255,255,0.09); padding: 1px 5px; border-radius: 4px;
+        .info-modal-body th { color: var(--text-primary); background: rgba(16,27,45,0.035); }
+        .info-modal-body code { background: rgba(16,27,45,0.06); padding: 1px 5px; border-radius: 4px;
                                 font-family: var(--font-mono); font-size: 12px; color: var(--accent-color); }
         .info-modal-close {
             all: unset; position: absolute; top: 16px; right: 20px;
@@ -234,42 +232,42 @@
         #status.disconnected { color: var(--danger-color); }
         .loader { border: 4px solid var(--border-light); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .setting-group { margin-bottom: 14px; border: 1px solid var(--border-light); border-radius: 18px; padding: 18px; background: var(--bg-soft); }
-        .setting-group h3 { margin-top: 0; color: var(--text-primary); font-weight: 700; border-bottom: 1px solid var(--border-light); padding-bottom: 10px; margin-bottom: 14px; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; }
-        .row { margin-bottom: 12px; display: grid; grid-template-columns: 110px 1fr 78px; gap: 12px; align-items: center; }
-        .row.no-value { grid-template-columns: 148px 1fr; }
-        .row label { font-weight: 500; color: var(--text-secondary); font-size: 14px; }
-        input[type="range"] { width: 100%; -webkit-appearance: none; appearance: none; height: 8px; background: rgba(255,255,255,0.12); outline: none; border-radius: 999px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: grab; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .setting-group { margin-bottom: 10px; border: 1px solid var(--border-light); border-radius: 14px; padding: 13px 14px; background: var(--bg-soft); }
+        .setting-group h3 { margin-top: 0; color: var(--text-primary); font-weight: 700; border-bottom: 1px solid var(--border-light); padding-bottom: 7px; margin-bottom: 10px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
+        .row { margin-bottom: 8px; display: grid; grid-template-columns: 108px 1fr 74px; gap: 10px; align-items: center; }
+        .row.no-value { grid-template-columns: 136px 1fr; }
+        .row label { font-weight: 600; color: var(--text-primary); font-size: 14px; }
+        input[type="range"] { width: 100%; -webkit-appearance: none; appearance: none; height: 8px; background: rgba(16,27,45,0.10); outline: none; border-radius: 999px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: grab; box-shadow: 0 2px 5px rgba(16,27,45,0.25); }
         input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: grab; border: none; }
         input[type="range"][disabled] { opacity: 0.8; cursor: default; }
         input[type="range"][disabled]::-webkit-slider-thumb { cursor: default; background: var(--success-color); }
         input[type="range"][disabled]::-moz-range-thumb { background: var(--success-color); }
-        .val-badge { font-family: var(--font-mono); font-size: 14px; background: rgba(255,255,255,0.05); padding: 7px 10px; border-radius: 10px; text-align: center; border: 1px solid var(--border-light); color: var(--text-primary); }
+        .val-badge { font-family: var(--font-mono); font-weight: 700; font-size: 14px; background: rgba(16,27,45,0.045); padding: 6px 8px; border-radius: 10px; text-align: center; border: 1px solid var(--border-light); color: var(--text-primary); }
         .val-badge.unit::after { content: ' µs'; font-size: 11px; color: var(--text-secondary); }
         select, input[type="number"], input[type="text"] { width: 100%; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: 12px; font-family: var(--font-main); font-size: 14px; color: var(--text-primary); background: var(--bg-card-strong); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
-        select:focus, input[type="number"]:focus, input[type="text"]:focus { border-color: rgba(255, 122, 24, 0.65); box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.14); }
-        #visualizer { width: 100%; height: 260px; border: 1px solid var(--border-light); border-radius: 20px; margin-bottom: 12px; overflow: hidden; background: radial-gradient(circle at top, rgba(86, 204, 242, 0.18), transparent 34%), linear-gradient(180deg, #0f2236 0%, #09131f 100%); }
+        select:focus, input[type="number"]:focus, input[type="text"]:focus { border-color: rgba(226, 101, 15, 0.55); box-shadow: 0 0 0 3px rgba(226, 101, 15, 0.12); }
+        #visualizer { width: 100%; height: 190px; border: 1px solid var(--border-light); border-radius: 16px; margin-bottom: 8px; overflow: hidden; background: radial-gradient(circle at top, rgba(86, 204, 242, 0.18), transparent 34%), linear-gradient(180deg, #0f2236 0%, #09131f 100%); }
         #visualizer canvas { display: block; width: 100% !important; height: 100% !important; }
-        #live-data { font-family: var(--font-mono); font-size: 15px; background: rgba(255,255,255,0.04); padding: 14px 15px; border-radius: 14px; border: 1px solid var(--border-light); text-align: center; margin-bottom: 20px; color: #dbebf8; }
+        #live-data { font-family: var(--font-mono); font-weight: 700; font-size: 14px; background: rgba(16,27,45,0.045); padding: 9px 12px; border-radius: 12px; border: 1px solid var(--border-light); text-align: center; margin-bottom: 8px; color: var(--text-primary); }
         .info-bar { border-radius: 14px; padding: 12px 16px; margin-bottom: 18px; font-size: 13px; }
-        .info-bar.passive { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.35); color: #94f0b2; }
-        .info-bar.waiting { background: rgba(247, 181, 0, 0.1); border: 1px solid rgba(247, 181, 0, 0.35); color: #ffd970; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(6px); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .info-bar.passive { background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); color: #15803d; }
+        .info-bar.waiting { background: rgba(180, 83, 9, 0.10); border: 1px solid rgba(180, 83, 9, 0.32); color: #92400e; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(16,27,45,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(6px); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
         .modal-content { background: var(--bg-card-strong); padding: 35px 45px; border-radius: 24px; text-align: center; box-shadow: var(--shadow-medium); transform: scale(0.95); transition: transform 0.3s; max-width: 420px; width: 90%; border: 1px solid var(--border-light); }
         .modal-overlay.show .modal-content { transform: scale(1); }
         .modal-content h2 { border-bottom: none; margin-top: 0; font-size: 26px; font-weight: 600; color: var(--primary-color); }
         .modal-content p { color: var(--text-secondary); font-size: 15px; }
-        .progress-bar { width: 100%; height: 22px; background: rgba(255,255,255,0.08); border-radius: 11px; overflow: hidden; margin: 20px 0; }
+        .progress-bar { width: 100%; height: 22px; background: rgba(16,27,45,0.08); border-radius: 11px; overflow: hidden; margin: 20px 0; }
         .progress-bar-inner { width: 0%; height: 100%; background: var(--primary-color); transition: width 0.5s; border-radius: 11px; }
         #countdown-timer { font-size: 30px; font-weight: 600; color: var(--primary-color); margin: 10px 0 20px; }
         #calibration-complete-btn { background: linear-gradient(135deg, #22c55e, #16a34a); margin-top: 10px; color: white; border-color: rgba(34, 197, 94, 0.4); }
         .bp-pill { padding: 9px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; line-height: 1.5; border: 1px solid transparent; }
-        .bp-idle { background: rgba(148,163,184,0.12); border-color: rgba(148,163,184,0.35); color: var(--text-secondary); }
-        .bp-ok   { background: rgba(34,197,94,0.13);  border-color: rgba(34,197,94,0.45);  color: #4ade80; }
-        .bp-warn { background: rgba(234,179,8,0.13);  border-color: rgba(234,179,8,0.45);  color: #facc15; }
-        .bp-err  { background: rgba(239,68,68,0.13);  border-color: rgba(239,68,68,0.45);  color: #f87171; }
+        .bp-idle { background: rgba(100,116,139,0.10); border-color: rgba(100,116,139,0.30); color: var(--text-secondary); }
+        .bp-ok   { background: rgba(34,197,94,0.13);  border-color: rgba(34,197,94,0.40);  color: #15803d; }
+        .bp-warn { background: rgba(217,119,6,0.13);  border-color: rgba(217,119,6,0.40);  color: #92400e; }
+        .bp-err  { background: rgba(220,38,38,0.12);  border-color: rgba(220,38,38,0.38);  color: #b91c1c; }
         .bp-steps { margin-top: 10px; border: 1px solid var(--border-light); border-radius: 8px; padding: 8px 12px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
         .bp-steps summary { cursor: pointer; font-weight: 600; color: var(--text-primary); }
         .bp-steps ol { margin: 8px 0 0; padding-left: 20px; }
@@ -299,10 +297,10 @@
             margin: 0;
         }
         .dr-wrap { position: relative; height: 32px; display: flex; align-items: center; }
-        .dr-track { position: absolute; width: 100%; height: 8px; background: rgba(255,255,255,0.12); border-radius: 999px; }
+        .dr-track { position: absolute; width: 100%; height: 8px; background: rgba(16,27,45,0.10); border-radius: 999px; }
         .dr-fill    { position: absolute; height: 8px; background: linear-gradient(90deg, var(--accent-color), var(--primary-color)); border-radius: 999px; }
-        .dr-current { position: absolute; width: 4px; height: 20px; background: #22c55e;
-                      border-radius: 3px; transform: translateX(-50%); box-shadow: 0 0 6px #22c55e88;
+        .dr-current { position: absolute; width: 4px; height: 20px; background: #16a34a;
+                      border-radius: 3px; transform: translateX(-50%); box-shadow: 0 0 6px #16a34a66;
                       transition: left 0.05s linear; pointer-events: none; }
         .dr-wrap input[type="range"] {
             position: absolute; width: 100%; margin: 0;
@@ -312,14 +310,14 @@
         .dr-wrap input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none; width: 20px; height: 20px;
             border-radius: 50%; background: var(--primary-color);
-            cursor: grab; box-shadow: 0 2px 5px rgba(0,0,0,0.2); pointer-events: auto;
+            cursor: grab; box-shadow: 0 2px 5px rgba(16,27,45,0.25); pointer-events: auto;
         }
         .dr-wrap input[type="range"]::-moz-range-thumb {
             width: 20px; height: 20px; border-radius: 50%;
             background: var(--primary-color); cursor: grab; border: none; pointer-events: auto;
         }
-        .range-badge { font-family: var(--font-mono); font-size: 12px; background: rgba(255,255,255,0.05);
-            padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-light);
+        .range-badge { font-family: var(--font-mono); font-weight: 700; font-size: 12px; background: rgba(16,27,45,0.045);
+            padding: 5px 7px; border-radius: 6px; border: 1px solid var(--border-light);
             text-align: center; white-space: nowrap; line-height: 1.4; color: var(--text-primary); }
         .panel-grid {
             display: grid;
@@ -328,24 +326,29 @@
         }
         .tx-layout {
             display: grid;
-            grid-template-columns: minmax(0, 1.12fr) minmax(360px, 0.88fr);
-            gap: 16px;
+            grid-template-columns: minmax(280px, 0.9fr) minmax(280px, 1fr) minmax(300px, 1.05fr);
+            gap: 12px;
             align-items: start;
         }
         .tx-visual-column,
+        .tx-hardware-column,
         .tx-settings-column {
             min-width: 0;
         }
+        @media (max-width: 1080px) {
+            .tx-layout { grid-template-columns: 1fr 1fr; }
+        }
         .telemetry-card {
-            padding: 16px;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
+            padding: 12px;
+            border-radius: 16px;
+            background: rgba(16,27,45,0.03);
+            border: 1px solid var(--border-light);
+            margin-bottom: 10px;
         }
         .compact-note {
             font-size: 12px;
             color: var(--text-secondary);
-            margin: 0 0 12px;
+            margin: 0;
         }
         .mini-meta {
             display: grid;
@@ -356,8 +359,8 @@
         .mini-meta-card {
             padding: 14px 16px;
             border-radius: 16px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(16,27,45,0.03);
+            border: 1px solid var(--border-light);
             text-align: left;
         }
         .mini-meta-card span {
@@ -370,12 +373,14 @@
         .mini-meta-card strong {
             display: block;
             margin-top: 4px;
-            color: #ffffff;
+            color: var(--text-primary);
             font-size: 16px;
         }
         .page-title {
             text-align: left;
             margin: 0;
+            padding-bottom: 0;
+            border-bottom: none;
         }
         @media (max-width: 768px) {
             body { padding: 18px 14px 30px; }
@@ -394,14 +399,14 @@
         .dev-icon-emoji { height: 46px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; font-size: 38px; line-height: 1; }
 .dev-icon-wrap { height: 46px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; }
 .firmware-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
-.firmware-card { padding: 24px 20px; border-radius: 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; align-items: center; text-align: center; }
+.firmware-card { padding: 24px 20px; border-radius: 20px; background: rgba(16,27,45,0.03); border: 1px solid var(--border-light); display: flex; flex-direction: column; align-items: center; text-align: center; }
 .firmware-card h3 { margin: 4px 0 8px; font-size: 16px; border: none; padding: 0; text-transform: none; letter-spacing: 0; }
 .firmware-version { font-size: 13px; color: var(--text-secondary); min-height: 22px; display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 14px; }
 .ver-tag { color: var(--accent-color); font-family: var(--font-mono); font-weight: 600; }
-.flash-btn { background: linear-gradient(135deg,var(--accent-color),#2f80ed)!important; border-color: rgba(86,204,242,0.45)!important; color:#051521!important; width:100%; justify-content:center; }
-.flash-btn:disabled { background: rgba(255,255,255,0.07)!important; color:var(--text-secondary)!important; box-shadow:none!important; transform:none!important; cursor:not-allowed!important; }
-.flash-note { font-size:13px; color:var(--text-secondary); background:rgba(247,181,0,0.07); border:1px solid rgba(247,181,0,0.22); border-radius:12px; padding:12px 16px; line-height:1.5; margin-top:4px; }
-.flash-note code { background:rgba(255,255,255,0.1); padding:1px 5px; border-radius:4px; font-family:var(--font-mono); font-size:12px; color:var(--warning-color); }
+.flash-btn { background: linear-gradient(135deg,var(--accent-color),#145e85)!important; border-color: rgba(28,127,176,0.45)!important; color:#fff!important; width:100%; justify-content:center; }
+.flash-btn:disabled { background: rgba(16,27,45,0.06)!important; color:var(--text-secondary)!important; box-shadow:none!important; transform:none!important; cursor:not-allowed!important; }
+.flash-note { font-size:13px; color:var(--text-secondary); background:rgba(180,83,9,0.06); border:1px solid rgba(180,83,9,0.20); border-radius:12px; padding:12px 16px; line-height:1.5; margin-top:4px; }
+.flash-note code { background:rgba(16,27,45,0.07); padding:1px 5px; border-radius:4px; font-family:var(--font-mono); font-size:12px; color:var(--warning-color); }
 esp-web-install-button { display:block; width:100%; }
 @media (max-width:580px) { .firmware-grid { grid-template-columns:1fr; } }
 
@@ -489,9 +494,17 @@ esp-web-install-button { display:block; width:100%; }
                 <p class="compact-note"><span data-i18n="tx_panel.compact_note">Watch the cube to check head movement in real time.</span>
                    <button class="hint" data-info="visual" data-i18n-aria="tx_panel.compact_note_aria" aria-label="About the cube visualization">?</button></p>
             </div>
-            <div class="setting-group" style="margin-top:16px">
+            <div class="setting-group">
+                <h3><span data-i18n="tx_panel.cal.title">🎯 Calibration</span><button class="hint" data-info="cal" data-i18n-aria="tx_panel.cal.title_aria" aria-label="About calibration">?</button></h3>
+                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 10px" data-i18n="tx_panel.cal.desc">Place the device on a flat surface.</p>
+                <button id="calibrateButton" data-i18n="tx_panel.cal.btn">Calibrate IMU</button>
+            </div>
+        </div>
+
+        <div class="tx-hardware-column">
+            <div class="setting-group">
                 <h3><span data-i18n="tx_panel.sensor.title">🧭 Sensor</span><button class="hint" data-info="i2c" data-i18n-aria="tx_panel.sensor.title_aria" aria-label="About sensor and I2C pins">?</button></h3>
-                <div id="imuDetected" class="bp-pill bp-idle" style="margin-bottom:12px" data-i18n="tx_panel.sensor.detected_waiting">Waiting for sensor info…</div>
+                <div id="imuDetected" class="bp-pill bp-idle" style="margin-bottom:9px" data-i18n="tx_panel.sensor.detected_waiting">Waiting for sensor info…</div>
                 <div class="row no-value">
                     <label for="imuSelect"><span data-i18n="tx_panel.sensor.sensor_label">Sensor</span><button class="hint" data-info="imu-select" data-i18n-aria="tx_panel.sensor.sensor_aria" aria-label="About sensor selection">?</button></label>
                     <select id="imuSelect">
@@ -512,12 +525,12 @@ esp-web-install-button { display:block; width:100%; }
                     <label for="axesInput"><span data-i18n="tx_panel.sensor.axes_label">Axis Orientation</span><button class="hint" data-info="axes" data-i18n-aria="tx_panel.sensor.axes_aria" aria-label="What is axis orientation?">?</button></label>
                     <input type="text" id="axesInput" maxlength="6" value="+X+Y+Z" placeholder="+X+Y+Z">
                 </div>
-                <div id="pinHelpNote" class="bp-state" style="margin-bottom:12px"></div>
+                <div id="pinHelpNote" class="bp-state" style="margin-bottom:9px"></div>
                 <button id="applyPinButton" data-i18n="tx_panel.i2c.apply_btn">Apply (Restart)</button>
             </div>
-            <div class="setting-group" style="margin-top:16px">
+            <div class="setting-group">
                 <h3 data-i18n="tx_panel.reset.title">🔄 Reset</h3>
-                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px" data-i18n="tx_panel.reset.desc">
+                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 10px" data-i18n="tx_panel.reset.desc">
                     The ways you can reset the center — i.e. the direction treated as "forward".</p>
                 <div class="row no-value" style="margin-bottom:4px">
                     <label for="zeroPinInput"><span data-i18n="tx_panel.reset.pin_label">Button Pin</span><button class="hint" data-info="zero-pin" data-i18n-aria="tx_panel.reset.pin_aria" aria-label="About the reset button pin">?</button></label>
@@ -525,7 +538,7 @@ esp-web-install-button { display:block; width:100%; }
                 </div>
                 <div id="zeroPinNote" class="bp-state"></div>
 
-                <div id="rcResetBlock" style="display:none; margin-top:14px; padding-top:14px; border-top:1px solid var(--border-light)">
+                <div id="rcResetBlock" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid var(--border-light)">
                     <div class="row no-value" style="margin-bottom:4px">
                         <label for="rcResetSelect"><span data-i18n="tx_panel.reset.from_remote_label">From Remote</span><button class="hint" data-info="rc-reset" data-i18n-aria="tx_panel.reset.from_remote_aria" aria-label="How does remote reset work?">?</button></label>
                         <select id="rcResetSelect">
@@ -536,19 +549,13 @@ esp-web-install-button { display:block; width:100%; }
                         </select>
                     </div>
                     <div id="rcResetHelp" class="bp-state"></div>
-                    <p style="margin:10px 0 0; font-size:13px; display:flex; align-items:center; gap:2px">
+                    <p style="margin:8px 0 0; font-size:13px; display:flex; align-items:center; gap:2px">
                         <button class="hint" data-modal="aux-modal" data-i18n-aria="tx_panel.reset.aux_link_aria" aria-label="How do I find my reset AUX channel?">?</button>
                         <a href="#" data-modal="aux-modal" style="color:var(--primary-color); margin-left:6px" data-i18n="tx_panel.reset.aux_link_text">
                             How do I find my reset AUX channel?</a>
                     </p>
                     <div id="rcResetFlash" class="bp-state" style="display:none"></div>
                 </div>
-            </div>
-
-            <div class="setting-group" style="margin-top:16px">
-                <h3><span data-i18n="tx_panel.cal.title">🎯 Calibration</span><button class="hint" data-info="cal" data-i18n-aria="tx_panel.cal.title_aria" aria-label="About calibration">?</button></h3>
-                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px" data-i18n="tx_panel.cal.desc">Place the device on a flat surface.</p>
-                <button id="calibrateButton" data-i18n="tx_panel.cal.btn">Calibrate IMU</button>
             </div>
         </div>
 
