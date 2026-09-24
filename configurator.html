@@ -637,6 +637,20 @@ esp-web-install-button { display:block; width:100%; }
                     <input type="range" id="kpSlider" min="0.5" max="10" step="0.5" value="2">
                     <span class="val-badge" id="kpVal">2.0</span>
                 </div>
+                <div class="row no-value">
+                    <label for="txPowerSelect"><span data-i18n="tx_panel.config.txp_label">Radio Power</span><button class="hint" data-info="tx-power" data-i18n-aria="tx_panel.config.txp_aria" aria-label="Which power should I choose?">?</button></label>
+                    <select id="txPowerSelect">
+                        <option value="MAX" data-i18n="tx_panel.config.txp_max">Maximum (~20 dBm, ~100 mW) — default</option>
+                        <option value="17">17 dBm (~50 mW)</option>
+                        <option value="15">15 dBm (~32 mW)</option>
+                        <option value="13">13 dBm (~20 mW)</option>
+                        <option value="11">11 dBm (~13 mW)</option>
+                        <option value="8.5" data-i18n="tx_panel.config.txp_85">8.5 dBm (~7 mW) — for ESP32-C3 Super Mini</option>
+                        <option value="7">7 dBm (~5 mW)</option>
+                        <option value="5">5 dBm (~3 mW)</option>
+                        <option value="2">2 dBm (~1.6 mW)</option>
+                    </select>
+                </div>
             </div>
 
             <div class="setting-group">
@@ -919,6 +933,7 @@ const bpPill        = document.getElementById('bpStatusPill');
 const saveConfigBtn = document.getElementById('saveConfigBtn');
 const lpfSlider     = document.getElementById('lpfSlider');
 const kpSlider      = document.getElementById('kpSlider');
+const txPowerSelect = document.getElementById('txPowerSelect');
 const kpValSpan     = document.getElementById('kpVal');
 const lpfValSpan    = document.getElementById('lpfVal');
 const sdaInput      = document.getElementById('sdaInput');
@@ -1272,6 +1287,7 @@ saveConfigBtn.addEventListener('click', () => {
     if (!isBackpack) writeSerial(`SET_OUTPUT_PIN:${p}\n`);
     writeSerial(`SET_LPF:${parseFloat(lpfSlider.value).toFixed(2)}\n`);
     writeSerial(`SET_KP:${parseFloat(kpSlider.value).toFixed(1)}\n`);
+    writeSerial(`SET_TX_POWER:${txPowerSelect.value}\n`);
     if (!isNaN(zp)) writeSerial(`SET_ZERO_PIN:${zp}\n`);
     const [yaw, pitch, roll] = drChannels;
     writeSerial(`SET_PWM_RANGE:YAW,${yaw.min.value},${yaw.max.value}\n`);
@@ -1496,6 +1512,21 @@ function handleLine(line) {
             else if (part.startsWith('BIND:')) bindInput.value   = part.substring(5);
             else if (part.startsWith('RCRST:')) { rcResetSelect.value = part.substring(6); updateRcResetHelp(); }
             else if (part.startsWith('ZPIN:')) zeroPinInput.value = part.substring(5);
+            else if (part.startsWith('TXP:')) {
+                // MAX ya da kayitli dBm (ör. 8.50). Listede olmayan bir deger
+                // elle girilmisse kaybolmasin diye secenek olarak eklenir.
+                const raw = part.substring(4).trim();
+                if (raw === 'MAX') txPowerSelect.value = 'MAX';
+                else {
+                    const dbm = parseFloat(raw);
+                    let opt = [...txPowerSelect.options].find(o => o.value !== 'MAX' && parseFloat(o.value) === dbm);
+                    if (!opt && !isNaN(dbm)) {
+                        opt = new Option(`${dbm} dBm (~${Math.pow(10, dbm / 10).toFixed(1)} mW)`, String(dbm));
+                        txPowerSelect.add(opt);
+                    }
+                    if (opt) txPowerSelect.value = opt.value;
+                }
+            }
             else if (part.startsWith('UID:')) {
                 const u = part.substring(4).split('-').map(h => parseInt(h, 16));
                 uidInput.value = u.every(b => b === 0) ? '' : u.join(',');

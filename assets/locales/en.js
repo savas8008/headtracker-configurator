@@ -102,6 +102,10 @@ window.HT_LOCALE_EN = {
             lpf_label: 'Filter (LPF)',
             kp_label: 'Shake Immunity',
             kp_aria: 'What is shake immunity?',
+            txp_label: 'Radio Power',
+            txp_aria: 'Which power should I choose?',
+            txp_max: 'Maximum (~20 dBm, ~100 mW) — default',
+            txp_85: '8.5 dBm (~7 mW) — for ESP32-C3 Super Mini',
         },
         bp: {
             title_aria: 'About PWM range',
@@ -208,6 +212,20 @@ window.HT_LOCALE_EN = {
            Power-cycle the device after applying.</p>
         <p>If the sensor isn't found at boot, the badge above turns red, the cube
            stays frozen, and <code>BP_STATUS</code> output shows <code>imu_hata=1</code>.</p>` },
+
+        'tx-power': { title: 'Radio (WiFi) transmit power', body: `
+        <p>How strongly the head tracker transmits its ESP-NOW packets. The
+           default is the chip's maximum (~20 dBm ≈ 100 mW). Software <b>cannot
+           go above it</b>; this setting only lowers the power.</p>
+        <p><b>Why lower it?</b> ESP32-C3 <b>Super Mini</b> boards have a poorly
+           matched antenna: at full power the signal distorts and packets are
+           lost even at 1-2 m. If your radio shows <i>"trainer signal lost /
+           recovered"</i> or channels freeze, try <b>8.5 dBm</b>.</p>
+        <p>The radio is only a few metres away, so even low power has enough
+           range. On other boards (Deneyap, ESP32-C3 DevKit) keep the default.</p>
+        <p>The change applies <b>immediately on save</b>, no restart needed.
+           Watch the <code>kesinti_ack</code> counter in <code>BP_STATUS</code>
+           to see the effect.</p>` },
 
         kp: { title: 'Shake immunity (Mahony Kp)', body: `
         <p>Controls <b>how much the filter trusts the accelerometer</b>. The

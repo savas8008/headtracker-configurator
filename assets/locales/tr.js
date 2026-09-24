@@ -102,6 +102,10 @@ window.HT_LOCALE_TR = {
             lpf_label: 'Filtre (LPF)',
             kp_label: 'Sarsıntı Bağışıklığı',
             kp_aria: 'Sarsıntı bağışıklığı nedir?',
+            txp_label: 'Radyo Gücü',
+            txp_aria: 'Hangi gücü seçmeliyim?',
+            txp_max: 'En yüksek (~20 dBm, ~100 mW) — varsayılan',
+            txp_85: '8.5 dBm (~7 mW) — ESP32-C3 Super Mini için',
         },
         bp: {
             title_aria: 'PWM aralığı hakkında',
@@ -207,6 +211,20 @@ window.HT_LOCALE_TR = {
            Uyguladıktan sonra cihazın gücünü kesip verin.</p>
         <p>Açılışta sensör bulunamazsa yukarıdaki rozet kırmızı olur, küp donuk
            kalır ve <code>BP_STATUS</code> çıktısında <code>imu_hata=1</code> görünür.</p>` },
+
+        'tx-power': { title: 'Radyo (WiFi) verici gücü', body: `
+        <p>Head tracker'ın ESP-NOW paketlerini ne kadar güçlü yayınladığı.
+           Varsayılan, çipin en yüksek gücüdür (~20 dBm ≈ 100 mW). Yazılımla bunun
+           <b>üstüne çıkılamaz</b>; bu ayar yalnızca gücü düşürür.</p>
+        <p><b>Neden düşürülür?</b> ESP32-C3 <b>Super Mini</b> kartlarının anten
+           eşlemesi kötüdür: tam güçte sinyal bozulur ve paketler 1-2 m'de bile
+           kaybolur. Kumandada <i>"trainer sinyali kayıp / geri geldi"</i> uyarısı
+           ya da takılan kanallar görüyorsanız <b>8.5 dBm</b> deneyin.</p>
+        <p>Kumanda birkaç metre içinde olduğu için düşük güçte bile menzil yeter.
+           Diğer kartlarda (Deneyap, ESP32-C3 DevKit) varsayılanı bırakın.</p>
+        <p>Değişiklik <b>kaydedince anında</b> uygulanır, yeniden başlatma
+           gerekmez. Etkisini <code>BP_STATUS</code> çıktısındaki
+           <code>kesinti_ack</code> sayacından izleyebilirsiniz.</p>` },
 
         kp: { title: 'Sarsıntı bağışıklığı (Mahony Kp)', body: `
         <p>Filtrenin <b>ivmeölçere ne kadar güvendiğini</b> belirler. İvmeölçer
