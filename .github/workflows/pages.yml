@@ -41,6 +41,11 @@ jobs:
         run: |
           cp index.html configurator.html _site/
           cp -r assets _site/
+          # Onbellek kirici: Pages dosyalari ~10 dk onbellekte tutar. Yeni HTML
+          # eski locale/JS ile gelirse eksik anahtarlar gorunurdu. Her dagitimda
+          # script adreslerine commit kisaltmasini ekle.
+          sed -i -E "s#(src=\"assets/[^\"?]+\.js)\"#\1?v=${GITHUB_SHA::7}\"#g" _site/configurator.html
+          grep -n 'src="assets/.*\.js?v=' _site/configurator.html
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
