@@ -400,6 +400,13 @@
 .dev-icon-wrap { height: 46px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; }
 .firmware-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
 .firmware-card { padding: 24px 20px; border-radius: 20px; background: rgba(16,27,45,0.03); border: 1px solid var(--border-light); display: flex; flex-direction: column; align-items: center; text-align: center; }
+.hw-support { margin-top: 16px; padding: 16px 20px; border-radius: 16px; background: rgba(16,27,45,0.03); border: 1px solid var(--border-light); }
+.hw-support h3 { margin: 0 0 10px; font-size: 15px; border: none; padding: 0; text-transform: none; letter-spacing: 0; }
+.hw-support-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.hw-support h4 { margin: 0 0 6px; font-size: 13px; color: var(--text-secondary); }
+.hw-support ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.7; }
+.hw-support p { margin: 10px 0 0; font-size: 12px; color: var(--text-secondary); }
+@media (max-width:580px) { .hw-support-grid { grid-template-columns:1fr; } }
 .firmware-card h3 { margin: 4px 0 8px; font-size: 16px; border: none; padding: 0; text-transform: none; letter-spacing: 0; }
 .firmware-version { font-size: 13px; color: var(--text-secondary); min-height: 22px; display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 14px; }
 .ver-tag { color: var(--accent-color); font-family: var(--font-mono); font-weight: 600; }
@@ -477,6 +484,20 @@ esp-web-install-button { display:block; width:100%; }
             </esp-web-install-button>
         </div>
     </div>
+    <div class="hw-support">
+        <h3 data-i18n="firmware.hw_title">🧩 Supported Boards and Sensors</h3>
+        <div class="hw-support-grid">
+            <div>
+                <h4 data-i18n="firmware.hw_boards_title">Boards</h4>
+                <ul data-i18n-html="firmware.hw_boards_list"></ul>
+            </div>
+            <div>
+                <h4 data-i18n="firmware.hw_sensors_title">Sensors (auto-detected)</h4>
+                <ul data-i18n-html="firmware.hw_sensors_list"></ul>
+            </div>
+        </div>
+        <p data-i18n="firmware.hw_note"></p>
+    </div>
 </div>
 
 <!-- VERİCİ PANELİ -->
@@ -511,6 +532,7 @@ esp-web-install-button { display:block; width:100%; }
                         <option value="0" data-i18n="tx_panel.sensor.opt_auto">Auto-detect (recommended)</option>
                         <option value="1">MPU6050</option>
                         <option value="2">LSM6DSM</option>
+                        <option value="3">BNO085</option>
                     </select>
                 </div>
                 <div class="row no-value">
@@ -1304,7 +1326,7 @@ saveConfigBtn.addEventListener('click', () => {
 // Sensör paneli: seçim + eksen + I2C pinleri.
 // Bu buton bugüne kadar hiçbir olaya bağlı değildi, yani SET_I2C_PINS
 // konfigüratörden hiç gönderilmiyordu.
-applyPinBtn.addEventListener('click', () => {
+applyPinBtn.addEventListener('click', async () => {
     const sda = parseInt(sdaInput.value, 10);
     const scl = parseInt(sclInput.value, 10);
     const axes = axesInput.value.trim();
@@ -1316,12 +1338,14 @@ applyPinBtn.addEventListener('click', () => {
         return;
     }
 
-    writeSerial(`SET_IMU:${['AUTO','MPU6050','LSM6DSM'][imuSelect.value] || 'AUTO'}\n`);
-    writeSerial(`SET_AXES:${axes.toUpperCase()}\n`);
-    writeSerial(`SET_I2C_PINS:${sda},${scl}\n`);
+    // SET_I2C_PINS en sonda: cihaz onu kaydedip kendini yeniden baslatir.
+    await writeSerial(`SET_IMU:${['AUTO','MPU6050','LSM6DSM','BNO085'][imuSelect.value] || 'AUTO'}\n`);
+    await writeSerial(`SET_AXES:${axes.toUpperCase()}\n`);
+    await writeSerial(`SET_I2C_PINS:${sda},${scl}\n`);
 
     applyPinBtn.textContent = I18N.t('tx_panel.sensor.apply_sent');
     setTimeout(() => { applyPinBtn.textContent = I18N.t('tx_panel.i2c.apply_btn'); }, 4000);
+    reconnectAfterRestart();
 });
 
 calibrateBtn.addEventListener('click', () => { writeSerial('calibrate\n'); startCalVisuals(); });
@@ -1333,27 +1357,10 @@ async function connectSerial() {
     statusDiv.textContent = I18N.t('header.status_selecting_port');
     statusDiv.className = '';
     try {
-        port = await navigator.serial.requestPort({ filters: [
+        const p = await navigator.serial.requestPort({ filters: [
             { usbVendorId: 0x10C4 }, { usbVendorId: 0x1A86 }, { usbVendorId: 0x303A }
         ]});
-        await port.open({ baudRate: 115200 });
-        connectBtn.disabled = false;
-        connectBtn.className = 'btn-connected';
-        connectBtn.innerHTML = ICON_UNPLUG + '&nbsp;' + I18N.t('header.disconnect_btn');
-        statusDiv.textContent = I18N.t('header.status_identifying');
-        statusDiv.className = 'connected';
-        const enc = new TextEncoderStream();
-        enc.readable.pipeTo(port.writable);
-        writer = enc.writable.getWriter();
-        const dec = new TextDecoderStream();
-        port.readable.pipeTo(dec.writable);
-        reader = dec.readable.getReader();
-        readLoop();
-        writeSerial('GET_ID\n');
-        identifyInterval = setInterval(() => {
-            if (!deviceType) writeSerial('GET_ID\n');
-            else { clearInterval(identifyInterval); identifyInterval = null; }
-        }, 2000);
+        await openPort(p);
     } catch (err) {
         connectBtn.disabled = false;
         connectBtn.className = 'btn-disconnected';
@@ -1361,6 +1368,66 @@ async function connectSerial() {
         statusDiv.textContent = err.message.includes('No port selected') ? I18N.t('header.status_disconnected') : I18N.t('header.status_error');
         statusDiv.className = 'disconnected';
     }
+}
+
+// Seçilmiş (izni verilmiş) bir portu açıp okuma döngüsünü ve tanımlamayı başlatır.
+async function openPort(p) {
+    await p.open({ baudRate: 115200 });
+    port = p;
+    connectBtn.disabled = false;
+    connectBtn.className = 'btn-connected';
+    connectBtn.innerHTML = ICON_UNPLUG + '&nbsp;' + I18N.t('header.disconnect_btn');
+    statusDiv.textContent = I18N.t('header.status_identifying');
+    statusDiv.className = 'connected';
+    const enc = new TextEncoderStream();
+    enc.readable.pipeTo(port.writable);
+    writer = enc.writable.getWriter();
+    const dec = new TextDecoderStream();
+    port.readable.pipeTo(dec.writable);
+    reader = dec.readable.getReader();
+    readLoop();
+    writeSerial('GET_ID\n');
+    identifyInterval = setInterval(() => {
+        if (!deviceType) writeSerial('GET_ID\n');
+        else { clearInterval(identifyInterval); identifyInterval = null; }
+    }, 2000);
+}
+
+// Cihaz kendini yeniden başlattığında (ör. I2C pinleri kaydedilince) portu
+// bırakır ve aynı cihaz geri gelince kullanıcıya port seçtirmeden yeniden
+// bağlanır. ESP32-C3'ün yerleşik USB'si yeniden başlatmada kaybolup geri
+// geldiği için port nesnesi değişebilir; USB kimliğiyle eşleştiririz.
+let reconnecting = false;
+async function reconnectAfterRestart() {
+    if (reconnecting || !port) return;
+    reconnecting = true;
+    const info = port.getInfo ? port.getInfo() : {};
+    await disconnectSerial();
+    connectBtn.disabled = true;
+    statusDiv.textContent = I18N.t('header.status_restarting');
+    statusDiv.className = '';
+    const deadline = Date.now() + 15000;
+    await new Promise(r => setTimeout(r, 1500));   // cihaz resetlensin
+    while (Date.now() < deadline) {
+        try {
+            const ports = await navigator.serial.getPorts();
+            const same = ports.filter(p => {
+                const i = p.getInfo();
+                return i.usbVendorId === info.usbVendorId && i.usbProductId === info.usbProductId;
+            });
+            for (const p of same) {
+                // USB-UART köprülü kartlarda (Deneyap) port nesnesi aynı kalır;
+                // önceki kapatma tamamlanmadıysa önce kapat.
+                if (p.readable || p.writable) { try { await p.close(); } catch (_) {} }
+                try { await openPort(p); reconnecting = false; return; } catch (_) {}
+            }
+        } catch (_) {}
+        await new Promise(r => setTimeout(r, 1000));
+    }
+    reconnecting = false;
+    connectBtn.disabled = false;
+    statusDiv.textContent = I18N.t('header.status_reconnect_manual');
+    statusDiv.className = 'disconnected';
 }
 
 async function disconnectSerial() {

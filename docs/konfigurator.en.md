@@ -24,8 +24,8 @@ A browser-based settings tool. Nothing to install:
 | **Shake immunity** | How much the filter trusts the accelerometer (Mahony Kp). Lower = more disturbance-resistant |
 | **PWM output range** | Lower/upper limit per axis (500–2500 µs) |
 | **Reverse** | Inverts an axis |
-| **Sensor** | Which IMU to use: Automatic / MPU6050 / LSM6DSM |
-| **SDA / SCL pin** | I2C pins (restart after changing) |
+| **Sensor** | Which IMU to use: Automatic / MPU6050 / LSM6DSM / BNO085 |
+| **SDA / SCL pin** | I2C pins (the device restarts itself on Apply) |
 | **Axis orientation** | How the sensor sits in the enclosure, e.g. `+X+Y+Z` or `-Y+X+Z` |
 
 **Save** writes the settings to the device's non-volatile memory (NVS); they survive
@@ -52,7 +52,8 @@ Each axis (X, Y, Z) must appear exactly once. After changing it, **recalibrate**
 the stored gyro bias was measured under the old axis map.
 
 **Apply** sends the sensor selection, the axis orientation and the I2C pins together.
-The I2C bus is set up at boot, so a pin change needs a restart.
+The I2C bus is set up at boot, so the device saves and restarts itself; the
+configurator reconnects automatically.
 
 ## If it twitches while sitting still
 

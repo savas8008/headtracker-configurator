@@ -5,7 +5,7 @@
 | Bileşen | Değer |
 |---------|-------|
 | Kart | ESP32-C3 Mini **veya** Deneyap Kart |
-| Sensör | MPU6050 veya LSM6DSM (I2C) |
+| Sensör | MPU6050, LSM6DSM veya BNO085 (I2C) |
 | Besleme | 3.3 V |
 | Seri hız | 115200 baud |
 
@@ -28,7 +28,7 @@ Cihaz açılışta I2C hattını tarar ve sensörü kendisi tanır; adres aralı
 | SCL | Yukarıdaki tabloya göre |
 
 I2C pinleri sabit değil — kartınızın yerleşimi farklıysa konfigüratördeki
-**Sensör** bölümünden değiştirip cihazı yeniden başlatın. Aynı bölümden
+**Sensör** bölümünden değiştirip **Uygula**'ya basın; cihaz kendini yeniden başlatır. Aynı bölümden
 sensörü elle de seçebilirsiniz, ama normalde **Otomatik**'te bırakın.
 
 !!! tip "Deneyap Kart neden pratik?"

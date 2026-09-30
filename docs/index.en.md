@@ -1,8 +1,8 @@
 # FPV Head Tracker
 
 An open-source, ESP32-based head tracker that maps your head movement onto your
-FPV camera gimbal. Turn your head, the camera follows. It runs on both the
-ESP32-C3 Mini and the Deneyap Kart, with either an MPU6050 or an LSM6DSM.
+FPV camera gimbal. Turn your head, the camera follows. It runs on the
+ESP32-C3 Mini, the Deneyap Kart and the CodeCell C3, with an MPU6050, LSM6DSM or BNO085.
 
 ## What the system is made of
 

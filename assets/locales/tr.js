@@ -9,6 +9,8 @@ window.HT_LOCALE_TR = {
         status_disconnected: 'Bağlı değil',
         status_selecting_port: 'Port seçiliyor...',
         status_identifying: 'Cihaz tanımlanıyor...',
+        status_restarting: 'Cihaz yeniden başlatılıyor…',
+        status_reconnect_manual: 'Yeniden bağlanılamadı — USB ile tekrar bağlanın',
         status_error: 'Bağlantı Hatası!',
         status_connected_tx: 'Bağlı: Kafa Takip Cihazı',
         status_connected_rx: 'Bağlı: Kumanda Modülü',
@@ -36,6 +38,16 @@ window.HT_LOCALE_TR = {
         tx_card_icon_aria: 'FPV gözlüklü kafa — kafa takip cihazı',
         tx_flash_btn: '⚡ Kafa Takip Cihazını Flaşla',
         unsupported: '⚠️ Chrome/Edge gerekli',
+        hw_title: '🧩 Desteklenen Kartlar ve Sensörler',
+        hw_boards_title: 'Kartlar',
+        hw_boards_list: `<li><b>ESP32-C3 Mini</b> — SDA 8 / SCL 9</li>
+            <li><b>Deneyap Kart / 1A</b> — SDA 4 / SCL 15 (dahili LSM6DSM)</li>
+            <li><b>CodeCell C3</b> — SDA 8 / SCL 9 (dahili BNO085)</li>`,
+        hw_sensors_title: 'Sensörler (otomatik tanınır)',
+        hw_sensors_list: `<li><b>MPU6050</b> (+ MPU6500 / 9250 klonları)</li>
+            <li><b>LSM6DSM</b> ailesi (DSL / DS3 / DSO / DSR)</li>
+            <li><b>BNO085</b> — kendi füzyonu ve sürekli kalibrasyonu var</li>`,
+        hw_note: 'Kart ve sensör serbestçe eşleşebilir; harici sensör takıyorsanız bağlandıktan sonra SDA/SCL pinlerini ayarlayın.',
     },
     tx_panel: {
         title: 'Kafa Takip Cihazı (Verici)',
@@ -62,7 +74,7 @@ window.HT_LOCALE_TR = {
             imu_badge_ok: '✅ <b>{board}</b> — <b>{detected}</b> bağlı',
             imu_badge_manual_suffix: ' (elle seçildi).',
             imu_badge_auto_suffix: ' (otomatik tanındı).',
-            apply_sent: '✓ Gönderildi — cihazı yeniden başlatın',
+            apply_sent: '✓ Kaydedildi — cihaz yeniden başlatılıyor…',
             alert_invalid_i2c: 'Geçersiz I2C pini. {help}',
             alert_sda_scl_same: 'SDA ve SCL aynı pin olamaz.',
             alert_axes_format: 'Eksen yönü +X+Y+Z biçiminde olmalı; her eksen (X, Y, Z) tam bir kez geçmeli.',
@@ -207,8 +219,8 @@ window.HT_LOCALE_TR = {
            Deneyap Kart'ta <code>SDA = 4</code> / <code>SCL = 15</code>.</p>
         <p>Deneyap Kart'ta dahili LSM6DSM zaten bu hatta bağlıdır — harici sensör
            takmadıysanız bu değerlere dokunmanız gerekmez.</p>
-        <p>Değişiklik <b>yeniden başlatma ister</b> — I2C veri yolu açılışta kuruluyor.
-           Uyguladıktan sonra cihazın gücünü kesip verin.</p>
+        <p>I2C veri yolu açılışta kurulduğu için <b>Uygula</b>'ya basınca cihaz
+           kaydedip <b>kendini yeniden başlatır</b>; konfigüratör otomatik yeniden bağlanır.</p>
         <p>Açılışta sensör bulunamazsa yukarıdaki rozet kırmızı olur, küp donuk
            kalır ve <code>BP_STATUS</code> çıktısında <code>imu_hata=1</code> görünür.</p>` },
 
@@ -247,12 +259,15 @@ window.HT_LOCALE_TR = {
            sızar — dolayısıyla yaw'daki titremeyi de azaltır.</p>` },
 
         'imu-select': { title: 'Sensör seçimi', body: `
-        <p>Cihaz açılışta I2C hattını tarar ve sensörü <b>kendisi tanır</b>. İki aile
+        <p>Cihaz açılışta I2C hattını tarar ve sensörü <b>kendisi tanır</b>. Aileler
            farklı adreslerde durduğu için karışma ihtimali yok:</p>
         <ul>
             <li><b>MPU6050</b> — <code>0x68</code> / <code>0x69</code></li>
             <li><b>LSM6DSM</b> — <code>0x6A</code> / <code>0x6B</code>
                 (Deneyap Kart'ın dahili sensörü)</li>
+            <li><b>BNO085</b> — <code>0x4A</code> / <code>0x4B</code>
+                (CodeCell C3'ün dahili sensörü; kendi füzyonunu ve sürekli
+                kalibrasyonunu yapar, <b>Kalibre Et</b> kalibrasyonu sensöre kaydeder)</li>
         </ul>
         <p>Bu yüzden normalde <b>Otomatik</b>'te bırakın. Elle seçim, tanınmayan bir
            klon yongayla uğraşırken ya da hatta iki sensör birden varken hangisinin
