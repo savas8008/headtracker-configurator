@@ -1,46 +1,49 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP32 Headtracker Konfigüratör</title>
+    <title>ESP32 Headtracker Configurator</title>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Orbitron:wght@500;700&family=Roboto+Mono&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="assets/locales/en.js"></script>
+    <script src="assets/locales/tr.js"></script>
+    <script src="assets/js/i18n.js"></script>
     <style>
         :root {
-            --bg-body: #07131f;
-            --bg-card: rgba(10, 21, 34, 0.82);
-            --bg-card-strong: rgba(12, 27, 43, 0.92);
-            --bg-soft: rgba(255, 255, 255, 0.04);
-            --text-primary: #edf7ff;
-            --text-secondary: #98abc0;
-            --border-light: rgba(255, 255, 255, 0.08);
-            --primary-color: #ff7a18;
-            --primary-hover: #ff9340;
-            --accent-color: #56ccf2;
-            --success-color: #22c55e;
-            --danger-color: #ef4444;
-            --warning-color: #f7b500;
-            --warning-hover: #de9d00;
+            --bg-body: #f3f6fb;
+            --bg-card: rgba(255, 255, 255, 0.86);
+            --bg-card-strong: #ffffff;
+            --bg-soft: rgba(16, 27, 45, 0.035);
+            --text-primary: #0a1424;
+            --text-secondary: #46536a;
+            --border-light: rgba(16, 27, 45, 0.13);
+            --primary-color: #e2650f;
+            --primary-hover: #ff8a3d;
+            --accent-color: #1c7fb0;
+            --success-color: #16a34a;
+            --danger-color: #dc2626;
+            --warning-color: #b45309;
+            --warning-hover: #92400e;
             --font-main: 'Barlow', sans-serif;
             --font-mono: 'Roboto Mono', monospace;
-            --shadow-light: 0 12px 28px rgba(0,0,0,0.2);
-            --shadow-medium: 0 24px 48px rgba(0,0,0,0.28);
+            --shadow-light: 0 8px 20px rgba(16, 27, 45, 0.07);
+            --shadow-medium: 0 20px 40px rgba(16, 27, 45, 0.12);
         }
         * { box-sizing: border-box; }
         body {
             font-family: var(--font-main);
             background:
-                radial-gradient(circle at top left, rgba(86, 204, 242, 0.16), transparent 24%),
-                radial-gradient(circle at top right, rgba(255, 122, 24, 0.18), transparent 26%),
-                linear-gradient(145deg, #07131f 0%, #091726 45%, #06101a 100%);
+                radial-gradient(circle at top left, rgba(28, 127, 176, 0.09), transparent 26%),
+                radial-gradient(circle at top right, rgba(226, 101, 15, 0.09), transparent 28%),
+                linear-gradient(160deg, #f8fafd 0%, #eef2f8 45%, #f3f6fb 100%);
             color: var(--text-primary);
-            margin: 0; padding: 28px 20px 44px;
+            margin: 0; padding: 16px 18px 24px;
             display: flex; flex-direction: column; align-items: center;
-            line-height: 1.6;
+            line-height: 1.5;
             min-height: 100vh;
             position: relative;
         }
@@ -50,14 +53,14 @@
             inset: 0;
             pointer-events: none;
             background:
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+                linear-gradient(rgba(16,27,45,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16,27,45,0.035) 1px, transparent 1px);
             background-size: 72px 72px;
             mask-image: radial-gradient(circle at center, black 38%, transparent 92%);
-            opacity: 0.35;
+            opacity: 0.5;
         }
         h1 {
-            color: #ffffff;
+            color: var(--text-primary);
             font-family: 'Orbitron', var(--font-main);
             font-size: clamp(2rem, 5vw, 3.6rem);
             font-weight: 700;
@@ -67,11 +70,11 @@
         }
         h2 {
             color: var(--text-primary);
-            font-weight: 600;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            padding-bottom: 10px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 8px;
             margin-top: 0;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             letter-spacing: 0.02em;
         }
         .page-shell {
@@ -80,19 +83,27 @@
             position: relative;
             z-index: 1;
         }
+        .docs-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 16px; border-radius: 10px; font-size: 14px; font-weight: 600;
+            color: var(--primary-color); text-decoration: none;
+            border: 1px solid rgba(226, 101, 15, 0.35); background: rgba(226, 101, 15, 0.08);
+            white-space: nowrap;
+        }
+        .docs-btn:hover { background: rgba(226, 101, 15, 0.16); }
         .app-header {
             width: 100%;
-            margin-bottom: 16px;
-            padding: 22px 24px;
-            border-radius: 28px;
+            margin-bottom: 10px;
+            padding: 10px 18px;
+            border-radius: 18px;
             background:
-                radial-gradient(circle at top right, rgba(255, 122, 24, 0.16), transparent 30%),
-                linear-gradient(135deg, rgba(86, 204, 242, 0.13), rgba(10, 21, 34, 0.88) 55%);
-            border: 1px solid rgba(255,255,255,0.08);
+                radial-gradient(circle at top right, rgba(226, 101, 15, 0.10), transparent 30%),
+                linear-gradient(135deg, rgba(28, 127, 176, 0.08), rgba(255, 255, 255, 0.92) 55%);
+            border: 1px solid var(--border-light);
             box-shadow: var(--shadow-medium);
             overflow: hidden;
             display: grid;
-            grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.9fr);
+            grid-template-columns: minmax(0, 1fr) auto;
             gap: 20px;
             align-items: center;
         }
@@ -100,12 +111,12 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 6px 12px;
+            padding: 4px 10px;
             border-radius: 999px;
-            margin-bottom: 14px;
-            background: rgba(86, 204, 242, 0.12);
-            border: 1px solid rgba(86, 204, 242, 0.24);
-            color: #98eeff;
+            margin-bottom: 6px;
+            background: rgba(28, 127, 176, 0.10);
+            border: 1px solid rgba(28, 127, 176, 0.28);
+            color: #0d5c80;
             font-size: 12px;
             font-weight: 700;
             letter-spacing: 0.16em;
@@ -129,21 +140,19 @@
             gap: 8px;
             padding: 10px 14px;
             border-radius: 999px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.07);
-            color: #d7e7f3;
+            background: rgba(16,27,45,0.04);
+            border: 1px solid rgba(16,27,45,0.08);
+            color: #33465c;
             font-size: 13px;
             font-weight: 600;
         }
         .container {
-            background:
-                linear-gradient(180deg, rgba(255,255,255,0.03), transparent 22%),
-                var(--bg-card);
+            background: var(--bg-card);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border-radius: 24px; padding: 20px;
+            border-radius: 18px; padding: 16px;
             width: 100%; max-width: 1180px;
-            margin-bottom: 16px;
+            margin-bottom: 10px;
             box-shadow: var(--shadow-light);
             border: 1px solid var(--border-light);
             transition: box-shadow 0.25s, transform 0.25s;
@@ -151,90 +160,125 @@
         .container:hover { box-shadow: var(--shadow-medium); transform: translateY(-2px); }
         .device-panel { display: none; }
         button {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); color: #0b1320;
-            border: 1px solid rgba(255, 122, 24, 0.65); padding: 13px 22px; border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); color: #fff7ee;
+            border: 1px solid rgba(226, 101, 15, 0.55); padding: 13px 22px; border-radius: 14px;
             font-size: 15px; font-weight: 700; cursor: pointer;
             transition: transform 0.18s, box-shadow 0.2s, opacity 0.2s;
             display: inline-flex; align-items: center; gap: 8px;
-            box-shadow: 0 14px 26px rgba(255, 122, 24, 0.22);
+            box-shadow: 0 10px 22px rgba(226, 101, 15, 0.20);
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 18px 32px rgba(255, 122, 24, 0.28); }
-        button:disabled { background: #6b7280; color: white; cursor: not-allowed; box-shadow: none; transform: none; }
-        #connectButton.btn-disconnected { background: linear-gradient(135deg, #ef4444, #dc2626); border-color: rgba(239,68,68,0.6); color: #fff; box-shadow: 0 14px 26px rgba(239,68,68,0.22); }
-        #connectButton.btn-disconnected:hover { box-shadow: 0 18px 32px rgba(239,68,68,0.32); }
-        #connectButton.btn-connected { background: linear-gradient(135deg, #22c55e, #16a34a); border-color: rgba(34,197,94,0.6); color: #fff; box-shadow: 0 14px 26px rgba(34,197,94,0.22); }
-        #connectButton.btn-connected:hover { box-shadow: 0 18px 32px rgba(34,197,94,0.32); }
-        #calibrateButton { background: linear-gradient(135deg, var(--warning-color), var(--warning-hover)); border-color: rgba(247, 181, 0, 0.6); color: #231700; }
-        #applyPinButton { background: linear-gradient(135deg, #56ccf2, #2f80ed); font-size: 14px; padding: 10px 18px; border-color: rgba(86, 204, 242, 0.45); color: #051521; }
-        .header-panel {
-            padding: 18px;
-            border-radius: 22px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.08);
-        }
-        .header-panel-title {
-            margin: 0 0 12px;
-            color: var(--text-secondary);
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-        }
+        button:hover { transform: translateY(-2px); box-shadow: 0 14px 28px rgba(226, 101, 15, 0.26); }
+        button:disabled { background: #e1e6ec; color: #97a2b0; cursor: not-allowed; box-shadow: none; transform: none; }
+        #connectButton.btn-disconnected { background: linear-gradient(135deg, #ef4444, #dc2626); border-color: rgba(239,68,68,0.6); color: #fff; box-shadow: 0 10px 22px rgba(239,68,68,0.20); }
+        #connectButton.btn-disconnected:hover { box-shadow: 0 14px 28px rgba(239,68,68,0.28); }
+        #connectButton.btn-connected { background: linear-gradient(135deg, #22c55e, #16a34a); border-color: rgba(34,197,94,0.6); color: #fff; box-shadow: 0 10px 22px rgba(34,197,94,0.20); }
+        #connectButton.btn-connected:hover { box-shadow: 0 14px 28px rgba(34,197,94,0.28); }
+        #calibrateButton { background: linear-gradient(135deg, #f7b500, var(--warning-color)); border-color: rgba(180, 83, 9, 0.5); color: #2b1600; }
+        #applyPinButton { background: linear-gradient(135deg, var(--accent-color), #145e85); font-size: 14px; padding: 10px 18px; border-color: rgba(28, 127, 176, 0.45); color: #fff; }
         .header-actions {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: stretch;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-end;
         }
         .connection-status {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            min-height: 46px;
-            font-size: 16px;
+            gap: 8px;
+            font-size: 14px;
             font-weight: 600;
-            gap: 10px;
             margin: 0;
-            padding: 10px 14px;
-            border-radius: 14px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(16,27,45,0.04);
+            border: 1px solid var(--border-light);
         }
+        /* Aciklama baloncugu: metinler sayfada durmaz, soru isaretine tiklayinca acilir */
+        .hint {
+            all: unset;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 19px; height: 19px; margin-left: 7px;
+            border-radius: 50%; cursor: pointer; flex: none;
+            font-size: 12px; font-weight: 700; line-height: 1;
+            color: var(--accent-color);
+            background: rgba(28, 127, 176, 0.10);
+            border: 1px solid rgba(28, 127, 176, 0.35);
+            vertical-align: middle;
+        }
+        .hint:hover  { background: rgba(28, 127, 176, 0.20); color: #0d5c80; }
+        .hint:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; }
+        .hint.warn { color: var(--warning-color); background: rgba(180,83,9,0.10); border-color: rgba(180,83,9,0.35); }
+        .hint.warn:hover { background: rgba(180,83,9,0.20); }
+        .modal-content.info-modal { max-width: 640px; text-align: left; padding: 26px 28px; max-height: 82vh; overflow-y: auto; }
+        .modal-content.info-modal h2 { color: var(--text-primary); font-size: 19px; margin: 0 34px 14px 0; padding-bottom: 10px;
+                         border-bottom: 1px solid var(--border-light); }
+        .modal-content .info-modal-body { font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+        .info-modal .info-modal-body p { margin: 0 0 10px; }
+        .info-modal-body ol, .info-modal-body ul { margin: 0 0 10px; padding-left: 20px; }
+        .info-modal-body li { margin-bottom: 6px; }
+        .info-modal-body table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 4px 0 12px; }
+        .info-modal-body th, .info-modal-body td { border: 1px solid var(--border-light); padding: 6px 8px; text-align: left; }
+        .info-modal-body th { color: var(--text-primary); background: rgba(16,27,45,0.035); }
+        .info-modal-body code { background: rgba(16,27,45,0.06); padding: 1px 5px; border-radius: 4px;
+                                font-family: var(--font-mono); font-size: 12px; color: var(--accent-color); }
+        .info-modal-close {
+            all: unset; position: absolute; top: 16px; right: 20px;
+            cursor: pointer; font-size: 22px; line-height: 1; color: var(--text-secondary);
+        }
+        .info-modal-close:hover { color: var(--text-primary); }
+        .info-modal-wrap { position: relative; }
         #status.connected { color: var(--success-color); }
         #status.disconnected { color: var(--danger-color); }
         .loader { border: 4px solid var(--border-light); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .setting-group { margin-bottom: 14px; border: 1px solid var(--border-light); border-radius: 18px; padding: 18px; background: var(--bg-soft); }
-        .setting-group h3 { margin-top: 0; color: var(--text-primary); font-weight: 700; border-bottom: 1px solid var(--border-light); padding-bottom: 10px; margin-bottom: 14px; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; }
-        .row { margin-bottom: 12px; display: grid; grid-template-columns: 110px 1fr 78px; gap: 12px; align-items: center; }
-        .row.no-value { grid-template-columns: 120px 1fr; }
-        .row label { font-weight: 500; color: var(--text-secondary); font-size: 14px; }
-        input[type="range"] { width: 100%; -webkit-appearance: none; appearance: none; height: 8px; background: rgba(255,255,255,0.12); outline: none; border-radius: 999px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: grab; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .setting-group { margin-bottom: 10px; border: 1px solid var(--border-light); border-radius: 14px; padding: 13px 14px; background: var(--bg-soft); }
+        .setting-group h3 { margin-top: 0; color: var(--text-primary); font-weight: 700; border-bottom: 1px solid var(--border-light); padding-bottom: 7px; margin-bottom: 10px; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
+        .row { margin-bottom: 8px; display: grid; grid-template-columns: 108px 1fr 74px; gap: 10px; align-items: center; }
+        .row.no-value { grid-template-columns: 136px 1fr; }
+        .row label { font-weight: 600; color: var(--text-primary); font-size: 14px; }
+        input[type="range"] { width: 100%; -webkit-appearance: none; appearance: none; height: 8px; background: rgba(16,27,45,0.10); outline: none; border-radius: 999px; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: grab; box-shadow: 0 2px 5px rgba(16,27,45,0.25); }
         input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--primary-color); cursor: grab; border: none; }
         input[type="range"][disabled] { opacity: 0.8; cursor: default; }
         input[type="range"][disabled]::-webkit-slider-thumb { cursor: default; background: var(--success-color); }
         input[type="range"][disabled]::-moz-range-thumb { background: var(--success-color); }
-        .val-badge { font-family: var(--font-mono); font-size: 14px; background: rgba(255,255,255,0.05); padding: 7px 10px; border-radius: 10px; text-align: center; border: 1px solid var(--border-light); color: var(--text-primary); }
+        .val-badge { font-family: var(--font-mono); font-weight: 700; font-size: 14px; background: rgba(16,27,45,0.045); padding: 6px 8px; border-radius: 10px; text-align: center; border: 1px solid var(--border-light); color: var(--text-primary); }
         .val-badge.unit::after { content: ' µs'; font-size: 11px; color: var(--text-secondary); }
-        select, input[type="number"] { width: 100%; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: 12px; font-family: var(--font-main); font-size: 14px; color: var(--text-primary); background: var(--bg-card-strong); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
-        select:focus, input[type="number"]:focus { border-color: rgba(255, 122, 24, 0.65); box-shadow: 0 0 0 3px rgba(255, 122, 24, 0.14); }
-        #visualizer { width: 100%; height: 260px; border: 1px solid var(--border-light); border-radius: 20px; margin-bottom: 12px; overflow: hidden; background: radial-gradient(circle at top, rgba(86, 204, 242, 0.18), transparent 34%), linear-gradient(180deg, #0f2236 0%, #09131f 100%); }
+        select, input[type="number"], input[type="text"] { width: 100%; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: 12px; font-family: var(--font-main); font-size: 14px; color: var(--text-primary); background: var(--bg-card-strong); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        select:focus, input[type="number"]:focus, input[type="text"]:focus { border-color: rgba(226, 101, 15, 0.55); box-shadow: 0 0 0 3px rgba(226, 101, 15, 0.12); }
+        #visualizer { width: 100%; height: 190px; border: 1px solid var(--border-light); border-radius: 16px; margin-bottom: 8px; overflow: hidden; background: radial-gradient(circle at top, rgba(86, 204, 242, 0.18), transparent 34%), linear-gradient(180deg, #0f2236 0%, #09131f 100%); }
         #visualizer canvas { display: block; width: 100% !important; height: 100% !important; }
-        #live-data { font-family: var(--font-mono); font-size: 15px; background: rgba(255,255,255,0.04); padding: 14px 15px; border-radius: 14px; border: 1px solid var(--border-light); text-align: center; margin-bottom: 20px; color: #dbebf8; }
+        #live-data { font-family: var(--font-mono); font-weight: 700; font-size: 14px; background: rgba(16,27,45,0.045); padding: 9px 12px; border-radius: 12px; border: 1px solid var(--border-light); text-align: center; margin-bottom: 8px; color: var(--text-primary); }
         .info-bar { border-radius: 14px; padding: 12px 16px; margin-bottom: 18px; font-size: 13px; }
-        .info-bar.passive { background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.35); color: #94f0b2; }
-        .info-bar.waiting { background: rgba(247, 181, 0, 0.1); border: 1px solid rgba(247, 181, 0, 0.35); color: #ffd970; }
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(6px); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        .info-bar.passive { background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35); color: #15803d; }
+        .info-bar.waiting { background: rgba(180, 83, 9, 0.10); border: 1px solid rgba(180, 83, 9, 0.32); color: #92400e; }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(16,27,45,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(6px); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
         .modal-overlay.show { opacity: 1; pointer-events: auto; }
         .modal-content { background: var(--bg-card-strong); padding: 35px 45px; border-radius: 24px; text-align: center; box-shadow: var(--shadow-medium); transform: scale(0.95); transition: transform 0.3s; max-width: 420px; width: 90%; border: 1px solid var(--border-light); }
         .modal-overlay.show .modal-content { transform: scale(1); }
         .modal-content h2 { border-bottom: none; margin-top: 0; font-size: 26px; font-weight: 600; color: var(--primary-color); }
         .modal-content p { color: var(--text-secondary); font-size: 15px; }
-        .progress-bar { width: 100%; height: 22px; background: rgba(255,255,255,0.08); border-radius: 11px; overflow: hidden; margin: 20px 0; }
+        .progress-bar { width: 100%; height: 22px; background: rgba(16,27,45,0.08); border-radius: 11px; overflow: hidden; margin: 20px 0; }
         .progress-bar-inner { width: 0%; height: 100%; background: var(--primary-color); transition: width 0.5s; border-radius: 11px; }
         #countdown-timer { font-size: 30px; font-weight: 600; color: var(--primary-color); margin: 10px 0 20px; }
         #calibration-complete-btn { background: linear-gradient(135deg, #22c55e, #16a34a); margin-top: 10px; color: white; border-color: rgba(34, 197, 94, 0.4); }
+        .bp-pill { padding: 9px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; line-height: 1.5; border: 1px solid transparent; }
+        .bp-idle { background: rgba(100,116,139,0.10); border-color: rgba(100,116,139,0.30); color: var(--text-secondary); }
+        .bp-ok   { background: rgba(34,197,94,0.13);  border-color: rgba(34,197,94,0.40);  color: #15803d; }
+        .bp-warn { background: rgba(217,119,6,0.13);  border-color: rgba(217,119,6,0.40);  color: #92400e; }
+        .bp-err  { background: rgba(220,38,38,0.12);  border-color: rgba(220,38,38,0.38);  color: #b91c1c; }
+        .bp-steps { margin-top: 10px; border: 1px solid var(--border-light); border-radius: 8px; padding: 8px 12px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+        .bp-steps summary { cursor: pointer; font-weight: 600; color: var(--text-primary); }
+        .bp-steps ol { margin: 8px 0 0; padding-left: 20px; }
+        .bp-steps li { margin-bottom: 5px; }
+        .bp-steps p { margin: 8px 0 0; }
+        .bp-btn { flex: 1; padding: 7px 10px; font-size: 13px; }
+        .bp-btn-primary { width: 100%; }
+        .bp-card { margin-top: 10px; border: 1px solid var(--border-light); border-radius: 8px; padding: 10px 12px; }
+        .bp-card-title { font-weight: 700; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--text-primary); margin-bottom: 6px; }
+        .bp-card p { margin: 0 0 10px; font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+        .bp-state { margin-top: 8px; font-size: 13px; line-height: 1.6; color: var(--text-secondary); }
         #saveConfigBtn { background: linear-gradient(135deg, #22c55e, #16a34a); margin-top: 6px; color: white; border-color: rgba(34, 197, 94, 0.4); }
         .row.pwm-range-row { grid-template-columns: 110px 1fr 110px; }
         .range-label-stack { display: flex; flex-direction: column; gap: 8px; }
@@ -253,10 +297,10 @@
             margin: 0;
         }
         .dr-wrap { position: relative; height: 32px; display: flex; align-items: center; }
-        .dr-track { position: absolute; width: 100%; height: 8px; background: rgba(255,255,255,0.12); border-radius: 999px; }
+        .dr-track { position: absolute; width: 100%; height: 8px; background: rgba(16,27,45,0.10); border-radius: 999px; }
         .dr-fill    { position: absolute; height: 8px; background: linear-gradient(90deg, var(--accent-color), var(--primary-color)); border-radius: 999px; }
-        .dr-current { position: absolute; width: 4px; height: 20px; background: #22c55e;
-                      border-radius: 3px; transform: translateX(-50%); box-shadow: 0 0 6px #22c55e88;
+        .dr-current { position: absolute; width: 4px; height: 20px; background: #16a34a;
+                      border-radius: 3px; transform: translateX(-50%); box-shadow: 0 0 6px #16a34a66;
                       transition: left 0.05s linear; pointer-events: none; }
         .dr-wrap input[type="range"] {
             position: absolute; width: 100%; margin: 0;
@@ -266,14 +310,14 @@
         .dr-wrap input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none; width: 20px; height: 20px;
             border-radius: 50%; background: var(--primary-color);
-            cursor: grab; box-shadow: 0 2px 5px rgba(0,0,0,0.2); pointer-events: auto;
+            cursor: grab; box-shadow: 0 2px 5px rgba(16,27,45,0.25); pointer-events: auto;
         }
         .dr-wrap input[type="range"]::-moz-range-thumb {
             width: 20px; height: 20px; border-radius: 50%;
             background: var(--primary-color); cursor: grab; border: none; pointer-events: auto;
         }
-        .range-badge { font-family: var(--font-mono); font-size: 12px; background: rgba(255,255,255,0.05);
-            padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-light);
+        .range-badge { font-family: var(--font-mono); font-weight: 700; font-size: 12px; background: rgba(16,27,45,0.045);
+            padding: 5px 7px; border-radius: 6px; border: 1px solid var(--border-light);
             text-align: center; white-space: nowrap; line-height: 1.4; color: var(--text-primary); }
         .panel-grid {
             display: grid;
@@ -282,24 +326,29 @@
         }
         .tx-layout {
             display: grid;
-            grid-template-columns: minmax(0, 1.12fr) minmax(360px, 0.88fr);
-            gap: 16px;
+            grid-template-columns: minmax(280px, 0.9fr) minmax(280px, 1fr) minmax(300px, 1.05fr);
+            gap: 12px;
             align-items: start;
         }
         .tx-visual-column,
+        .tx-hardware-column,
         .tx-settings-column {
             min-width: 0;
         }
+        @media (max-width: 1080px) {
+            .tx-layout { grid-template-columns: 1fr 1fr; }
+        }
         .telemetry-card {
-            padding: 16px;
-            border-radius: 20px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
+            padding: 12px;
+            border-radius: 16px;
+            background: rgba(16,27,45,0.03);
+            border: 1px solid var(--border-light);
+            margin-bottom: 10px;
         }
         .compact-note {
             font-size: 12px;
             color: var(--text-secondary);
-            margin: 0 0 12px;
+            margin: 0;
         }
         .mini-meta {
             display: grid;
@@ -310,8 +359,8 @@
         .mini-meta-card {
             padding: 14px 16px;
             border-radius: 16px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(16,27,45,0.03);
+            border: 1px solid var(--border-light);
             text-align: left;
         }
         .mini-meta-card span {
@@ -324,12 +373,14 @@
         .mini-meta-card strong {
             display: block;
             margin-top: 4px;
-            color: #ffffff;
+            color: var(--text-primary);
             font-size: 16px;
         }
         .page-title {
             text-align: left;
             margin: 0;
+            padding-bottom: 0;
+            border-bottom: none;
         }
         @media (max-width: 768px) {
             body { padding: 18px 14px 30px; }
@@ -345,15 +396,24 @@
             #visualizer { height: 240px; }
             .tx-layout { grid-template-columns: 1fr; }
         }
-        .firmware-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
-.firmware-card { padding: 24px 20px; border-radius: 20px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .dev-icon-emoji { height: 46px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; font-size: 38px; line-height: 1; }
+.dev-icon-wrap { height: 46px; margin-bottom: 6px; display: flex; align-items: center; justify-content: center; }
+.firmware-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+.firmware-card { padding: 24px 20px; border-radius: 20px; background: rgba(16,27,45,0.03); border: 1px solid var(--border-light); display: flex; flex-direction: column; align-items: center; text-align: center; }
+.hw-support { margin-top: 16px; padding: 16px 20px; border-radius: 16px; background: rgba(16,27,45,0.03); border: 1px solid var(--border-light); }
+.hw-support h3 { margin: 0 0 10px; font-size: 15px; border: none; padding: 0; text-transform: none; letter-spacing: 0; }
+.hw-support-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.hw-support h4 { margin: 0 0 6px; font-size: 13px; color: var(--text-secondary); }
+.hw-support ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.7; }
+.hw-support p { margin: 10px 0 0; font-size: 12px; color: var(--text-secondary); }
+@media (max-width:580px) { .hw-support-grid { grid-template-columns:1fr; } }
 .firmware-card h3 { margin: 4px 0 8px; font-size: 16px; border: none; padding: 0; text-transform: none; letter-spacing: 0; }
 .firmware-version { font-size: 13px; color: var(--text-secondary); min-height: 22px; display: flex; align-items: center; justify-content: center; gap: 5px; margin-bottom: 14px; }
 .ver-tag { color: var(--accent-color); font-family: var(--font-mono); font-weight: 600; }
-.flash-btn { background: linear-gradient(135deg,var(--accent-color),#2f80ed)!important; border-color: rgba(86,204,242,0.45)!important; color:#051521!important; width:100%; justify-content:center; }
-.flash-btn:disabled { background: rgba(255,255,255,0.07)!important; color:var(--text-secondary)!important; box-shadow:none!important; transform:none!important; cursor:not-allowed!important; }
-.flash-note { font-size:13px; color:var(--text-secondary); background:rgba(247,181,0,0.07); border:1px solid rgba(247,181,0,0.22); border-radius:12px; padding:12px 16px; line-height:1.5; margin-top:4px; }
-.flash-note code { background:rgba(255,255,255,0.1); padding:1px 5px; border-radius:4px; font-family:var(--font-mono); font-size:12px; color:var(--warning-color); }
+.flash-btn { background: linear-gradient(135deg,var(--accent-color),#145e85)!important; border-color: rgba(28,127,176,0.45)!important; color:#fff!important; width:100%; justify-content:center; }
+.flash-btn:disabled { background: rgba(16,27,45,0.06)!important; color:var(--text-secondary)!important; box-shadow:none!important; transform:none!important; cursor:not-allowed!important; }
+.flash-note { font-size:13px; color:var(--text-secondary); background:rgba(180,83,9,0.06); border:1px solid rgba(180,83,9,0.20); border-radius:12px; padding:12px 16px; line-height:1.5; margin-top:4px; }
+.flash-note code { background:rgba(16,27,45,0.07); padding:1px 5px; border-radius:4px; font-family:var(--font-mono); font-size:12px; color:var(--warning-color); }
 esp-web-install-button { display:block; width:100%; }
 @media (max-width:580px) { .firmware-grid { grid-template-columns:1fr; } }
 
@@ -364,60 +424,85 @@ esp-web-install-button { display:block; width:100%; }
 <section class="app-header">
     <div>
         <div class="hero-kicker">Developed By YILMAZ</div>
-        <h2 class="page-title">ESP32 Headtracker Konfigurator</h2>
-   
+        <h2 class="page-title" data-i18n="app.title">ESP32 Headtracker Configurator</h2>
     </div>
-    <div class="header-panel">
-        <div class="header-panel-title">Baglanti ve Durum</div>
-        <div class="header-actions">
-            <button id="connectButton" class="btn-disconnected">
-                <img src="assets/icons/usb.png" alt="USB bağlantısı" width="30" height="30">
-                USB'den Bağlan
-            </button>
-            <div class="connection-status">
-                <div id="status" class="disconnected">Bagli Degil</div>
-                <div id="loader" class="loader" style="display:none"></div>
-            </div>
+    <div class="header-actions">
+        <div class="connection-status">
+            <div id="status" class="disconnected" data-i18n="header.status_disconnected">Not connected</div>
+            <div id="loader" class="loader" style="display:none;width:16px;height:16px;border-width:3px"></div>
         </div>
+        <a class="docs-btn" href="docs/" target="_blank" rel="noopener" data-i18n-title="header.docs_btn_title" title="Setup and troubleshooting guide">
+            <span data-i18n="header.docs_btn">📘 Guide</span>
+        </a>
+        <button id="connectButton" class="btn-disconnected">
+            <img src="assets/icons/usb.png" data-i18n-alt="header.usb_connection_alt" alt="USB connection" width="24" height="24">
+            <span data-i18n="header.connect_btn">Connect via USB</span>
+        </button>
     </div>
 </section>
 <div class="container" id="firmware-container">
-    <h2>⚡ Firmware Güncelleme</h2>
+    <h2 data-i18n="firmware.section_title">⚡ Firmware Update</h2>
     <div class="flash-note">
-        <strong>Flaşlamadan önce:</strong> <code>BOOT</code> butonunu basılı tutarken
-        <code>RESET</code>'e kısa basın, ardından butona tıklayın. Sadece <strong>Chrome / Edge</strong> desteklenir.
+        <span data-i18n-html="firmware.flash_note_pre">Put the device into <strong>bootloader mode</strong> and press the button below.</span>
+        <button class="hint warn" data-info="flash" data-i18n-aria="firmware.flash_note_aria" aria-label="How do I enter bootloader mode?">!</button>
+        <span data-i18n-html="firmware.flash_note_post">Only <strong>Chrome / Edge</strong>.</span>
+        <br><span style="opacity:.8" data-i18n="firmware.flash_note_board">ESP32-C3 Mini and Deneyap Kart flash from the same button — the connected chip is detected automatically and the right firmware is selected.</span>
     </div>
     <div class="firmware-grid">
         <div class="firmware-card">
-            <div style="font-size:34px;margin-bottom:6px">📡</div>
-            <h3>Alıcı (RX)</h3>
+            <div class="dev-icon-emoji">🎮</div>
+            <h3 data-i18n="firmware.rx_card_title">Receiver (RX) — Remote Module</h3>
             <div class="firmware-version" id="alici-version">
                 <div class="loader" style="width:14px;height:14px;border-top-color:var(--accent-color);margin:0"></div>
-                <span>Kontrol ediliyor...</span>
+                <span data-i18n="firmware.checking">Checking...</span>
             </div>
             <esp-web-install-button id="alici-install-btn">
-                <button slot="activate" class="flash-btn" disabled>⚡ Alıcıyı Flaşla</button>
-                <span slot="unsupported" style="color:var(--danger-color);font-size:12px">⚠️ Chrome/Edge gerekli</span>
+                <button slot="activate" class="flash-btn" disabled data-i18n="firmware.rx_flash_btn">⚡ Flash Receiver Module</button>
+                <span slot="unsupported" style="color:var(--danger-color);font-size:12px" data-i18n="firmware.unsupported">⚠️ Chrome/Edge required</span>
             </esp-web-install-button>
         </div>
         <div class="firmware-card">
-            <div style="font-size:34px;margin-bottom:6px">🎮</div>
-            <h3>Verici (TX)</h3>
+            <div class="dev-icon-wrap"><svg class="dev-icon" viewBox="0 0 512 512" width="46" height="46" role="img" data-i18n-aria="firmware.tx_card_icon_aria" aria-label="FPV goggle head — head tracker device">
+                    <defs><linearGradient id="htg" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="#56ccf2"/><stop offset="1" stop-color="#ff7a18"/>
+                    </linearGradient></defs>
+                    <g fill="none" stroke="url(#htg)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M 175 500 h -35 a 22 22 0 0 1 -22 -22 v -98 a 32 32 0 0 0 -14 -26 C 56 314 26 242 31 176 A 212 212 0 0 1 243 10 c 116 0 202 82 207 192 l 54 88 a 32 32 0 0 1 -27 48 h -13 a 22 22 0 0 0 -22 22 v 56 a 56 56 0 0 1 -56 56 h -39 a 22 22 0 0 0 -22 22 v 34 a 22 22 0 0 1 -22 22 h -30"/>
+                        <path d="M 300 168 C 190 150 95 178 66 222"/>
+                    </g>
+                    <rect x="296" y="150" width="192" height="98" rx="24" fill="url(#htg)"/>
+                    <circle cx="233" cy="500" r="13" fill="url(#htg)"/>
+                </svg></div>
+            <h3 data-i18n="firmware.tx_card_title">Head Tracker (Transmitter)</h3>
             <div class="firmware-version" id="verici-version">
                 <div class="loader" style="width:14px;height:14px;border-top-color:var(--accent-color);margin:0"></div>
-                <span>Kontrol ediliyor...</span>
+                <span data-i18n="firmware.checking">Checking...</span>
             </div>
             <esp-web-install-button id="verici-install-btn">
-                <button slot="activate" class="flash-btn" disabled>⚡ Vericiyi Flaşla</button>
-                <span slot="unsupported" style="color:var(--danger-color);font-size:12px">⚠️ Chrome/Edge gerekli</span>
+                <button slot="activate" class="flash-btn" disabled data-i18n="firmware.tx_flash_btn">⚡ Flash Head Tracker</button>
+                <span slot="unsupported" style="color:var(--danger-color);font-size:12px" data-i18n="firmware.unsupported">⚠️ Chrome/Edge required</span>
             </esp-web-install-button>
         </div>
+    </div>
+    <div class="hw-support">
+        <h3 data-i18n="firmware.hw_title">🧩 Supported Boards and Sensors</h3>
+        <div class="hw-support-grid">
+            <div>
+                <h4 data-i18n="firmware.hw_boards_title">Boards</h4>
+                <ul data-i18n-html="firmware.hw_boards_list"></ul>
+            </div>
+            <div>
+                <h4 data-i18n="firmware.hw_sensors_title">Sensors (auto-detected)</h4>
+                <ul data-i18n-html="firmware.hw_sensors_list"></ul>
+            </div>
+        </div>
+        <p data-i18n="firmware.hw_note"></p>
     </div>
 </div>
 
 <!-- VERİCİ PANELİ -->
 <div class="container device-panel" id="tx-panel">
-    <h2>Verici (TX)</h2>
+    <h2 data-i18n="tx_panel.title">Head Tracker (Transmitter)</h2>
     <div class="tx-layout">
         <div class="tx-visual-column">
             <div class="telemetry-card">
@@ -427,53 +512,171 @@ esp-web-install-button { display:block; width:100%; }
                     Yaw: <span id="yawVal">0.00</span>°&nbsp;&nbsp;|&nbsp;&nbsp;
                     Roll: <span id="rollVal">0.00</span>°
                 </div>
-                <p class="compact-note">Kupu izleyerek bas hareketini anlik kontrol et. Hassasiyet ve PWM araligini sag panelden hizlica tune edebilirsin.</p>
+                <p class="compact-note"><span data-i18n="tx_panel.compact_note">Watch the cube to check head movement in real time.</span>
+                   <button class="hint" data-info="visual" data-i18n-aria="tx_panel.compact_note_aria" aria-label="About the cube visualization">?</button></p>
             </div>
-            <div class="setting-group" style="margin-top:16px">
-                <h3>🔌 I2C Pinleri (MPU6050)</h3>
-                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">SDA/SCL değiştirilirse cihazın yeniden başlatılması gerekir.</p>
+            <div class="setting-group">
+                <h3><span data-i18n="tx_panel.cal.title">🎯 Calibration</span><button class="hint" data-info="cal" data-i18n-aria="tx_panel.cal.title_aria" aria-label="About calibration">?</button></h3>
+                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 10px" data-i18n="tx_panel.cal.desc">Place the device on a flat surface.</p>
+                <button id="calibrateButton" data-i18n="tx_panel.cal.btn">Calibrate IMU</button>
+            </div>
+        </div>
+
+        <div class="tx-hardware-column">
+            <div class="setting-group">
+                <h3><span data-i18n="tx_panel.sensor.title">🧭 Sensor</span><button class="hint" data-info="i2c" data-i18n-aria="tx_panel.sensor.title_aria" aria-label="About sensor and I2C pins">?</button></h3>
+                <div id="imuDetected" class="bp-pill bp-idle" style="margin-bottom:9px" data-i18n="tx_panel.sensor.detected_waiting">Waiting for sensor info…</div>
                 <div class="row no-value">
-                    <label for="sdaInput">SDA Pini</label>
-                    <input type="number" id="sdaInput" min="0" max="39" value="8" placeholder="GPIO 0-39">
+                    <label for="imuSelect"><span data-i18n="tx_panel.sensor.sensor_label">Sensor</span><button class="hint" data-info="imu-select" data-i18n-aria="tx_panel.sensor.sensor_aria" aria-label="About sensor selection">?</button></label>
+                    <select id="imuSelect">
+                        <option value="0" data-i18n="tx_panel.sensor.opt_auto">Auto-detect (recommended)</option>
+                        <option value="1">MPU6050</option>
+                        <option value="2">LSM6DSM</option>
+                        <option value="3">BNO085</option>
+                    </select>
                 </div>
-                <div class="row no-value" style="margin-bottom:12px">
-                    <label for="sclInput">SCL Pini</label>
-                    <input type="number" id="sclInput" min="0" max="39" value="9" placeholder="GPIO 0-39">
+                <div class="row no-value">
+                    <label for="sdaInput" data-i18n="tx_panel.i2c.sda_label">SDA Pin</label>
+                    <input type="number" id="sdaInput" min="0" max="39" value="8" placeholder="GPIO">
                 </div>
-                <button id="applyPinButton">Uygula (Yeniden Başlat)</button>
+                <div class="row no-value">
+                    <label for="sclInput" data-i18n="tx_panel.i2c.scl_label">SCL Pin</label>
+                    <input type="number" id="sclInput" min="0" max="39" value="9" placeholder="GPIO">
+                </div>
+                <div class="row no-value" style="margin-bottom:4px">
+                    <label for="axesInput"><span data-i18n="tx_panel.sensor.axes_label">Axis Orientation</span><button class="hint" data-info="axes" data-i18n-aria="tx_panel.sensor.axes_aria" aria-label="What is axis orientation?">?</button></label>
+                    <input type="text" id="axesInput" maxlength="6" value="+X+Y+Z" placeholder="+X+Y+Z">
+                </div>
+                <div id="pinHelpNote" class="bp-state" style="margin-bottom:9px"></div>
+                <button id="applyPinButton" data-i18n="tx_panel.i2c.apply_btn">Apply (Restart)</button>
+            </div>
+            <div class="setting-group">
+                <h3 data-i18n="tx_panel.reset.title">🔄 Reset</h3>
+                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 10px" data-i18n="tx_panel.reset.desc">
+                    The ways you can reset the center — i.e. the direction treated as "forward".</p>
+                <div class="row no-value" style="margin-bottom:4px">
+                    <label for="zeroPinInput"><span data-i18n="tx_panel.reset.pin_label">Button Pin</span><button class="hint" data-info="zero-pin" data-i18n-aria="tx_panel.reset.pin_aria" aria-label="About the reset button pin">?</button></label>
+                    <input type="number" id="zeroPinInput" min="0" max="21" value="0" data-i18n-placeholder="tx_panel.reset.pin_placeholder" placeholder="GPIO (default 0 = BOOT)">
+                </div>
+                <div id="zeroPinNote" class="bp-state"></div>
+
+                <div id="rcResetBlock" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid var(--border-light)">
+                    <div class="row no-value" style="margin-bottom:4px">
+                        <label for="rcResetSelect"><span data-i18n="tx_panel.reset.from_remote_label">From Remote</span><button class="hint" data-info="rc-reset" data-i18n-aria="tx_panel.reset.from_remote_aria" aria-label="How does remote reset work?">?</button></label>
+                        <select id="rcResetSelect">
+                            <option value="0" data-i18n="tx_panel.reset.opt_off">Off</option>
+                            <option value="1" data-i18n="tx_panel.reset.opt_ht">HT Enable switch</option>
+                            <option value="2" data-i18n="tx_panel.reset.opt_dvr">DVR Rec switch (recommended)</option>
+                            <option value="3" data-i18n="tx_panel.reset.opt_both">Both</option>
+                        </select>
+                    </div>
+                    <div id="rcResetHelp" class="bp-state"></div>
+                    <p style="margin:8px 0 0; font-size:13px; display:flex; align-items:center; gap:2px">
+                        <button class="hint" data-modal="aux-modal" data-i18n-aria="tx_panel.reset.aux_link_aria" aria-label="How do I find my reset AUX channel?">?</button>
+                        <a href="#" data-modal="aux-modal" style="color:var(--primary-color); margin-left:6px" data-i18n="tx_panel.reset.aux_link_text">
+                            How do I find my reset AUX channel?</a>
+                    </p>
+                    <div id="rcResetFlash" class="bp-state" style="display:none"></div>
+                </div>
             </div>
         </div>
 
         <div class="tx-settings-column">
             <div class="setting-group">
-                <h3>⚙️ Yapılandırma</h3>
+                <h3 data-i18n="tx_panel.config.title">⚙️ Configuration</h3>
                 <div class="row">
-                    <label for="sensSlider">Hassasiyet</label>
+                    <label for="sensSlider" data-i18n="tx_panel.config.sens_label">Sensitivity</label>
                     <input type="range" id="sensSlider" min="0.1" max="20" step="0.1" value="5.5">
                     <span class="val-badge" id="sensVal">5.5</span>
                 </div>
                 <div class="row no-value">
-                    <label for="protoSelect">Protokol</label>
+                    <label for="protoSelect" data-i18n="tx_panel.config.proto_label">Protocol</label>
                     <select id="protoSelect">
                         <option value="0">PPM</option>
                         <option value="1">SBUS</option>
-                        <option value="2">SBUS (Ters)</option>
+                        <option value="2" data-i18n="tx_panel.config.proto_sbus_rev">SBUS (Reversed)</option>
+                        <option value="3">ELRS Backpack (MSP)</option>
                     </select>
                 </div>
-                <div class="row no-value" style="margin-bottom:4px">
-                    <label for="pinInput">Çıkış Pini</label>
+                <div class="row no-value" style="margin-bottom:4px" id="outputPinRow">
+                    <label for="pinInput" data-i18n="tx_panel.config.output_pin_label">Output Pin</label>
                     <input type="number" id="pinInput" min="0" max="39" value="7" placeholder="GPIO 0-39">
                 </div>
+                <div class="row no-value" style="margin-bottom:4px; display:none" id="bindPhraseRow">
+                    <label for="bindPhraseInput" data-i18n="tx_panel.config.bind_label">Bind Phrase</label>
+                    <input type="text" id="bindPhraseInput" maxlength="32" data-i18n-placeholder="tx_panel.config.bind_placeholder" placeholder="ELRS bind phrase (no commas)">
+                </div>
+                <div class="row no-value" style="margin-bottom:4px; display:none" id="uidRow">
+                    <label for="uidInput" data-i18n="tx_panel.config.uid_label">UID (optional)</label>
+                    <input type="text" id="uidInput" data-i18n-placeholder="tx_panel.config.uid_placeholder" placeholder="64,69,87,110,97,85 — derived from phrase if empty">
+                </div>
+                <div id="backpackInfo" style="display:none; margin-top:10px">
+                    <div id="bpStatusPill" class="bp-pill bp-idle" data-i18n="tx_panel.bp.status_waiting">Waiting for status…</div>
+
+                    <div class="bp-card">
+                        <div class="bp-card-title" data-i18n="tx_panel.bp.test_title">Test channels</div>
+                        <p id="bpTestIntro"><span data-i18n="tx_panel.bp.test_intro">For 15 seconds, a sweep signal is sent instead of head movement; you should see the matching channel move on your radio.</span>
+                           <button class="hint" data-info="bp-test" data-i18n-aria="tx_panel.bp.test_intro_aria" aria-label="How to read the channel test">?</button></p>
+                        <button id="bpTestButton" class="bp-btn bp-btn-primary" data-i18n="tx_panel.bp.test_btn">Start Test (15 s)</button>
+                        <div id="bpTestState" class="bp-state" style="display:none"></div>
+                        <div id="bpTestAsk" style="display:none; margin-top:8px">
+                            <span data-i18n="tx_panel.bp.ask_label">Did the channel move left-right on your radio?</span>
+                            <div style="display:flex; gap:8px; margin-top:6px">
+                                <button id="bpTestYes" class="bp-btn" data-i18n="tx_panel.bp.yes_btn">Yes, it moved</button>
+                                <button id="bpTestNo"  class="bp-btn" data-i18n="tx_panel.bp.no_btn">No movement</button>
+                            </div>
+                        </div>
+                        <div id="bpTestVerdict" class="bp-state" style="display:none"></div>
+                    </div>
+
+                    <p style="margin:10px 0 0; font-size:13px">
+                        <a href="docs/backpack/" target="_blank" rel="noopener" style="color:var(--primary-color)" data-i18n="tx_panel.bp.guide_link">
+                            📘 Detailed ELRS Backpack setup guide →</a>
+                    </p>
+
+                    <p style="margin:10px 0 0; font-size:13px">
+                        <button class="hint" data-info="bp-setup" data-i18n-aria="tx_panel.bp.settings_aria" aria-label="Radio settings">?</button>
+                        <a href="#" data-info="bp-setup" style="color:var(--primary-color)" data-i18n="tx_panel.bp.settings_label">Radio Settings</a>
+                    </p>
+
+                    <details class="bp-steps">
+                        <summary data-i18n="tx_panel.bp.advanced_summary">Advanced</summary>
+                        <p style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                            <button id="bpStatusButton" class="bp-btn" data-i18n="tx_panel.bp.raw_status_btn">Show Raw Status</button>
+                            <button id="bpScanButton" class="bp-btn" data-i18n="tx_panel.bp.uid_scan_btn">UID Scan</button>
+                            <button class="hint" data-info="bp-advanced" data-i18n-aria="tx_panel.bp.advanced_tools_aria" aria-label="What do these tools do?">?</button>
+                        </p>
+                        <pre id="bpLog" style="margin:8px 0 0; white-space:pre-wrap; font-size:12px; color:var(--text-secondary)"></pre>
+                    </details>
+                </div>
                 <div class="row" style="margin-top:12px">
-                    <label for="lpfSlider">Filtre (LPF)</label>
+                    <label for="lpfSlider" data-i18n="tx_panel.config.lpf_label">Filter (LPF)</label>
                     <input type="range" id="lpfSlider" min="0" max="0.95" step="0.01" value="0">
                     <span class="val-badge" id="lpfVal">0.00</span>
+                </div>
+                <div class="row">
+                    <label for="kpSlider"><span data-i18n="tx_panel.config.kp_label">Shake Immunity</span><button class="hint" data-info="kp" data-i18n-aria="tx_panel.config.kp_aria" aria-label="What is shake immunity?">?</button></label>
+                    <input type="range" id="kpSlider" min="0.5" max="10" step="0.5" value="2">
+                    <span class="val-badge" id="kpVal">2.0</span>
+                </div>
+                <div class="row no-value">
+                    <label for="txPowerSelect"><span data-i18n="tx_panel.config.txp_label">Radio Power</span><button class="hint" data-info="tx-power" data-i18n-aria="tx_panel.config.txp_aria" aria-label="Which power should I choose?">?</button></label>
+                    <select id="txPowerSelect">
+                        <option value="MAX" data-i18n="tx_panel.config.txp_max">Maximum (~20 dBm, ~100 mW) — default</option>
+                        <option value="17">17 dBm (~50 mW)</option>
+                        <option value="15">15 dBm (~32 mW)</option>
+                        <option value="13">13 dBm (~20 mW)</option>
+                        <option value="11">11 dBm (~13 mW)</option>
+                        <option value="8.5" data-i18n="tx_panel.config.txp_85">8.5 dBm (~7 mW) — for ESP32-C3 Super Mini</option>
+                        <option value="7">7 dBm (~5 mW)</option>
+                        <option value="5">5 dBm (~3 mW)</option>
+                        <option value="2">2 dBm (~1.6 mW)</option>
+                    </select>
                 </div>
             </div>
 
             <div class="setting-group">
-                <h3>📐 PWM Çıkış Aralığı</h3>
-                <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">Her kanal için minimum ve maksimum PWM değerini sürükleyerek ayarlayın (500–2500 µs).</p>
+                <h3><span data-i18n="tx_panel.pwm.title">📐 PWM Output Range</span><button class="hint" data-info="pwm" data-i18n-aria="tx_panel.bp.title_aria" aria-label="About PWM range">?</button></h3>
 
                 <div class="row pwm-range-row">
                     <div class="range-label-stack">
@@ -528,31 +731,26 @@ esp-web-install-button { display:block; width:100%; }
                     </div>
                     <span class="range-badge" id="rollRangeBadge">1000<br>2000</span>
                 </div>
-                <button id="saveConfigBtn" style="margin-top:10px">
+                <button id="saveConfigBtn" style="margin-top:10px" data-i18n="tx_panel.pwm.save_btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                    Kaydet
+                    Save
                 </button>
             </div>
 
         </div>
     </div>
 
-    <div class="setting-group" style="margin-top:16px">
-        <h3>🎯 Kalibrasyon</h3>
-        <p style="font-size:13px;color:var(--text-secondary);margin:0 0 14px">Cihazı düz zemine koyun, ardından kalibre edin.</p>
-        <button id="calibrateButton">IMU Kalibre Et</button>
-    </div>
 </div>
 
 <!-- ALICI PANELİ -->
 <div class="container device-panel" id="rx-panel">
-    <h2>Alıcı (RX) — PWM Değerleri</h2>
-    <div class="info-bar waiting" id="rx-status-bar">
-        ⏳ Handshake bekleniyor — vericiyi açın ve bağlantının kurulmasını bekleyin.
+    <h2 data-i18n="rx_panel.title">🎮 Receiver (RX) — Remote Module</h2>
+    <div class="info-bar waiting" id="rx-status-bar" data-i18n="rx_panel.waiting_status">
+        ⏳ Waiting for handshake — power on the transmitter and wait for the connection to be established.
     </div>
     <div class="setting-group">
-        <h3>📊 Kanal PWM Değerleri (Canlı)</h3>
-        <div class="info-bar passive" style="margin-bottom:14px">Alıcı pasif moddadır. Tüm ayarlar verici üzerinden yapılandırılır.</div>
+        <h3 data-i18n="rx_panel.values_title">📊 Channel PWM Values (Live)</h3>
+        <div class="info-bar passive" style="margin-bottom:14px" data-i18n="rx_panel.passive_note">The receiver is in passive mode. All settings are configured through the transmitter.</div>
         <div class="row">
             <label>Yaw (Ch 1)</label>
             <input type="range" id="pwmYaw" min="1000" max="2000" value="1500" disabled>
@@ -571,14 +769,51 @@ esp-web-install-button { display:block; width:100%; }
     </div>
 </div>
 
+<!-- Kanal ↔ AUX dönüştürücü -->
+<div id="aux-modal" class="modal-overlay">
+    <div class="modal-content info-modal info-modal-wrap">
+        <button class="info-modal-close" data-close data-i18n-aria="common.close" aria-label="Close">&times;</button>
+        <h2 data-i18n="aux_modal.title">How do I find my reset AUX channel?</h2>
+        <div class="info-modal-body">
+    <div data-i18n-html="aux_modal.body"><p style="margin-top:8px">ELRS numbers channels as <b>AUX</b>, with an offset
+    (<code>AUX1 = CH5</code>). Where head tracking data actually goes depends entirely
+    on <b>HT Start Channel</b> — if <b>Aux…</b> is selected it overrides three RC channels,
+    if <b>EdgeTX</b> is selected it goes to the radio as a trainer input without touching
+    any channel. Choose your mode and the channel you're considering below.</p></div>
+    <div class="row no-value" style="margin-bottom:4px">
+    <label for="auxHtStart">HT Start Channel</label>
+    <select id="auxHtStart">
+    <option value="0">EdgeTX (trainer)</option>
+    </select>
+    </div>
+    <div class="row no-value" style="margin-bottom:4px">
+    <label for="auxChInput" data-i18n="aux_modal.channel_label">Channel I'll use</label>
+    <input type="number" id="auxChInput" min="1" max="16" value="13" data-i18n-placeholder="aux_modal.channel_placeholder" placeholder="CH number">
+    </div>
+    <div id="auxModeOut" class="bp-state" style="margin-top:4px"></div>
+    <div id="auxMapOut" class="bp-state"></div>
+    <table id="auxMapTable" style="margin-top:10px; border-collapse:collapse; font-size:12px; width:100%"></table>
+        </div>
+    </div>
+</div>
+
+<!-- Genel açıklama modalı -->
+<div id="info-modal" class="modal-overlay">
+    <div class="modal-content info-modal info-modal-wrap">
+        <button class="info-modal-close" data-close data-i18n-aria="common.close" aria-label="Close">&times;</button>
+        <h2 id="info-modal-title"></h2>
+        <div class="info-modal-body" id="info-modal-body"></div>
+    </div>
+</div>
+
 <!-- Kalibrasyon Modal -->
 <div id="cal-modal" class="modal-overlay">
     <div class="modal-content">
-        <h2 id="modal-title">Kalibrasyon Sürüyor...</h2>
-        <p id="modal-text">Cihazı 10 saniye düz zeminde sabit tutun.</p>
+        <h2 id="modal-title" data-i18n="cal_modal.running_title">Calibrating...</h2>
+        <p id="modal-text" data-i18n="cal_modal.running_text">Hold the device still on a flat surface for 10 seconds.</p>
         <div class="progress-bar"><div class="progress-bar-inner" id="prog-bar"></div></div>
         <div id="countdown-timer">10</div>
-        <button id="calibration-complete-btn" style="display:none">Tamam</button>
+        <button id="calibration-complete-btn" style="display:none" data-i18n="cal_modal.ok_btn">OK</button>
     </div>
 </div>
 
@@ -612,6 +847,22 @@ function makeFaceTexture(label, bg) {
     return new THREE.CanvasTexture(cvs);
 }
 
+function buildFaceMaterials() {
+    return [
+        new THREE.MeshStandardMaterial({ map: makeFaceTexture(I18N.t('tx_panel.cube.right'),  '#86efac'), roughness: 0.45 }),
+        new THREE.MeshStandardMaterial({ map: makeFaceTexture(I18N.t('tx_panel.cube.left'),   '#fca5a5'), roughness: 0.45 }),
+        new THREE.MeshStandardMaterial({ map: makeFaceTexture(I18N.t('tx_panel.cube.top'),    '#e0e7ff'), roughness: 0.45 }),
+        new THREE.MeshStandardMaterial({ map: makeFaceTexture(I18N.t('tx_panel.cube.bottom'), '#fde68a'), roughness: 0.45 }),
+        new THREE.MeshStandardMaterial({ map: makeFaceTexture(I18N.t('tx_panel.cube.front'),  '#7dd3fc'), roughness: 0.45 }),
+        new THREE.MeshStandardMaterial({ map: makeFaceTexture(I18N.t('tx_panel.cube.back'),   '#d8b4fe'), roughness: 0.45 }),
+    ];
+}
+
+window.htOnLangChange = function () {
+    if (model) model.material = buildFaceMaterials();
+    if (typeof applyBoardLimits === 'function') applyBoardLimits();
+};
+
 function init3D() {
     if (threeReady) return;
     threeReady = true;
@@ -637,17 +888,8 @@ function init3D() {
     controls3d.dampingFactor = 0.08;
 
     // BoxGeometry yüz sırası: +X, -X, +Y, -Y, +Z, -Z
-    const materials = [
-        new THREE.MeshStandardMaterial({ map: makeFaceTexture('SAĞ',  '#86efac'), roughness: 0.45 }),
-        new THREE.MeshStandardMaterial({ map: makeFaceTexture('SOL',  '#fca5a5'), roughness: 0.45 }),
-        new THREE.MeshStandardMaterial({ map: makeFaceTexture('ÜST',  '#e0e7ff'), roughness: 0.45 }),
-        new THREE.MeshStandardMaterial({ map: makeFaceTexture('ALT',  '#fde68a'), roughness: 0.45 }),
-        new THREE.MeshStandardMaterial({ map: makeFaceTexture('ÖN',   '#7dd3fc'), roughness: 0.45 }),
-        new THREE.MeshStandardMaterial({ map: makeFaceTexture('ARKA', '#d8b4fe'), roughness: 0.45 }),
-    ];
-
     const geo  = new THREE.BoxGeometry(2.5, 2.5, 2.5);
-    model      = new THREE.Mesh(geo, materials);
+    model      = new THREE.Mesh(geo, buildFaceMaterials());
     scene.add(model);
 
     const edges = new THREE.EdgesGeometry(geo);
@@ -684,12 +926,46 @@ const sensSlider    = document.getElementById('sensSlider');
 const sensValSpan   = document.getElementById('sensVal');
 const protoSelect   = document.getElementById('protoSelect');
 const pinInput      = document.getElementById('pinInput');
+const bindInput     = document.getElementById('bindPhraseInput');
+const uidInput      = document.getElementById('uidInput');
+const uidRow        = document.getElementById('uidRow');
+const bpStatusBtn   = document.getElementById('bpStatusButton');
+const bpTestBtn     = document.getElementById('bpTestButton');
+const bpScanBtn     = document.getElementById('bpScanButton');
+const bpTestState   = document.getElementById('bpTestState');
+const bpTestAsk     = document.getElementById('bpTestAsk');
+const bpTestVerdict = document.getElementById('bpTestVerdict');
+const bpTestYes     = document.getElementById('bpTestYes');
+const bpTestNo      = document.getElementById('bpTestNo');
+const bpLog         = document.getElementById('bpLog');
+const rcResetSelect = document.getElementById('rcResetSelect');
+const rcResetHelp   = document.getElementById('rcResetHelp');
+const rcResetFlash  = document.getElementById('rcResetFlash');
+const zeroPinInput  = document.getElementById('zeroPinInput');
+const rcResetBlock  = document.getElementById('rcResetBlock');
+const auxHtStart    = document.getElementById('auxHtStart');
+const auxChInput    = document.getElementById('auxChInput');
+const auxModeOut    = document.getElementById('auxModeOut');
+const auxMapOut     = document.getElementById('auxMapOut');
+const auxMapTable   = document.getElementById('auxMapTable');
+const outputPinRow  = document.getElementById('outputPinRow');
+const bindPhraseRow = document.getElementById('bindPhraseRow');
+const backpackInfo  = document.getElementById('backpackInfo');
+const bpPill        = document.getElementById('bpStatusPill');
 const saveConfigBtn = document.getElementById('saveConfigBtn');
 const lpfSlider     = document.getElementById('lpfSlider');
+const kpSlider      = document.getElementById('kpSlider');
+const txPowerSelect = document.getElementById('txPowerSelect');
+const kpValSpan     = document.getElementById('kpVal');
 const lpfValSpan    = document.getElementById('lpfVal');
 const sdaInput      = document.getElementById('sdaInput');
 const sclInput      = document.getElementById('sclInput');
 const applyPinBtn   = document.getElementById('applyPinButton');
+const imuSelect     = document.getElementById('imuSelect');
+const imuDetected   = document.getElementById('imuDetected');
+const axesInput     = document.getElementById('axesInput');
+const pinHelpNote   = document.getElementById('pinHelpNote');
+const zeroPinNote   = document.getElementById('zeroPinNote');
 const calibrateBtn  = document.getElementById('calibrateButton');
 const calModal      = document.getElementById('cal-modal');
 const modalTitle    = document.getElementById('modal-title');
@@ -710,6 +986,8 @@ const reverseInputs = {
     ROLL: document.getElementById('rollReverse')
 };
 
+let bpPrev = null;
+let rcResetFlashTimer = null;
 let port, reader, writer, lineBuffer = '', deviceType = null, calTimer, isClosing = false, identifyInterval = null;
 
 // ── RX PWM slider track renk güncelleme ──────────────────────────────────────
@@ -767,31 +1045,272 @@ drChannels.forEach(ch => {
 calDoneBtn.addEventListener('click', () => calModal.classList.remove('show'));
 connectBtn.addEventListener('click', () => port ? disconnectSerial() : connectSerial());
 
+// LPF rozeti bugune kadar yalnizca GET_CONFIG geldiginde guncelleniyordu;
+// kaydirici surulurken deger gorunmuyordu.
+lpfSlider.addEventListener('input', () => {
+    lpfValSpan.textContent = parseFloat(lpfSlider.value).toFixed(2);
+});
+kpSlider.addEventListener('input', () => {
+    kpValSpan.textContent = parseFloat(kpSlider.value).toFixed(1);
+});
 sensSlider.addEventListener('input', () => {
     sensValSpan.textContent = parseFloat(sensSlider.value).toFixed(1);
 });
 
-lpfSlider.addEventListener('input', () => {
-    lpfValSpan.textContent = parseFloat(lpfSlider.value).toFixed(2);
+function updateProtoVisibility() {
+    const isBackpack = protoSelect.value === '3';
+    outputPinRow.style.display  = isBackpack ? 'none' : '';
+    bindPhraseRow.style.display = isBackpack ? '' : 'none';
+    uidRow.style.display        = isBackpack ? '' : 'none';
+    backpackInfo.style.display  = isBackpack ? '' : 'none';
+    // Kumandadan sifirlama yalnizca backpack modunda calisir; buton pini her modda gecerli
+    rcResetBlock.style.display  = isBackpack ? '' : 'none';
+}
+protoSelect.addEventListener('change', updateProtoVisibility);
+updateProtoVisibility();
+
+let bpCountdown = null;
+
+bpStatusBtn.addEventListener('click', () => { bpLog.textContent = ''; writeSerial('BP_STATUS\n'); });
+
+const updateRcResetHelp = () => { rcResetHelp.innerHTML = I18N.t('tx_panel.rc_reset_help.' + rcResetSelect.value) || ''; };
+rcResetSelect.addEventListener('change', updateRcResetHelp);
+updateRcResetHelp();
+
+// ── Aciklama modallari ──────────────────────────────────────────────────────
+// Uzun anlatimlar sayfada durmaz; kullanici soru/unlem isaretine tiklayinca acilir.
+// ── Kart tablosu ─────────────────────────────────────────────────────────────
+// Aralıklar vericideki src/board_config.h > isUsableGpio() ile birebir aynı
+// olmalı; burada erken uyarı veriyoruz, son sözü yine cihaz söylüyor.
+// Yardım metinleri assets/locales/{en,tr}.js -> tx_panel.sensor.board_help_* altında.
+const BOARDS = {
+    C3:   { name: 'ESP32-C3 Mini',  ranges: [[0,10],[18,21]] },
+    DYDK: { name: 'Deneyap Kart',   ranges: [[0,5],[12,15],[18,19],[21,23],[25,27],[32,33]] },
+};
+let boardId = 'C3';
+
+function gpioOk(pin) {
+    const b = BOARDS[boardId] || BOARDS.C3;
+    return Number.isInteger(pin) && b.ranges.some(([lo, hi]) => pin >= lo && pin <= hi);
+}
+
+// Cihazın SET_AXES ayrıştırıcısının aynası: her eksen bir kez, işaret isteğe bağlı.
+function axesOk(spec) {
+    const m = spec.toUpperCase().replace(/[\s,]/g, '').match(/^([+-]?[XYZ]){3}$/);
+    if (!m) return false;
+    const axes = spec.toUpperCase().replace(/[\s,+-]/g, '');
+    return new Set(axes).size === 3;
+}
+
+function boardHelp() {
+    return I18N.t('tx_panel.sensor.board_help_' + boardId.toLowerCase());
+}
+
+// Karta göre pin alanlarının sınırlarını ve yardım metnini güncelle.
+function applyBoardLimits() {
+    const b = BOARDS[boardId] || BOARDS.C3;
+    const lo = b.ranges[0][0], hi = b.ranges[b.ranges.length - 1][1];
+    [sdaInput, sclInput, zeroPinInput].forEach(el => { el.min = lo; el.max = hi; });
+    // Not iki yerde de duruyor: pin alanları iki ayrı bölüme dağılmış durumda.
+    pinHelpNote.textContent = boardHelp();
+    zeroPinNote.textContent = boardHelp();
+}
+
+// INFO_TOPICS içerikleri assets/locales/{en,tr}.js -> info.* altında.
+const infoModal      = document.getElementById('info-modal');
+const infoModalTitle = document.getElementById('info-modal-title');
+const infoModalBody  = document.getElementById('info-modal-body');
+let   openModalEl    = null;
+
+function openModal(el) {
+    if (openModalEl) openModalEl.classList.remove('show');
+    openModalEl = el;
+    el.classList.add('show');
+}
+function closeModal() {
+    if (!openModalEl) return;
+    openModalEl.classList.remove('show');
+    openModalEl = null;
+}
+function openInfo(key) {
+    const title = I18N.t('info.' + key + '.title');
+    if (title === 'info.' + key + '.title') return;
+    infoModalTitle.textContent = title;
+    infoModalBody.innerHTML = I18N.t('info.' + key + '.body');
+    openModal(infoModal);
+}
+
+document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-info],[data-modal]');
+    if (trigger) {
+        e.preventDefault();
+        const named = trigger.getAttribute('data-modal');
+        if (named) openModal(document.getElementById(named));
+        else openInfo(trigger.getAttribute('data-info'));
+        return;
+    }
+    // Kapatma: capraz butonu ya da modal disina tiklama
+    if (e.target.closest('[data-close]') ||
+        (openModalEl && e.target === openModalEl)) closeModal();
+});
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+// ── Kanal ↔ AUX donusturucu ──────────────────────────────────────────────────
+// ELRS'te AUX1 = 4. kanal indeksi, yani CH5 (src/include/common.h). Lua'daki
+// DVR Rec / HT Start listeleri AUX10'a kadar gider → CH14.
+const AUX_FIRST_CH = 5;   // AUX1
+const AUX_LAST_CH  = 14;  // AUX10
+const HT_SPAN      = 3;   // HT Start Channel'dan itibaren Pan/Tilt/Roll
+
+for (let n = 1; n <= 10; n++) {
+    const o = document.createElement('option');
+    o.value = String(n);
+    o.textContent = `Aux${n} (CH${n + AUX_FIRST_CH - 1})`;
+    auxHtStart.appendChild(o);
+}
+auxHtStart.value = '6';   // en yaygin kurulum
+
+// Kafa takibinin kanal haritasi. Aux<n> modunda PTR yuku CH(n+4)'ten itibaren
+// ardisik uc kanali ezer (Pan/Tilt/Roll); EdgeTX modunda hicbir AUX'a
+// dokunulmaz, veri kumandaya trainer girisi olarak gider (TR1/TR2/TR3).
+const HT_ROLES = ['Pan', 'Tilt', 'Roll'];
+
+function htChannelRoles() {
+    const n = parseInt(auxHtStart.value);
+    if (!n) return {};                       // EdgeTX (trainer)
+    const first = n + AUX_FIRST_CH - 1;
+    const roles = {};
+    HT_ROLES.forEach((role, i) => { roles[first + i] = role; });
+    return roles;
+}
+
+function renderAuxMode(roles) {
+    const n = parseInt(auxHtStart.value);
+    if (!n) {
+        auxModeOut.innerHTML = I18N.t('aux_modal.aux_mode_edgetx');
+        return;
+    }
+    const chs = Object.keys(roles).map(Number).sort((a, b) => a - b);
+    const list = chs.map(c => `<b>CH${c}</b> ${roles[c]}`).join(' · ');
+    const over = chs.filter(c => c > AUX_LAST_CH);
+    auxModeOut.innerHTML = I18N.t('aux_modal.aux_mode_n', { n, list }) +
+        (over.length ? I18N.t('aux_modal.aux_mode_over_suffix', { chs: over.join(', CH') }) : '');
+}
+
+function updateAuxMap() {
+    const roles = htChannelRoles();
+    const ch    = parseInt(auxChInput.value);
+    const aux   = ch - AUX_FIRST_CH + 1;
+    renderAuxMode(roles);
+
+    let msg;
+    if (isNaN(ch)) {
+        msg = '';
+    } else if (ch < AUX_FIRST_CH) {
+        msg = I18N.t('aux_modal.map_gimbal', { ch, first: AUX_FIRST_CH });
+    } else if (ch > AUX_LAST_CH) {
+        msg = I18N.t('aux_modal.map_out_of_range', { ch, last: AUX_LAST_CH });
+    } else if (roles[ch]) {
+        msg = I18N.t('aux_modal.map_used_by_ht', { ch, aux, role: roles[ch] });
+    } else {
+        msg = I18N.t('aux_modal.map_ok', { ch, aux });
+    }
+    auxMapOut.innerHTML = msg;
+
+    // Canli harita: her kanalin o anki rolu
+    const cells = [];
+    for (let c = AUX_FIRST_CH; c <= AUX_LAST_CH; c++) {
+        const role  = roles[c];
+        const isDvr = c === ch && !role;
+        const bg = role  ? 'background:rgba(220,80,80,.18)'
+                 : isDvr ? 'background:rgba(80,180,120,.20)' : '';
+        const tag = role ? `🎯 ${role}` : (isDvr ? '✓ DVR' : '—');
+        cells.push(`<td style="padding:3px 5px;border:1px solid var(--border-light);text-align:center;${bg}">` +
+                   `CH${c}<br><b>AUX${c - AUX_FIRST_CH + 1}</b>` +
+                   `<br><span style="opacity:.75">${tag}</span></td>`);
+    }
+    auxMapTable.innerHTML = '<tr>' + cells.slice(0, 5).join('') + '</tr>' +
+                            '<tr>' + cells.slice(5).join('') + '</tr>';
+}
+
+auxHtStart.addEventListener('change', updateAuxMap);
+auxChInput.addEventListener('input', updateAuxMap);
+updateAuxMap();
+
+bpTestBtn.addEventListener('click', () => {
+    writeSerial('BP_TEST\n');
+    bpTestBtn.disabled = true;
+    bpTestAsk.style.display = 'none';
+    bpTestVerdict.style.display = 'none';
+    bpTestState.style.display = '';
+    clearInterval(bpCountdown);
+    let left = 15;
+    const tick = () => {
+        bpTestState.innerHTML = I18N.t('tx_panel.bp.test_running', { left });
+        if (left-- <= 0) clearInterval(bpCountdown);
+    };
+    tick();
+    bpCountdown = setInterval(tick, 1000);
 });
 
-applyPinBtn.addEventListener('click', () => {
-    const sda = parseInt(sdaInput.value);
-    const scl = parseInt(sclInput.value);
-    if (sda >= 0 && sda <= 39 && scl >= 0 && scl <= 39 && sda !== scl) {
-        writeSerial(`SET_I2C_PINS:${sda},${scl}\n`);
-        applyPinBtn.textContent = '✓ Kaydedildi – Cihazı Yeniden Başlatın';
-        setTimeout(() => { applyPinBtn.textContent = 'Uygula (Yeniden Başlat)'; }, 3000);
-    }
+bpTestYes.addEventListener('click', () => {
+    bpTestAsk.style.display = 'none';
+    bpTestVerdict.style.display = '';
+    bpTestVerdict.innerHTML = I18N.t('tx_panel.bp.verdict_yes');
+});
+
+bpTestNo.addEventListener('click', () => {
+    bpTestAsk.style.display = 'none';
+    bpTestVerdict.style.display = '';
+    bpTestVerdict.innerHTML = I18N.t('tx_panel.bp.verdict_no_intro') +
+        '<ol style="margin:6px 0 0; padding-left:20px">' +
+        '<li>' + I18N.t('tx_panel.bp.verdict_no_1') + '</li>' +
+        '<li>' + I18N.t('tx_panel.bp.verdict_no_2') + '</li>' +
+        '<li>' + I18N.t('tx_panel.bp.verdict_no_3') + '</li>' +
+        '<li>' + I18N.t('tx_panel.bp.verdict_no_4') + '</li>' +
+        '<li>' + I18N.t('tx_panel.bp.verdict_no_5') + '</li></ol>';
+});
+
+bpScanBtn.addEventListener('click', () => {
+    writeSerial('BP_SCAN\n');
+    clearInterval(bpCountdown);
+    let left = 10;
+    const tick = () => {
+        bpLog.textContent = I18N.t('tx_panel.bp.scan_listening', { left });
+        if (left-- <= 0) clearInterval(bpCountdown);
+    };
+    tick();
+    bpCountdown = setInterval(tick, 1000);
 });
 
 saveConfigBtn.addEventListener('click', () => {
+    const isBackpack = protoSelect.value === '3';
     const p = parseInt(pinInput.value);
-    if (p < 0 || p > 39) return;
+    if (!isBackpack && (p < 0 || p > 39)) return;
+    // Buton pini bu kartın pini; çıkış pini ise alıcının, o yüzden burada
+    // doğrulanmaz. Kontroller tek bir komut gönderilmeden önce yapılır ki
+    // reddedilen bir değer yarım kaydedilmiş bir yapılandırma bırakmasın.
+    const zp = parseInt(zeroPinInput.value, 10);
+    if (!isNaN(zp) && !gpioOk(zp)) {
+        alert(I18N.t('tx_panel.sensor.alert_invalid_zero_pin', { help: boardHelp() }));
+        return;
+    }
+    if (isBackpack) {
+        const phrase = bindInput.value.trim();
+        const uid    = uidInput.value.trim();
+        if (!phrase && !uid) { alert(I18N.t('tx_panel.alert_bind_or_uid_required')); return; }
+        if (phrase.includes(',')) { alert(I18N.t('tx_panel.alert_bind_no_comma')); return; }
+        if (phrase) writeSerial(`SET_BIND_PHRASE:${phrase}\n`);
+        writeSerial(`SET_UID:${uid || 'CLEAR'}\n`);
+        writeSerial(`SET_RC_RESET:${rcResetSelect.value}\n`);
+    }
     writeSerial(`SET_SENS:${parseFloat(sensSlider.value).toFixed(1)}\n`);
     writeSerial(`SET_PROTOCOL:${protoSelect.value}\n`);
-    writeSerial(`SET_OUTPUT_PIN:${p}\n`);
+    if (!isBackpack) writeSerial(`SET_OUTPUT_PIN:${p}\n`);
     writeSerial(`SET_LPF:${parseFloat(lpfSlider.value).toFixed(2)}\n`);
+    writeSerial(`SET_KP:${parseFloat(kpSlider.value).toFixed(1)}\n`);
+    writeSerial(`SET_TX_POWER:${txPowerSelect.value}\n`);
+    if (!isNaN(zp)) writeSerial(`SET_ZERO_PIN:${zp}\n`);
     const [yaw, pitch, roll] = drChannels;
     writeSerial(`SET_PWM_RANGE:YAW,${yaw.min.value},${yaw.max.value}\n`);
     writeSerial(`SET_PWM_RANGE:PITCH,${pitch.min.value},${pitch.max.value}\n`);
@@ -799,8 +1318,34 @@ saveConfigBtn.addEventListener('click', () => {
     writeSerial(`SET_REVERSE:YAW,${reverseInputs.YAW.checked ? 1 : 0}\n`);
     writeSerial(`SET_REVERSE:PITCH,${reverseInputs.PITCH.checked ? 1 : 0}\n`);
     writeSerial(`SET_REVERSE:ROLL,${reverseInputs.ROLL.checked ? 1 : 0}\n`);
-    saveConfigBtn.textContent = '✓ Kaydedildi';
-    setTimeout(() => { saveConfigBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Kaydet'; }, 1500);
+    saveConfigBtn.textContent = isBackpack ? I18N.t('tx_panel.pwm.saved_backpack_btn') : I18N.t('tx_panel.pwm.saved_btn');
+    if (isBackpack) bpPrev = null;
+    setTimeout(() => { saveConfigBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> ' + I18N.t('tx_panel.pwm.save_btn'); }, isBackpack ? 4000 : 1500);
+});
+
+// Sensör paneli: seçim + eksen + I2C pinleri.
+// Bu buton bugüne kadar hiçbir olaya bağlı değildi, yani SET_I2C_PINS
+// konfigüratörden hiç gönderilmiyordu.
+applyPinBtn.addEventListener('click', async () => {
+    const sda = parseInt(sdaInput.value, 10);
+    const scl = parseInt(sclInput.value, 10);
+    const axes = axesInput.value.trim();
+
+    if (!gpioOk(sda) || !gpioOk(scl)) { alert(I18N.t('tx_panel.sensor.alert_invalid_i2c', { help: boardHelp() })); return; }
+    if (sda === scl) { alert(I18N.t('tx_panel.sensor.alert_sda_scl_same')); return; }
+    if (!axesOk(axes)) {
+        alert(I18N.t('tx_panel.sensor.alert_axes_format'));
+        return;
+    }
+
+    // SET_I2C_PINS en sonda: cihaz onu kaydedip kendini yeniden baslatir.
+    await writeSerial(`SET_IMU:${['AUTO','MPU6050','LSM6DSM','BNO085'][imuSelect.value] || 'AUTO'}\n`);
+    await writeSerial(`SET_AXES:${axes.toUpperCase()}\n`);
+    await writeSerial(`SET_I2C_PINS:${sda},${scl}\n`);
+
+    applyPinBtn.textContent = I18N.t('tx_panel.sensor.apply_sent');
+    setTimeout(() => { applyPinBtn.textContent = I18N.t('tx_panel.i2c.apply_btn'); }, 4000);
+    reconnectAfterRestart();
 });
 
 calibrateBtn.addEventListener('click', () => { writeSerial('calibrate\n'); startCalVisuals(); });
@@ -808,38 +1353,81 @@ calibrateBtn.addEventListener('click', () => { writeSerial('calibrate\n'); start
 // ── Seri Port ────────────────────────────────────────────────────────────────
 async function connectSerial() {
     connectBtn.disabled = true;
-    connectBtn.innerHTML = '<div class="loader" style="width:16px;height:16px;border-top-color:white;margin:0"></div>&nbsp;Bağlanılıyor...';
-    statusDiv.textContent = 'Port seçiliyor...';
+    connectBtn.innerHTML = '<div class="loader" style="width:16px;height:16px;border-top-color:white;margin:0"></div>&nbsp;' + I18N.t('header.connecting_btn');
+    statusDiv.textContent = I18N.t('header.status_selecting_port');
     statusDiv.className = '';
     try {
-        port = await navigator.serial.requestPort({ filters: [
+        const p = await navigator.serial.requestPort({ filters: [
             { usbVendorId: 0x10C4 }, { usbVendorId: 0x1A86 }, { usbVendorId: 0x303A }
         ]});
-        await port.open({ baudRate: 115200 });
-        connectBtn.disabled = false;
-        connectBtn.className = 'btn-connected';
-        connectBtn.innerHTML = ICON_UNPLUG + '&nbsp;Bağlantıyı Kes';
-        statusDiv.textContent = 'Cihaz tanımlanıyor...';
-        statusDiv.className = 'connected';
-        const enc = new TextEncoderStream();
-        enc.readable.pipeTo(port.writable);
-        writer = enc.writable.getWriter();
-        const dec = new TextDecoderStream();
-        port.readable.pipeTo(dec.writable);
-        reader = dec.readable.getReader();
-        readLoop();
-        writeSerial('GET_ID\n');
-        identifyInterval = setInterval(() => {
-            if (!deviceType) writeSerial('GET_ID\n');
-            else { clearInterval(identifyInterval); identifyInterval = null; }
-        }, 2000);
+        await openPort(p);
     } catch (err) {
         connectBtn.disabled = false;
         connectBtn.className = 'btn-disconnected';
-        connectBtn.innerHTML = ICON_USB + '&nbsp;USB\'den Bağlan';
-        statusDiv.textContent = err.message.includes('No port selected') ? 'Bağlı Değil' : 'Bağlantı Hatası!';
+        connectBtn.innerHTML = ICON_USB + '&nbsp;' + I18N.t('header.connect_btn');
+        statusDiv.textContent = err.message.includes('No port selected') ? I18N.t('header.status_disconnected') : I18N.t('header.status_error');
         statusDiv.className = 'disconnected';
     }
+}
+
+// Seçilmiş (izni verilmiş) bir portu açıp okuma döngüsünü ve tanımlamayı başlatır.
+async function openPort(p) {
+    await p.open({ baudRate: 115200 });
+    port = p;
+    connectBtn.disabled = false;
+    connectBtn.className = 'btn-connected';
+    connectBtn.innerHTML = ICON_UNPLUG + '&nbsp;' + I18N.t('header.disconnect_btn');
+    statusDiv.textContent = I18N.t('header.status_identifying');
+    statusDiv.className = 'connected';
+    const enc = new TextEncoderStream();
+    enc.readable.pipeTo(port.writable);
+    writer = enc.writable.getWriter();
+    const dec = new TextDecoderStream();
+    port.readable.pipeTo(dec.writable);
+    reader = dec.readable.getReader();
+    readLoop();
+    writeSerial('GET_ID\n');
+    identifyInterval = setInterval(() => {
+        if (!deviceType) writeSerial('GET_ID\n');
+        else { clearInterval(identifyInterval); identifyInterval = null; }
+    }, 2000);
+}
+
+// Cihaz kendini yeniden başlattığında (ör. I2C pinleri kaydedilince) portu
+// bırakır ve aynı cihaz geri gelince kullanıcıya port seçtirmeden yeniden
+// bağlanır. ESP32-C3'ün yerleşik USB'si yeniden başlatmada kaybolup geri
+// geldiği için port nesnesi değişebilir; USB kimliğiyle eşleştiririz.
+let reconnecting = false;
+async function reconnectAfterRestart() {
+    if (reconnecting || !port) return;
+    reconnecting = true;
+    const info = port.getInfo ? port.getInfo() : {};
+    await disconnectSerial();
+    connectBtn.disabled = true;
+    statusDiv.textContent = I18N.t('header.status_restarting');
+    statusDiv.className = '';
+    const deadline = Date.now() + 15000;
+    await new Promise(r => setTimeout(r, 1500));   // cihaz resetlensin
+    while (Date.now() < deadline) {
+        try {
+            const ports = await navigator.serial.getPorts();
+            const same = ports.filter(p => {
+                const i = p.getInfo();
+                return i.usbVendorId === info.usbVendorId && i.usbProductId === info.usbProductId;
+            });
+            for (const p of same) {
+                // USB-UART köprülü kartlarda (Deneyap) port nesnesi aynı kalır;
+                // önceki kapatma tamamlanmadıysa önce kapat.
+                if (p.readable || p.writable) { try { await p.close(); } catch (_) {} }
+                try { await openPort(p); reconnecting = false; return; } catch (_) {}
+            }
+        } catch (_) {}
+        await new Promise(r => setTimeout(r, 1000));
+    }
+    reconnecting = false;
+    connectBtn.disabled = false;
+    statusDiv.textContent = I18N.t('header.status_reconnect_manual');
+    statusDiv.className = 'disconnected';
 }
 
 async function disconnectSerial() {
@@ -853,8 +1441,8 @@ async function disconnectSerial() {
     port = null;
     connectBtn.disabled = false;
     connectBtn.className = 'btn-disconnected';
-    connectBtn.innerHTML = ICON_USB + '&nbsp;USB\'den Bağlan';
-    statusDiv.textContent = 'Bağlı Değil';
+    connectBtn.innerHTML = ICON_USB + '&nbsp;' + I18N.t('header.connect_btn');
+    statusDiv.textContent = I18N.t('header.status_disconnected');
     statusDiv.className = 'disconnected';
     txPanel.style.display = 'none';
     rxPanel.style.display = 'none';
@@ -883,6 +1471,21 @@ async function readLoop() {
 }
 
 // ── Seri Veri İşleme ─────────────────────────────────────────────────────────
+// Bağlı sensörü ve seçimin onunla uyuşup uyuşmadığını gösterir.
+function renderImuBadge(detected) {
+    if (detected === null) return;
+    const board = (BOARDS[boardId] || BOARDS.C3).name;
+    if (!detected || detected === 'YOK') {
+        imuDetected.className = 'bp-pill bp-err';
+        imuDetected.innerHTML = I18N.t('tx_panel.sensor.imu_badge_error', { board });
+        return;
+    }
+    const forced = imuSelect.value !== '0';
+    imuDetected.className = 'bp-pill bp-ok';
+    imuDetected.innerHTML = I18N.t('tx_panel.sensor.imu_badge_ok', { board, detected }) +
+        (forced ? I18N.t('tx_panel.sensor.imu_badge_manual_suffix') : I18N.t('tx_panel.sensor.imu_badge_auto_suffix'));
+}
+
 function handleLine(line) {
     // Cihaz tanıma
     if (line.startsWith('ID:')) {
@@ -890,7 +1493,7 @@ function handleLine(line) {
         if (id === 'TX' && deviceType !== 'TX') {
             deviceType = 'TX';
             if (identifyInterval) { clearInterval(identifyInterval); identifyInterval = null; }
-            statusDiv.textContent = 'Bağlı: Verici (TX)';
+            statusDiv.textContent = I18N.t('header.status_connected_tx');
             fwContainer.style.display = 'none';
             txPanel.style.display = 'block';
             rxPanel.style.display = 'none';
@@ -900,7 +1503,7 @@ function handleLine(line) {
         } else if (id === 'RX' && deviceType !== 'RX') {
             deviceType = 'RX';
             if (identifyInterval) { clearInterval(identifyInterval); identifyInterval = null; }
-            statusDiv.textContent = 'Bağlı: Alıcı (RX)';
+            statusDiv.textContent = I18N.t('header.status_connected_rx');
             fwContainer.style.display = 'none';
             rxPanel.style.display = 'block';
             txPanel.style.display = 'none';
@@ -946,7 +1549,7 @@ function handleLine(line) {
         if (rxStatusBar.classList.contains('waiting')) {
             rxStatusBar.classList.remove('waiting');
             rxStatusBar.classList.add('passive');
-            rxStatusBar.textContent = '✅ PWM veri akışı aktif.';
+            rxStatusBar.textContent = I18N.t('rx_panel.pwm_active_status');
         }
         return;
     }
@@ -954,9 +1557,47 @@ function handleLine(line) {
     // TX konfig: CONFIG:PROTO:0,PIN:7,SENS:5.50,YAW:1000-2000,PITCH:1000-2000,ROLL:1000-2000
     if (line.startsWith('CONFIG:')) {
         const chMap = { YAW: drChannels[0], PITCH: drChannels[1], ROLL: drChannels[2] };
+        let detectedImu = null;
         line.substring(7).split(',').forEach(part => {
-            if (part.startsWith('PROTO:'))     protoSelect.value = part.substring(6);
+            // BOARD cihazın çıktısında ilk sırada gelir, böylece pin alanlarının
+            // sınırları SDA/SCL/ZPIN okunmadan önce karta göre ayarlanmış olur.
+            if (part.startsWith('BOARD:')) {
+                const id = part.substring(6);
+                boardId = BOARDS[id] ? id : 'C3';
+                applyBoardLimits();
+            }
+            else if (part.startsWith('IMUSEL:')) imuSelect.value = part.substring(7);
+            else if (part.startsWith('IMU:'))    detectedImu = part.substring(4);
+            else if (part.startsWith('AXES:'))   axesInput.value = part.substring(5);
+            else if (part.startsWith('KP:')) {
+                const v = parseFloat(part.substring(3));
+                kpSlider.value = v;
+                kpValSpan.textContent = v.toFixed(1);
+            }
+            else if (part.startsWith('PROTO:'))     { protoSelect.value = part.substring(6); updateProtoVisibility(); }
             else if (part.startsWith('PIN:'))  pinInput.value    = part.substring(4);
+            else if (part.startsWith('BIND:')) bindInput.value   = part.substring(5);
+            else if (part.startsWith('RCRST:')) { rcResetSelect.value = part.substring(6); updateRcResetHelp(); }
+            else if (part.startsWith('ZPIN:')) zeroPinInput.value = part.substring(5);
+            else if (part.startsWith('TXP:')) {
+                // MAX ya da kayitli dBm (ör. 8.50). Listede olmayan bir deger
+                // elle girilmisse kaybolmasin diye secenek olarak eklenir.
+                const raw = part.substring(4).trim();
+                if (raw === 'MAX') txPowerSelect.value = 'MAX';
+                else {
+                    const dbm = parseFloat(raw);
+                    let opt = [...txPowerSelect.options].find(o => o.value !== 'MAX' && parseFloat(o.value) === dbm);
+                    if (!opt && !isNaN(dbm)) {
+                        opt = new Option(`${dbm} dBm (~${Math.pow(10, dbm / 10).toFixed(1)} mW)`, String(dbm));
+                        txPowerSelect.add(opt);
+                    }
+                    if (opt) txPowerSelect.value = opt.value;
+                }
+            }
+            else if (part.startsWith('UID:')) {
+                const u = part.substring(4).split('-').map(h => parseInt(h, 16));
+                uidInput.value = u.every(b => b === 0) ? '' : u.join(',');
+            }
             else if (part.startsWith('SENS:')) {
                 const v = parseFloat(part.substring(5));
                 sensSlider.value = v;
@@ -980,6 +1621,89 @@ function handleLine(line) {
                 }
             }
         });
+        renderImuBadge(detectedImu);
+        return;
+    }
+
+    // Kumandadan sifirlama olayi: RC_RESET:HT | RC_RESET:DVR
+    if (line.startsWith('RC_RESET:')) {
+        const src = line.substring(9).trim() === 'DVR' ? 'DVR Rec' : 'HT Enable';
+        rcResetFlash.style.display = '';
+        rcResetFlash.innerHTML = I18N.t('tx_panel.reset_from_radio', { src, time: new Date().toLocaleTimeString() });
+        clearTimeout(rcResetFlashTimer);
+        rcResetFlashTimer = setTimeout(() => { rcResetFlash.style.display = 'none'; }, 6000);
+        return;
+    }
+
+    // BP_STATUS satirlari
+    if (line.startsWith('BP_STATUS:')) {
+        bpLog.textContent += line.substring(10).trim() + '\n';
+        return;
+    }
+    if (line.startsWith('BP_SCAN:')) {
+        const body = line.substring(8).trim();
+        if (body.startsWith('bitti')) { clearInterval(bpCountdown); bpLog.textContent = ''; }
+        bpLog.textContent += body + '\n';
+        return;
+    }
+    // BP_TEST: bitti,<gonderilen>,<ack>
+    if (line.startsWith('BP_TEST:')) {
+        clearInterval(bpCountdown);
+        bpTestBtn.disabled = false;
+        const parts = line.substring(8).split(',');
+        const sent = parseInt(parts[1]), ack = parseInt(parts[2]);
+        bpTestState.style.display = '';
+        if (!isNaN(sent) && sent > 0) {
+            const q = Math.round(100 * ack / sent);
+            bpTestState.innerHTML = I18N.t('tx_panel.bp.test_finished_pct', { sent, q });
+            bpTestAsk.style.display = q > 0 ? '' : 'none';
+            if (q === 0) {
+                bpTestVerdict.style.display = '';
+                bpTestVerdict.innerHTML = I18N.t('tx_panel.bp.test_finished_none');
+            }
+        } else {
+            bpTestState.textContent = I18N.t('tx_panel.bp.test_finished_plain');
+            bpTestAsk.style.display = '';
+        }
+        return;
+    }
+
+    // Backpack durumu: BP:<aktif>,<link>,<htEnable>[,<ack_ok>,<ack_yok>]
+    if (line.startsWith('BP:')) {
+        const v = line.substring(3).split(',').map(x => parseInt(x.trim()));
+        const act = v[0], ht = v[2];
+        const hasAck = v.length >= 5 && !isNaN(v[3]) && !isNaN(v[4]);
+        let cls = 'bp-ok', msg = '';
+        let dOk = 1, dFail = 0, measuring = false;
+
+        if (hasAck) {
+            if (bpPrev) { dOk = v[3] - bpPrev.ok; dFail = v[4] - bpPrev.fail; }
+            else measuring = true;
+            bpPrev = { ok: v[3], fail: v[4] };
+        }
+
+        if (act !== 1) {
+            cls = 'bp-err';
+            msg = I18N.t('tx_panel.bp.pill_inactive');
+        } else if (measuring) {
+            cls = 'bp-idle'; msg = I18N.t('tx_panel.bp.pill_measuring');
+        } else if (hasAck && dOk === 0 && dFail === 0) {
+            cls = 'bp-warn';
+            msg = I18N.t('tx_panel.bp.pill_no_data');
+        } else if (hasAck && dOk === 0) {
+            cls = 'bp-err';
+            msg = I18N.t('tx_panel.bp.pill_no_ack');
+        } else if (ht === 0) {
+            cls = 'bp-warn';
+            msg = I18N.t('tx_panel.bp.pill_ht_off');
+        } else {
+            const q = hasAck ? Math.round(100 * dOk / (dOk + dFail)) : null;
+            cls = 'bp-ok';
+            msg = I18N.t('tx_panel.bp.pill_ok') + (q !== null ? I18N.t('tx_panel.bp.pill_ok_link', { q }) : '') + '.' +
+                  '<div style="font-weight:400; opacity:.85; margin-top:4px">' + I18N.t('tx_panel.bp.pill_ok_hint') + '</div>';
+        }
+        bpPill.className = 'bp-pill ' + cls;
+        bpPill.innerHTML = msg;
         return;
     }
 
@@ -992,8 +1716,8 @@ function handleLine(line) {
 
 // ── Kalibrasyon ──────────────────────────────────────────────────────────────
 function startCalVisuals() {
-    modalTitle.textContent = 'Kalibrasyon Sürüyor...';
-    modalText.textContent  = 'Cihazı 10 saniye düz zeminde sabit tutun.';
+    modalTitle.textContent = I18N.t('cal_modal.running_title');
+    modalText.textContent  = I18N.t('cal_modal.running_text');
     progBar.style.width = '0%';
     progBar.style.backgroundColor = 'var(--primary-color)';
     countdown.textContent = '10';
@@ -1008,15 +1732,15 @@ function startCalVisuals() {
         countdown.textContent = s;
         if (s <= 0) {
             clearInterval(calTimer); calTimer = null;
-            countdown.textContent = "ESP'den onay bekleniyor...";
+            countdown.textContent = I18N.t('cal_modal.waiting_esp');
         }
     }, 1000);
 }
 
 function showCalComplete() {
     if (calTimer) { clearInterval(calTimer); calTimer = null; }
-    modalTitle.textContent = 'Kalibrasyon Başarılı!';
-    modalText.textContent  = 'Sensör ofsetleri kaydedildi.';
+    modalTitle.textContent = I18N.t('cal_modal.success_title');
+    modalText.textContent  = I18N.t('cal_modal.success_text');
     progBar.style.width = '100%';
     progBar.style.backgroundColor = 'var(--success-color)';
     countdown.style.display = 'none';
@@ -1044,10 +1768,11 @@ async function loadFirmwareInfo() {
             installEl.manifest = url;
             flashBtn.disabled  = false;
         } catch (_) {
-            verDiv.innerHTML = '<span style="color:var(--warning-color)">⚠ Firmware bulunamadi</span>';
+            verDiv.innerHTML = '<span style="color:var(--warning-color)">' + I18N.t('firmware.not_found') + '</span>';
         }
     }));
 }
+applyBoardLimits();   // cihaz bağlanana kadar varsayılan kart (C3) sınırları
 loadFirmwareInfo();
 
 </script>

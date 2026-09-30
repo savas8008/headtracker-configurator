@@ -1,0 +1,126 @@
+# Technical notes
+
+This page is for developers and anyone curious about the protocol. For normal use the
+[Configurator](konfigurator.md) and [ELRS Backpack](backpack.md) pages are enough.
+
+## Software components
+
+| Component | Main parts |
+|-----------|------------|
+| Transmitter firmware | main loop, IMU reading, custom ESP-NOW protocol, backpack (MSP) module |
+| Receiver firmware | main loop, ESP-NOW reception, PPM and SBUS generators |
+| Configurator | single-file browser app and this documentation site |
+
+!!! note "Source code"
+    The firmware repositories are private. Compiled builds are published publicly and
+    [flashed from the configurator](firmware.md). Contact the project owner for source access.
+
+## Serial commands (115200 baud)
+
+### Transmitter
+
+| Command | Description |
+|---------|-------------|
+| `GET_ID` | returns `ID:TX` |
+| `GET_DATA` | starts the continuous angle/status stream |
+| `GET_CONFIG` | dumps the whole configuration on one line |
+| `calibrate` | IMU calibration (10 s, stored in NVS) |
+| `SET_PROTOCOL:0-3` | output mode |
+| `SET_SENS:5.5` | sensitivity |
+| `SET_LPF:0.00-0.95` | low-pass filter |
+| `SET_I2C_PINS:SDA,SCL` | I2C pins |
+| `SET_PWM_RANGE:YAW\|PITCH\|ROLL,min,max` | per-axis PWM range |
+| `SET_REVERSE:YAW\|PITCH\|ROLL,0\|1` | axis reverse |
+| `SET_BIND_PHRASE:<text>` | ELRS bind phrase (max 32 chars, no commas) |
+| `SET_UID:a,b,c,d,e,f` | set the UID directly; `SET_UID:CLEAR` to clear |
+| `SET_RC_RESET:0-3` | zeroing trigger from the radio (bit mask: 1=HT Enable, 2=DVR Rec) |
+| `BP_STATUS` | backpack diagnostic dump |
+| `BP_TEST` | 15 s channel sweep test |
+| `BP_SCAN` | 10 s ESP-NOW transmitter scan |
+
+### Receiver
+
+| Command | Description |
+|---------|-------------|
+| `GET_ID` | returns `ID:RX` |
+| `GET_DATA` | streams the PWM values |
+
+## Custom ESP-NOW protocol (modes 0–2)
+
+The transmitter broadcasts a single `ht_packet_t` struct:
+
+- `HT_PKT_HANDSHAKE` — protocol, output pin, sensitivity, PWM ranges
+- `HT_PKT_READY` — receiver acknowledgement
+- `HT_PKT_ORIENT` — yaw / pitch / roll
+
+The receiver learns its settings from the handshake and needs no configuration of its own.
+
+## ELRS Backpack protocol (mode 3)
+
+The transmitter behaves like an ExpressLRS VRX backpack.
+
+**Identity (UID)** — derived exactly as ExpressLRS `build_flags.py` does:
+
+```
+UID = md5('-DMY_BINDING_PHRASE="<phrase>"')[0:6]
+UID[0] &= ~0x01      # MAC must be unicast → first byte even
+```
+
+The UID is both the device's WiFi MAC address and the ESP-NOW destination; both sides
+use the same address. The TX backpack drops packets whose source MAC doesn't match its UID.
+
+**Transport:** WiFi STA, channel **1**, unencrypted ESP-NOW.
+
+**Outgoing — `MSP_ELRS_BACKPACK_SET_PTR (0x0383)`**, every 20 ms:
+3 × int16 CRSF values (191…1792), ordered **Pan / Tilt / Roll**.
+
+**Incoming — `MSP_ELRS_BACKPACK_SET_HEAD_TRACKING (0x030D)`**: the radio's HT Enable
+state. The TX only broadcasts it *on change*, so a device powered up later would never
+learn it; we request the cached packet with `MSP_ELRS_REQU_VTX_PKT (0x0B)`.
+
+**Incoming — `MSP_ELRS_BACKPACK_SET_RECORDING_STATE (0x0305)`**: the state of the
+`DVR Rec` AUX in ELRS Lua. The TX module emits it only when the switch changes
+position, and the TX backpack does not cache it (`SendCachedMSP()` only replays the
+VTX and HT packets), so every packet that arrives is a genuine user action.
+
+**Zeroing from the radio** is built on these two incoming messages: an off→on
+transition of `0x030D` and any change of `0x0305` each count as a zeroing event.
+Which ones are listened to is selected with the `SET_RC_RESET` bit mask. The event is
+flagged with a 32-bit counter in the ESP-NOW receive task and consumed in `loop()` via
+`takeResetRequest()` — the IMU reference quaternion is never touched from another task,
+and no event is lost without needing a lock. The first 3 s after start-up
+(`BACKPACK_RESET_SUPPRESS_MS`) are ignored, because a packet arriving in that window
+may be the cache sync we asked for ourselves.
+
+**MSP v2 frame:** `$X<` + flags(1) + function(2, LE) + payloadSize(2, LE) + payload +
+`crc8_dvb_s2` (over header and payload, polynomial `0xD5`).
+
+!!! note "PTR is sent regardless of HT state"
+    On the ELRS side `processPanTiltRollPacket` runs unconditionally; channel override
+    is already gated by HT Enable. So the system works even if `0x030D` never arrives.
+
+## Persistent storage (NVS)
+
+| Namespace | Contents |
+|-----------|----------|
+| `ht_verici` | protocol, pins, sensitivity, LPF, PWM ranges, reverse, bind phrase, UID, `rcReset` |
+| `imu-offsets` | 6 offsets (accel/gyro X-Y-Z) and the `calibrated_ok` flag |
+
+## Known traps
+
+- **The backpack ships without an address** (`00:00:00:00:00:00`). Until you press
+  `[Bind]` once in ELRS Lua, nothing is received — this is the biggest time sink.
+- **`Telemetry: WiFi`** makes the backpack boot into its WiFi service and never start
+  ESP-NOW; head tracking dies completely. `Off` and `ESPNOW` both work.
+- **`HT Enable` / `HT Start Channel` are per model** and reset when you switch models.
+  `DVR Rec` and `Telemetry` are global — one more reason to prefer `DVR Rec` for
+  zeroing from the radio.
+- **The same MAC address** is used by the TX backpack, by us, and by the goggles if
+  present. Goggles and tracker powered at once will collide.
+- **Changing modes** changes the WiFi MAC, so it requires a restart.
+
+## Release flow
+
+Firmware changes are built with PlatformIO in CI; on a successful build the binaries are
+pushed to the public distribution repository, and the configurator serves that version.
+Every firmware a user receives has therefore passed a build.

@@ -1,0 +1,53 @@
+# FPV Head Tracker
+
+ESP32 tabanlı, kafa hareketinizi FPV kameranızın gimbal'ine taşıyan açık kaynaklı
+bir head tracker sistemi. Başınızı çevirdiğinizde kamera da çevrilir.
+ESP32-C3 Mini, Deneyap Kart ve CodeCell C3 ile; MPU6050, LSM6DSM ve BNO085 sensörleriyle çalışır.
+
+## Sistem neyden oluşuyor
+
+| Parça | Nerede durur | Ne yapar |
+|-------|--------------|----------|
+| **Verici** | Gözlüğün/kaskın üstünde | IMU ile kafa açısını okur, kablosuz gönderir |
+| **Alıcı** | Kumandanın trainer portunda | Gelen açıyı PPM veya SBUS sinyaline çevirir |
+| **Konfigüratör** | Tarayıcıda | USB ile ayar yapar, kalibrasyon ve teşhis sunar |
+
+Dördüncü bir seçenek daha var: **ELRS Backpack modu**. Bu modda alıcı modüle hiç
+gerek kalmaz — verici, veriyi doğrudan kumandanızdaki ExpressLRS modülünün backpack'ine
+gönderir, kanallar RC linkine oradan işlenir.
+
+## Hangi modu seçmeliyim?
+
+``` mermaid
+graph TD
+    A[Kumandanızda ELRS modülü<br>ve backpack var mı?] -->|Evet| B[ELRS Backpack modu<br>alıcı modül gerekmez]
+    A -->|Hayır| C[Kumandanın trainer girişi<br>hangisini kabul ediyor?]
+    C -->|PPM| D[PPM modu]
+    C -->|SBUS| E[SBUS modu<br>ters çalışırsa SBUS ters]
+```
+
+| Mod | Alıcı modül | Kumanda bağlantısı |
+|-----|-------------|--------------------|
+| PPM | gerekli | Trainer portu, PPM |
+| SBUS | gerekli | Trainer portu, SBUS |
+| SBUS (ters) | gerekli | Trainer portu, ters SBUS isteyen kumandalar |
+| **ELRS Backpack** | **gerekmez** | ESP-NOW ile ELRS TX backpack |
+
+## Hızlı başlangıç
+
+1. [Donanımı kurun](donanim.md) — verici ve (kullanacaksanız) alıcı
+2. [Firmware yükleyin](firmware.md)
+3. [Konfigüratörden ayarlayın ve kalibre edin](konfigurator.md)
+4. Modunuzu seçin: [PPM/SBUS](modlar.md) veya [ELRS Backpack](backpack.md)
+
+!!! tip "Bir şey çalışmıyorsa"
+    Önce [Sorun Giderme](sorun-giderme.md) sayfasına bakın. Backpack moduna özel
+    sorunlar için [ELRS Backpack](backpack.md) sayfasının sonundaki tablo daha faydalı.
+
+## Firmware nereden geliyor?
+
+Derlenmiş firmware dosyaları herkese açık olarak yayınlanır ve konfigüratör bunları
+doğrudan tarayıcıdan cihaza yazabilir — dosya indirmenize gerek yoktur.
+Ayrıntı: [Firmware Yükleme](firmware.md).
+
+Kaynak kod depoları özeldir; erişim için proje sahibine başvurun.
