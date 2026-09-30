@@ -489,14 +489,22 @@ esp-web-install-button { display:block; width:100%; }
         <div class="hw-support-grid">
             <div>
                 <h4 data-i18n="firmware.hw_boards_title">Boards</h4>
-                <ul data-i18n-html="firmware.hw_boards_list"></ul>
+                <ul data-i18n-html="firmware.hw_boards_list">
+                    <li><b>ESP32-C3 Mini</b> — SDA 8 / SCL 9</li>
+                    <li><b>Deneyap Kart / 1A</b> — SDA 4 / SCL 15 (built-in LSM6DSM)</li>
+                    <li><b>CodeCell C3</b> — SDA 8 / SCL 9 (built-in BNO085)</li>
+                </ul>
             </div>
             <div>
                 <h4 data-i18n="firmware.hw_sensors_title">Sensors (auto-detected)</h4>
-                <ul data-i18n-html="firmware.hw_sensors_list"></ul>
+                <ul data-i18n-html="firmware.hw_sensors_list">
+                    <li><b>MPU6050</b> (+ MPU6500 / 9250 clones)</li>
+                    <li><b>LSM6DSM</b> family (DSL / DS3 / DSO / DSR)</li>
+                    <li><b>BNO085</b> — has its own fusion and continuous calibration</li>
+                </ul>
             </div>
         </div>
-        <p data-i18n="firmware.hw_note"></p>
+        <p data-i18n="firmware.hw_note">Any board works with any sensor; if you wire an external sensor, set the SDA/SCL pins after connecting.</p>
     </div>
 </div>
 

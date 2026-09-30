@@ -40,25 +40,35 @@ const I18N = (() => {
         }
     }
 
+    // Anahtar locale'de yoksa (ör. tarayıcı önbelleğinden eski bir locale
+    // dosyası geldiyse) öğeye dokunma: HTML'deki varsayılan metin kalır,
+    // kullanıcı ham anahtar adını görmez.
+    function has(key) { return t(key) !== key; }
+
     function applyDataAttrs() {
         document.querySelectorAll('[data-i18n]').forEach(el => {
-            const val = t(el.getAttribute('data-i18n'));
-            setTextKeepIcon(el, val);
+            const key = el.getAttribute('data-i18n');
+            if (has(key)) setTextKeepIcon(el, t(key));
         });
         document.querySelectorAll('[data-i18n-html]').forEach(el => {
-            el.innerHTML = t(el.getAttribute('data-i18n-html'));
+            const key = el.getAttribute('data-i18n-html');
+            if (has(key)) el.innerHTML = t(key);
         });
         document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-            el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (has(key)) el.placeholder = t(key);
         });
         document.querySelectorAll('[data-i18n-title]').forEach(el => {
-            el.title = t(el.getAttribute('data-i18n-title'));
+            const key = el.getAttribute('data-i18n-title');
+            if (has(key)) el.title = t(key);
         });
         document.querySelectorAll('[data-i18n-aria]').forEach(el => {
-            el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+            const key = el.getAttribute('data-i18n-aria');
+            if (has(key)) el.setAttribute('aria-label', t(key));
         });
         document.querySelectorAll('[data-i18n-alt]').forEach(el => {
-            el.alt = t(el.getAttribute('data-i18n-alt'));
+            const key = el.getAttribute('data-i18n-alt');
+            if (has(key)) el.alt = t(key);
         });
     }
 
