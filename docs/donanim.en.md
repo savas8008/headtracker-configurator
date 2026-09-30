@@ -5,7 +5,7 @@
 | Component | Value |
 |-----------|-------|
 | Board | ESP32-C3 Mini **or** Deneyap Kart |
-| Sensor | MPU6050 or LSM6DSM (I2C) |
+| Sensor | MPU6050, LSM6DSM or BNO085 (I2C) |
 | Supply | 3.3 V |
 | Serial | 115200 baud |
 
@@ -29,7 +29,7 @@ LSM6DSM `0x6A`/`0x6B`).
 | SCL | Per the table above |
 
 The I2C pins are not fixed — if your board differs, change them in the configurator's
-**Sensor** section and restart the device. The same section lets you pick the sensor
+**Sensor** section and press **Apply**; the device restarts itself. The same section lets you pick the sensor
 by hand, but normally leave it on **Automatic**.
 
 !!! tip "Why Deneyap Kart is convenient"

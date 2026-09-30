@@ -9,6 +9,8 @@ window.HT_LOCALE_EN = {
         status_disconnected: 'Not connected',
         status_selecting_port: 'Selecting port...',
         status_identifying: 'Identifying device...',
+        status_restarting: 'Device restarting…',
+        status_reconnect_manual: 'Could not reconnect — connect via USB again',
         status_error: 'Connection error!',
         status_connected_tx: 'Connected: Head Tracker',
         status_connected_rx: 'Connected: Receiver Module',
@@ -36,6 +38,16 @@ window.HT_LOCALE_EN = {
         tx_card_icon_aria: 'FPV goggle head — head tracker device',
         tx_flash_btn: '⚡ Flash Head Tracker',
         unsupported: '⚠️ Chrome/Edge required',
+        hw_title: '🧩 Supported Boards and Sensors',
+        hw_boards_title: 'Boards',
+        hw_boards_list: `<li><b>ESP32-C3 Mini</b> — SDA 8 / SCL 9</li>
+            <li><b>Deneyap Kart / 1A</b> — SDA 4 / SCL 15 (built-in LSM6DSM)</li>
+            <li><b>CodeCell C3</b> — SDA 8 / SCL 9 (built-in BNO085)</li>`,
+        hw_sensors_title: 'Sensors (auto-detected)',
+        hw_sensors_list: `<li><b>MPU6050</b> (+ MPU6500 / 9250 clones)</li>
+            <li><b>LSM6DSM</b> family (DSL / DS3 / DSO / DSR)</li>
+            <li><b>BNO085</b> — has its own fusion and continuous calibration</li>`,
+        hw_note: 'Any board works with any sensor; if you wire an external sensor, set the SDA/SCL pins after connecting.',
     },
     tx_panel: {
         title: 'Head Tracker (Transmitter)',
@@ -62,7 +74,7 @@ window.HT_LOCALE_EN = {
             imu_badge_ok: '✅ <b>{board}</b> — <b>{detected}</b> connected',
             imu_badge_manual_suffix: ' (manually selected).',
             imu_badge_auto_suffix: ' (auto-detected).',
-            apply_sent: '✓ Sent — restart the device',
+            apply_sent: '✓ Saved — device restarting…',
             alert_invalid_i2c: 'Invalid I2C pin. {help}',
             alert_sda_scl_same: "SDA and SCL can't be the same pin.",
             alert_axes_format: 'Axis orientation must be in the +X+Y+Z format; each axis (X, Y, Z) must appear exactly once.',
@@ -208,8 +220,8 @@ window.HT_LOCALE_EN = {
         <p>On the Deneyap Kart the built-in LSM6DSM is already wired to this bus — if
            you haven't attached an external sensor, you don't need to touch these
            values.</p>
-        <p>Changing this <b>requires a restart</b> — the I2C bus is set up at boot.
-           Power-cycle the device after applying.</p>
+        <p>The I2C bus is set up at boot, so pressing <b>Apply</b> saves and the
+           device <b>restarts itself</b>; the configurator reconnects automatically.</p>
         <p>If the sensor isn't found at boot, the badge above turns red, the cube
            stays frozen, and <code>BP_STATUS</code> output shows <code>imu_hata=1</code>.</p>` },
 
@@ -251,12 +263,15 @@ window.HT_LOCALE_EN = {
 
         'imu-select': { title: 'Sensor selection', body: `
         <p>The device scans the I2C bus at boot and <b>identifies the sensor itself</b>.
-           The two families sit at different addresses, so there's no chance of
+           The families sit at different addresses, so there's no chance of
            confusion:</p>
         <ul>
             <li><b>MPU6050</b> — <code>0x68</code> / <code>0x69</code></li>
             <li><b>LSM6DSM</b> — <code>0x6A</code> / <code>0x6B</code>
                 (the Deneyap Kart's built-in sensor)</li>
+            <li><b>BNO085</b> — <code>0x4A</code> / <code>0x4B</code>
+                (the CodeCell C3's built-in sensor; does its own fusion and continuous
+                calibration, <b>Calibrate</b> saves the calibration to the sensor)</li>
         </ul>
         <p>So normally leave this on <b>Auto</b>. Manual selection exists for dealing
            with an unrecognized clone chip, or for telling it which one to use when

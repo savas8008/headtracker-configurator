@@ -2,7 +2,7 @@
 
 ESP32 tabanlı, kafa hareketinizi FPV kameranızın gimbal'ine taşıyan açık kaynaklı
 bir head tracker sistemi. Başınızı çevirdiğinizde kamera da çevrilir.
-ESP32-C3 Mini ve Deneyap Kart ile, MPU6050 ve LSM6DSM sensörleriyle çalışır.
+ESP32-C3 Mini, Deneyap Kart ve CodeCell C3 ile; MPU6050, LSM6DSM ve BNO085 sensörleriyle çalışır.
 
 ## Sistem neyden oluşuyor
 

@@ -24,8 +24,8 @@ Tarayıcıdan çalışan ayar arayüzü. Kurulum gerekmez:
 | **Sarsıntı Bağışıklığı** | Filtrenin ivmeölçere güveni (Mahony Kp). Düşük = sarsıntıya dayanıklı |
 | **PWM Çıkış Aralığı** | Her eksen için alt/üst sınır (500–2500 µs) |
 | **Reverse** | Ekseni ters çevirir |
-| **Sensör** | Hangi IMU kullanılacak: Otomatik / MPU6050 / LSM6DSM |
-| **SDA / SCL Pini** | I2C pinleri (değiştirince yeniden başlatın) |
+| **Sensör** | Hangi IMU kullanılacak: Otomatik / MPU6050 / LSM6DSM / BNO085 |
+| **SDA / SCL Pini** | I2C pinleri (Uygula'da cihaz kendini yeniden başlatır) |
 | **Eksen Yönü** | Sensörün kutu içindeki yönü, örn. `+X+Y+Z` veya `-Y+X+Z` |
 
 Değişiklikler **Kaydet**'e basınca cihazın kalıcı belleğine (NVS) yazılır; güç
@@ -52,8 +52,8 @@ Her eksen (X, Y, Z) tam bir kez geçmelidir. Değiştirdikten sonra **kalibrasyo
 tekrarlayın** — jiroskop sapması eski eksen haritasıyla ölçülmüştür.
 
 **Uygula** düğmesi sensör seçimini, eksen yönünü ve I2C pinlerini birlikte
-gönderir. I2C veri yolu açılışta kurulduğu için pin değişikliği yeniden başlatma
-ister.
+gönderir. I2C veri yolu açılışta kurulduğu için cihaz ayarları kaydedip kendini
+yeniden başlatır; konfigüratör otomatik olarak yeniden bağlanır.
 
 ## Cihaz dururken titriyorsa
 
